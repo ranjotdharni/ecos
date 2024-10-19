@@ -3,7 +3,7 @@
 import { FormEvent, MouseEvent, useState } from "react"
 import styles from './auth.module.css'
 import useError from "@/customs/hooks/useError"
-import { userAuthenticate } from "@/app/welcome/page"
+import { userAuthenticate } from "@/app/server/auth"
 
 // Auth forms submit slug
 export interface AuthFormSlug {
@@ -130,7 +130,7 @@ export default function Welcome() {
     const [newUser, setNewUser] = useState<boolean>(true) // track create form vs login form
     const [error, throwError] = useError()
 
-    // pass up form data
+    // pass up form data for credential authentication
     async function authenticate(slug: AuthFormSlug) {
         await userAuthenticate(newUser, slug).then(error => {
             if (error)
