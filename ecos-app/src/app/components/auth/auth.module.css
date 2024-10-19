@@ -1,0 +1,66 @@
+.form {
+    height: 75%;
+    width: 35%;
+    min-width: 400px;
+    max-width: 600px;
+    background: var(--color--contrast);
+    border-radius: 1em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 10px;
+}
+
+.form label {
+    position: relative;
+    top: 5%;
+    left: 5px;
+    font-size: 1.1em;
+    color: var(--color--text);
+}
+
+.form input {
+    outline: none;
+    border: none;
+    border-radius: 0.25em;
+    color: var(--color--subtext);
+    min-height: 23px;
+    padding-left: 5px;
+}
+
+.footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: end;
+    height: 15%;
+}
+
+.footer p {
+    color: crimson;
+    font-size: max(0.75vw, 0.5em);
+}
+
+.footer div button {
+    border: none;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 5px;
+    border-radius: 3px;
+    color: var(--color--subtext);
+    background-color: var(--color--accent);
+
+    &:hover {
+        cursor: pointer;
+        color: var(--color--text);
+    }
+}
+
+.footer div button:nth-child(2) {
+    background: none;
+    font-size: 0.7em;
+    padding: 0;
+    text-decoration: underline;
+}
