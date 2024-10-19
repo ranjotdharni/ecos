@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
-import { JetBrains_Mono } from 'next/font/google'
-import "./globals.css";
-import { isAuthenticated } from "./server/auth";
+import { handleAuthentication } from "./server/auth"
+import { JetBrains_Mono } from "next/font/google"
+import type { Metadata } from "next"
+import "./globals.css"
 
 const JB_Mono = JetBrains_Mono({
   subsets: ['latin'],
@@ -18,7 +18,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await isAuthenticated()
+
+  await handleAuthentication()
 
   return (
     <html lang="en">
