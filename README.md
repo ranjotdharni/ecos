@@ -1,2 +1,2 @@
 # ecos
-Economy based, online game.
+Online Economy Game.
