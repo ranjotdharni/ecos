@@ -1,7 +1,7 @@
 
 
+export const DEFAULT_SUCCESS_ROUTE: string = '/'
 const AUTH_ROUTE: string = '/welcome'
-const SUCCESS_ROUTE: string = '/'
 const AUTH_EXEMPT_ROUTES: string[] = [
     AUTH_ROUTE
 ]
@@ -23,12 +23,18 @@ export async function isAuthenticated() {
 export function validateUsername(username: string): string | void {
     if (username.length < 8) // length
         return 'Username must be at least 8 characters'
+
+    if (username.length > 64)
+        return 'Username may be at most 64 characters'
 }
 
 // ensure password passes rules, return error string or void
 export function validatePassword(password: string): string | void {
     if (password.length < 8) // length
         return 'Password must be at least 8 characters'
+
+    if (password.length > 64)
+        return 'Password may be at most 64 characters'
 
     if (!PASSWORD_SPECIAL_CHARACTERS.test(password)) // special character
         return 'Password must contain one special character'
