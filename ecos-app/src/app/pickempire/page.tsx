@@ -1,10 +1,10 @@
 'use server'
 
+import Empire from "../components/empire/Empire"
+
 export default async function PickEmpire() {
 
     return (
-        <div>
-            <h1>Pick an Empire</h1>
-        </div>
+        <Empire />
     )
 }

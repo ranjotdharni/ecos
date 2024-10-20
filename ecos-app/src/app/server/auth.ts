@@ -29,41 +29,48 @@ export async function isAuthenticated(): Promise<number> {
     // check authentication
     const cookieList = cookies()
 
-    if (!cookieList.has('username') || !cookieList.has('token'))
+    if (!cookieList.has('username') || !cookieList.has('token'))    // session cookies not found
         return AUTH_CODES.NOT_AUTHENTICATED
 
+    // get session
     let result: [QueryResult, FieldPacket[]] | QueryError = await dbGetSession(cookieList.get('username')!.value, cookieList.get('token')!.value)
 
-    if ((result as QueryError).code !== undefined) {
+    if ((result as QueryError).code !== undefined) {    // ISE when getting session, authenticate again
         console.log(result)
         return AUTH_CODES.NOT_AUTHENTICATED
     }
 
     const session: Session[] = (result as [Session[], FieldPacket[]])[0]
     
-    if (session.length === 0 || new Date() > session[0].expires_at)
+    if (session.length === 0 || new Date() > session[0].expires_at) // session not found or expired, authenticate again
         return AUTH_CODES.NOT_AUTHENTICATED
 
-    result = await dbCheckCredentials(cookieList.get('username')!.value)
+    // At this point user has valid session, now check if empire selected
 
-    if ((result as QueryError).code !== undefined) {
+    result = await dbCheckCredentials(cookieList.get('username')!.value)    // grab user info
+
+    if ((result as QueryError).code !== undefined) {    // ISE when getting user info, authenticate again
         console.log(result)
         return AUTH_CODES.NOT_AUTHENTICATED
     }
 
     const credentials: User[] = (result as [User[], FieldPacket[]])[0]
     
-    if (credentials.length === 0)
+    if (credentials.length === 0)   // user info not found, authenticate again
         return AUTH_CODES.NOT_AUTHENTICATED
 
-    if (credentials[0].empire === null)
+    if (credentials[0].empire === null) // user authenticated but empire not selected
         return AUTH_CODES.NULL_EMPIRE
 
-    return AUTH_CODES.LOGGED_IN
+    return AUTH_CODES.LOGGED_IN // user authenticated and empire is selected
 }
 
 // handle user's auth status
 export async function handleAuthentication() {
+    // skip auth in development
+    if (process.env.ENV === 'dev')
+        return
+
     // check if route is exempt
     const headerList = headers()
     const pathname = headerList.get("current-path")
