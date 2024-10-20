@@ -12,9 +12,7 @@ import bcrypt from "bcrypt"
 const DEFAULT_SUCCESS_ROUTE: string = '/'
 const AUTH_ROUTE: string = '/welcome'
 const NEW_EMPIRE_ROUTE = '/pickempire'
-const AUTH_EXEMPT_ROUTES: string[] = [
-    AUTH_ROUTE
-]
+const AUTH_EXEMPT_ROUTES: string[] = []
 
 const AUTH_CODES = {
     NOT_AUTHENTICATED: 0,    // Needs to login
@@ -43,7 +41,7 @@ export async function isAuthenticated(): Promise<number> {
 
     const session: Session[] = (result as [Session[], FieldPacket[]])[0]
     
-    if (session.length === 0 || new Date > session[0].expires_at)
+    if (session.length === 0 || new Date() > session[0].expires_at)
         return AUTH_CODES.NOT_AUTHENTICATED
 
     result = await dbCheckCredentials(cookieList.get('username')!.value)
@@ -70,19 +68,20 @@ export async function handleAuthentication() {
     const headerList = headers()
     const pathname = headerList.get("current-path")
     
+    // handle auth exempt routes
     if (AUTH_EXEMPT_ROUTES.includes(pathname as string))
         return
 
-    // redirect to auth route or select empire route
+    // check user's authentication status
     const status: number = await isAuthenticated()
 
-    if (status === AUTH_CODES.NOT_AUTHENTICATED) {
-        redirect(AUTH_ROUTE)
+    if (status === AUTH_CODES.NOT_AUTHENTICATED && pathname !== AUTH_ROUTE) {   // not authenticated and not on auth route already
+        redirect(`${AUTH_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
     }
-    else if (status === AUTH_CODES.NULL_EMPIRE && pathname !== NEW_EMPIRE_ROUTE) {
-        redirect(NEW_EMPIRE_ROUTE)
+    else if (status === AUTH_CODES.NULL_EMPIRE && pathname !== NEW_EMPIRE_ROUTE) {  // empire not selected and not on empire selection route
+        redirect(`${NEW_EMPIRE_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
     }
-    else if (status === AUTH_CODES.LOGGED_IN && pathname === NEW_EMPIRE_ROUTE) {
+    else if (status === AUTH_CODES.LOGGED_IN && (pathname === NEW_EMPIRE_ROUTE || pathname === AUTH_ROUTE)) {   // logged in but on an auth or empire select route
         redirect(DEFAULT_SUCCESS_ROUTE)
     }
 }
@@ -131,15 +130,8 @@ async function generateAuthCookieOptions(expiry: Date) {
     }
 }
 
-export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug) {
-    const status: number = await isAuthenticated()
-
-    if (status === AUTH_CODES.NULL_EMPIRE) 
-        redirect(NEW_EMPIRE_ROUTE)
-
-    if (status === AUTH_CODES.LOGGED_IN) 
-        redirect(DEFAULT_SUCCESS_ROUTE)
-
+// Submit credential authentication form handler
+export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug, urlParams: { [key: string]: string | string[] | undefined }) {
     if (isNewUser) {    // create new user
 
         // validate username
@@ -201,9 +193,16 @@ export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug
     cookieList.set('username', details.username, cookieOptions)
     cookieList.set('token', session_token, cookieOptions)
 
-    // redirect
-    if (isNewUser)
-        redirect(NEW_EMPIRE_ROUTE)
+    // determine if redirect route param was passed
+    let nextRoute: string
 
-    redirect(DEFAULT_SUCCESS_ROUTE)
+    if (urlParams.next === undefined)
+        nextRoute = (isNewUser ? NEW_EMPIRE_ROUTE : DEFAULT_SUCCESS_ROUTE)
+    else if (Array.isArray(urlParams.next))
+        nextRoute = (isNewUser ? `${NEW_EMPIRE_ROUTE}?next=${urlParams.next[0]}` : urlParams.next[0])
+    else 
+        nextRoute = (isNewUser ? `${NEW_EMPIRE_ROUTE}?next=${urlParams.next}` : urlParams.next)
+
+    // redirect
+    redirect(nextRoute)
 }

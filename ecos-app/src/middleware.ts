@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { handleAuthentication } from "./app/server/auth";
 
+// pass current path as header to server
 export async function middleware(request: NextRequest) {
-  // Log the current request pathname
   const headers = new Headers(request.headers)
   headers.set("current-path", request.nextUrl.pathname)
   return NextResponse.next({ headers })
