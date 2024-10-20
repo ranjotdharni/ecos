@@ -14,7 +14,7 @@ export interface AuthFormSlug {
 
 // individual Auth form props
 interface AuthFormProps {
-    swap: (event: MouseEvent<HTMLButtonElement>) => void
+    swap: (event: MouseEvent<HTMLAnchorElement>) => void
     submit: (slug: AuthFormSlug) => void
     error?: string
 }
@@ -53,24 +53,17 @@ export function UserCreateForm(props : AuthFormProps) {
 
     return (
         <form className={styles.form}>
-            <h2>Welcome - Create Account</h2>
+            <h1>Sign Up</h1>
+            <h3>Create an account</h3>
 
-            <label>Username</label>
-            <input placeholder='Enter Username...' onChange={editUsername} />
+            <input placeholder='Username' onChange={editUsername} />
+            <input type='password' placeholder='Password' onChange={editPassword} />
+            <input type='password' placeholder='Confirm Password' onChange={editConfirm} />
 
-            <label>Password</label>
-            <input type='password' placeholder='Enter Password...' onChange={editPassword} />
-
-            <label>Confirm Password</label>
-            <input type='password' placeholder='Re-enter Password...' onChange={editConfirm} />
-
-            <div className={styles.footer}>
-                <p>{props.error}</p>
-                <div>
-                    <button onClick={submit}>Submit</button>
-                    <button onClick={props.swap}>Returning User</button>
-                </div>
-            </div>
+            
+            <button onClick={submit}>Submit</button>
+            <p className={styles.swap}>Already a user? <a onClick={props.swap}>Log In</a></p>
+            <p className={styles.error}>{props.error}</p>
         </form>
     )
 }
@@ -103,24 +96,17 @@ export function UserLoginForm(props: AuthFormProps) {
 
     return (
         <form className={styles.form}>
-            <h2>Existing User - Log In</h2>
+            <h1>Log In</h1>
+            <h3>Sign into your account</h3>
 
-            <label>Username</label>
-            <input placeholder='Enter Username...' onChange={editUsername} />
+            <input placeholder='Username' onChange={editUsername} />
+            <input type='password' placeholder='Password' onChange={editPassword} />
+            <input className={styles.hidden} disabled  />
 
-            <label>Password</label>
-            <input type='password' placeholder='Enter Password...' onChange={editPassword} />
-
-            <label></label>
-            <input hidden />
-
-            <div className={styles.footer}>
-                <p>{props.error}</p>
-                <div>
-                    <button onClick={submit}>Submit</button>
-                    <button onClick={props.swap}>New User</button>
-                </div>
-            </div>
+            
+            <button onClick={submit}>Submit</button>
+            <p className={styles.swap}>Not a user? <a onClick={props.swap}>Sign Up</a></p>
+            <p className={styles.error}>{props.error}</p>
         </form>
     )
 }
@@ -139,12 +125,14 @@ export default function AuthForm({ urlParams } : { urlParams: { [key: string]: s
     }
 
     // switch between create and login form
-    function swapForm(event: MouseEvent<HTMLButtonElement>) {
+    function swapForm(event: MouseEvent<HTMLAnchorElement>) {
         event.preventDefault()
         setNewUser(!newUser)
     }
 
     return (
-        newUser ? <UserCreateForm swap={swapForm} submit={authenticate} error={error} /> : <UserLoginForm swap={swapForm} submit={authenticate} error={error} />
+        <section className={styles.page}>
+            {newUser ? <UserCreateForm swap={swapForm} submit={authenticate} error={error} /> : <UserLoginForm swap={swapForm} submit={authenticate} error={error} />}
+        </section>
     )
 }

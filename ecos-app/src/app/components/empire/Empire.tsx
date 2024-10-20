@@ -1,8 +1,8 @@
 'use client'
 
 import { EMPIRE_DATA, EmpireData } from "@/app/server/empire"
-import styles from "./empire.module.css"
 import { MouseEvent, useState } from "react"
+import styles from "./empire.module.css"
 
 function EmpireCard({ empire, selectedEmpire, setSelectedEmpire } : { empire: EmpireData, selectedEmpire: number | undefined, setSelectedEmpire: (select: number) => void }) {
 
@@ -13,10 +13,11 @@ function EmpireCard({ empire, selectedEmpire, setSelectedEmpire } : { empire: Em
 
     return (
         <div onClick={selectEmpire} className={`${styles.card} ${(empire.code === selectedEmpire ? styles.highlightCard : '')}`}>
+            <img src={empire.sigil.src} />
             <h2>{empire.name}</h2>
             <p>{empire.desc}</p>
             <div>
-                <button hidden={empire.code !== selectedEmpire} disabled={empire.code !== selectedEmpire}>Continue</button>
+                <button hidden={empire.code !== selectedEmpire} disabled={empire.code !== selectedEmpire}>Select</button>
             </div>
         </div>
     )
@@ -27,7 +28,7 @@ export default function Empire() {
 
     return (
         <>
-            <h1 className={styles.title}>Pick Your Empire</h1>
+            <h1 className={styles.title}>Choose Your Empire</h1>
             <div className={styles.page}>
                 {
                     EMPIRE_DATA.map(e => {
