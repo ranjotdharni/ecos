@@ -6,7 +6,7 @@ export interface User extends RowDataPacket {
     user_id: string
     username: string
     password: string
-    empire: string | null
+    empire: number | null
     created_at: Date
 }
 
