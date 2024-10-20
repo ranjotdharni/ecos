@@ -2,9 +2,9 @@
 
 import AuthForm from "../components/auth/AuthForm"
 
-export default async function Welcome() {
+export default async function Welcome({ searchParams } : { searchParams: { [key: string]: string | string[] | undefined } }) {
 
     return (
-        <AuthForm />
+        <AuthForm urlParams={searchParams} />
     )
 }

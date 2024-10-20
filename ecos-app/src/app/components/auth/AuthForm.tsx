@@ -126,13 +126,13 @@ export function UserLoginForm(props: AuthFormProps) {
 }
 
 // Authenticate a user
-export default function Welcome() {
+export default function AuthForm({ urlParams } : { urlParams: { [key: string]: string | string[] | undefined } }) {
     const [newUser, setNewUser] = useState<boolean>(true) // track create form vs login form
     const [error, throwError] = useError()
 
     // pass up form data for credential authentication
     async function authenticate(slug: AuthFormSlug) {
-        await userAuthenticate(newUser, slug).then(error => {
+        await userAuthenticate(newUser, slug, urlParams).then(error => {
             if (error)
                 throwError(error)
         })
