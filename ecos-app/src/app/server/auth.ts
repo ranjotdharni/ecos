@@ -23,6 +23,9 @@ const AUTH_CODES = {
 const PASSWORD_SPECIAL_CHARACTERS: RegExp = /[~`!@#$%^&*()\-_+={}[\]|\\;:"<>,./?]/
 const PASSWORD_SALT_ROUNDS: number = 10
 
+// minutes that the session is valid for
+const SESSION_VALIDITY_PERIOD: number = 2
+
 // confirm user's auth status
 export async function isAuthenticated(): Promise<number> {
 
@@ -42,7 +45,7 @@ export async function isAuthenticated(): Promise<number> {
 
     const session: Session[] = (result as [Session[], FieldPacket[]])[0]
     
-    if (session.length === 0 || new Date() > session[0].expires_at) // session not found or expired, authenticate again
+    if (session.length === 0 || isSessionExpired(session[0].expires_at)) // session not found or expired, authenticate again
         return AUTH_CODES.NOT_AUTHENTICATED
 
     // At this point user has valid session, now check if empire selected
@@ -68,7 +71,7 @@ export async function isAuthenticated(): Promise<number> {
 // handle user's auth status
 export async function handleAuthentication() {
     // skip auth in development
-    if (process.env.ENV === 'dev')
+    if (process.env.ENV === 'dev') 
         return
 
     // check if route is exempt
@@ -120,11 +123,16 @@ export async function validatePassword(password: string): Promise<string | void>
         return 'Password must contain one uppercase character'
 }
 
-// Uniformly generate max age for session cookies
-async function generateCookieExpirationDate(): Promise<Date> {
+// Uniformly generate expiration for session cookies (in utc)
+async function generateSessionExpirationDate(): Promise<Date> {
     const expiry: Date = new Date() 
-    expiry.setMinutes(expiry.getMinutes() + 2)
+    expiry.setMinutes(expiry.getMinutes() + SESSION_VALIDITY_PERIOD)
     return expiry
+}
+
+// Check if utc session has expired
+function isSessionExpired(expiry: Date): boolean {
+    return new Date() > expiry
 }
 
 // generate auth cookies' options uniformly
@@ -133,7 +141,7 @@ async function generateAuthCookieOptions(expiry: Date) {
         maxAge: (expiry.getTime() - (new Date()).getTime()) / 1000,
         httpOnly: true,
         sameSite: true,
-        secure: process.env.ENV !== 'dev'
+        secure: process.env.ENV === 'prod'
     }
 }
 
@@ -184,7 +192,7 @@ export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug
     }
 
     // create session
-    const session_expiration: Date = await generateCookieExpirationDate()
+    const session_expiration: Date = await generateSessionExpirationDate()
     const session_token: string = uuidv4() 
 
     const result: [QueryResult, FieldPacket[]] | QueryError = await dbGenerateSession(details.username, session_token, dateToSQLDate(session_expiration))    // automatically destroys any existing session(s)
