@@ -118,6 +118,7 @@ export default function AuthForm({ urlParams } : { urlParams: { [key: string]: s
 
     // pass up form data for credential authentication
     async function authenticate(slug: AuthFormSlug) {
+        // apparently getTimezoneOffset give positive value if behind utc time
         await userAuthenticate(newUser, slug, urlParams).then(error => {
             if (error)
                 throwError(error)

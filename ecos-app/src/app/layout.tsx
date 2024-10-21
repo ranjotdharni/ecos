@@ -11,7 +11,7 @@ const JB_Mono = JetBrains_Mono({
 const metadata: Metadata = {
   title: "Hegemony - Online Economy Game",
   description: "Online Economy Game",
-};
+}
 
 export default async function RootLayout({
   children,
@@ -32,5 +32,5 @@ export default async function RootLayout({
         </footer>
       </body>
     </html>
-  );
+  )
 }
