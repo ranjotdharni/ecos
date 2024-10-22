@@ -1,14 +1,7 @@
 import ConcertinaSigil from '../static/png/concertinaSigil.png'
 import TempestraSigil from '../static/png/tempestraSigil.png'
 import IcariumSigil from '../static/png/icariumSigil.png'
-import { StaticImageData } from 'next/image'
-
-export interface EmpireData {
-    code: number
-    name: string
-    sigil: StaticImageData
-    desc: string
-}
+import { EmpireData } from '@/customs/utils/types'
 
 export const TEMPESTRA_CODE: number = 1
 export const CONCERTINA_CODE: number = 2

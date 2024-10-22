@@ -1,19 +1,13 @@
 'use client'
 
 import { FormEvent, MouseEvent, useState } from "react"
-import styles from './auth.module.css'
-import useError from "@/customs/hooks/useError"
 import { userAuthenticate } from "@/app/server/auth"
-
-// Auth forms submit slug
-export interface AuthFormSlug {
-    username: string
-    password: string
-    confirm?: string
-}
+import { AuthFormSlug } from "@/customs/utils/types"
+import useError from "@/customs/hooks/useError"
+import styles from './auth.module.css'
 
 // individual Auth form props
-interface AuthFormProps {
+export interface AuthFormProps {
     swap: (event: MouseEvent<HTMLAnchorElement>) => void
     submit: (slug: AuthFormSlug) => void
     error?: string
@@ -22,9 +16,19 @@ interface AuthFormProps {
 // Create a new user account
 export function UserCreateForm(props : AuthFormProps) {
 
+    const [firstname, setFirstname] = useState<string>('')
+    const [lastname, setLastname] = useState<string>('')
     const [username, setUsername] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [confirm, setConfirm] = useState<string>('')
+
+    function editFirstname(event: FormEvent<HTMLInputElement>) {
+        setFirstname(event.currentTarget.value)
+    }
+
+    function editLastname(event: FormEvent<HTMLInputElement>) {
+        setLastname(event.currentTarget.value)
+    }
 
     function editUsername(event: FormEvent<HTMLInputElement>) {
         setUsername(event.currentTarget.value)
@@ -45,6 +49,8 @@ export function UserCreateForm(props : AuthFormProps) {
             return
 
         props.submit({
+            firstname: firstname.trim(),
+            lastname: lastname.trim(),
             username: username.trim(),
             password: password.trim(),
             confirm: confirm.trim()
@@ -55,6 +61,11 @@ export function UserCreateForm(props : AuthFormProps) {
         <form className={styles.form}>
             <h1>Sign Up</h1>
             <h3>Create an account</h3>
+
+            <section>
+                <input placeholder='First Name' onChange={editFirstname} />
+                <input placeholder='Last Name' onChange={editLastname} />
+            </section>
 
             <input placeholder='Username' onChange={editUsername} />
             <input type='password' placeholder='Password' onChange={editPassword} />

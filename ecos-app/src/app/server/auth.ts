@@ -1,24 +1,14 @@
 'use server'
 
-import { dbCheckCredentials, dbCreateUser, dbGenerateSession, dbGetSession, User, Session } from "../db/query"
+import { AUTH_CODES, AUTH_EXEMPT_ROUTES, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE } from "../../customs/utils/constants"
+import { dbCheckCredentials, dbCreateUser, dbGenerateSession, dbGetSession } from "../db/query"
+import { Session, User, AuthFormSlug } from "@/customs/utils/types"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
-import { AuthFormSlug } from "../components/auth/AuthForm"
 import { dateToSQLDate } from "@/customs/utils/tools"
-import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
-import {v4 as uuidv4} from "uuid"
-import bcrypt from "bcrypt"
-
-const DEFAULT_SUCCESS_ROUTE: string = '/'
-const AUTH_ROUTE: string = '/welcome'
-const NEW_EMPIRE_ROUTE = '/pickempire'
-const AUTH_EXEMPT_ROUTES: string[] = []
-
-const AUTH_CODES = {
-    NOT_AUTHENTICATED: 0,    // Needs to login
-    NULL_EMPIRE: 1,          // logged in but needs to select empire
-    LOGGED_IN: 2             // logged in and empire selected
-}
+import { cookies } from "next/headers"
+import { compare, hash } from "bcrypt"
+import { v4 as uuidv4 } from "uuid"
 
 const PASSWORD_SPECIAL_CHARACTERS: RegExp = /[~`!@#$%^&*()\-_+={}[\]|\\;:"<>,./?]/
 const PASSWORD_SALT_ROUNDS: number = 10
@@ -26,78 +16,32 @@ const PASSWORD_SALT_ROUNDS: number = 10
 // minutes that the session is valid for
 const SESSION_VALIDITY_PERIOD: number = 2
 
-// confirm user's auth status
-export async function isAuthenticated(): Promise<number> {
+// ensure first and last name pass rules, return error string or void
+export async function validateName(firstname: string, lastname: string): Promise<string | void> {
+    if (firstname.indexOf(' ') >= 0) // first name whitespace
+        return 'First Name may not contain whitespaces'
 
-    // check authentication
-    const cookieList = cookies()
+    if (lastname.indexOf(' ') >= 0) // last name whitespace
+        return 'Last Name may not contain whitespaces'
 
-    if (!cookieList.has('username') || !cookieList.has('token'))    // session cookies not found
-        return AUTH_CODES.NOT_AUTHENTICATED
+    if (firstname.length < 2) // first name length
+        return 'First name must be at least 2 characters'
 
-    // get session
-    let result: [QueryResult, FieldPacket[]] | QueryError = await dbGetSession(cookieList.get('username')!.value, cookieList.get('token')!.value)
+    if (firstname.length > 32)
+        return 'First name may be at most 32 characters'
 
-    if ((result as QueryError).code !== undefined) {    // ISE when getting session, authenticate again
-        console.log(result)
-        return AUTH_CODES.NOT_AUTHENTICATED
-    }
+    if (lastname.length < 2) // last name length
+        return 'Last name must be at least 2 characters'
 
-    const session: Session[] = (result as [Session[], FieldPacket[]])[0]
-    
-    if (session.length === 0 || isSessionExpired(session[0].expires_at)) // session not found or expired, authenticate again
-        return AUTH_CODES.NOT_AUTHENTICATED
-
-    // At this point user has valid session, now check if empire selected
-
-    result = await dbCheckCredentials(cookieList.get('username')!.value)    // grab user info
-
-    if ((result as QueryError).code !== undefined) {    // ISE when getting user info, authenticate again
-        console.log(result)
-        return AUTH_CODES.NOT_AUTHENTICATED
-    }
-
-    const credentials: User[] = (result as [User[], FieldPacket[]])[0]
-    
-    if (credentials.length === 0)   // user info not found, authenticate again
-        return AUTH_CODES.NOT_AUTHENTICATED
-
-    if (credentials[0].empire === null) // user authenticated but empire not selected
-        return AUTH_CODES.NULL_EMPIRE
-
-    return AUTH_CODES.LOGGED_IN // user authenticated and empire is selected
-}
-
-// handle user's auth status
-export async function handleAuthentication() {
-    // skip auth in development
-    if (process.env.ENV === 'dev') 
-        return
-
-    // check if route is exempt
-    const headerList = headers()
-    const pathname = headerList.get("current-path")
-    
-    // handle auth exempt routes
-    if (AUTH_EXEMPT_ROUTES.includes(pathname as string))
-        return
-
-    // check user's authentication status
-    const status: number = await isAuthenticated()
-
-    if (status === AUTH_CODES.NOT_AUTHENTICATED && pathname !== AUTH_ROUTE) {   // not authenticated and not on auth route already
-        redirect(`${AUTH_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
-    }
-    else if (status === AUTH_CODES.NULL_EMPIRE && pathname !== NEW_EMPIRE_ROUTE) {  // empire not selected and not on empire selection route
-        redirect(`${NEW_EMPIRE_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
-    }
-    else if (status === AUTH_CODES.LOGGED_IN && (pathname === NEW_EMPIRE_ROUTE || pathname === AUTH_ROUTE)) {   // logged in but on an auth or empire select route
-        redirect(DEFAULT_SUCCESS_ROUTE)
-    }
+    if (lastname.length > 32)
+        return 'Last name may be at most 32 characters'
 }
 
 // ensure username passes rules, return error string or void
 export async function validateUsername(username: string): Promise<string | void> {
+    if (username.indexOf(' ') >= 0) // whitespace
+        return 'Username may not contain whitespaces'
+
     if (username.length < 8) // length
         return 'Username must be at least 8 characters'
 
@@ -107,6 +51,9 @@ export async function validateUsername(username: string): Promise<string | void>
 
 // ensure password passes rules, return error string or void
 export async function validatePassword(password: string): Promise<string | void> {
+    if (password.indexOf(' ') >= 0) // whitespace
+        return 'Password may not contain whitespaces'
+
     if (password.length < 8) // length
         return 'Password must be at least 8 characters'
 
@@ -135,6 +82,63 @@ function isSessionExpired(expiry: Date): boolean {
     return new Date() > expiry
 }
 
+// confirm user's auth status
+export async function isAuthenticated(): Promise<number> {
+    // check authentication
+    const cookieList = cookies()
+
+    if (!cookieList.has('username') || !cookieList.has('token'))    // session cookies not found
+        return AUTH_CODES.NOT_AUTHENTICATED
+
+    // get session
+    let result: [QueryResult, FieldPacket[]] | QueryError = await dbGetSession(cookieList.get('username')!.value, cookieList.get('token')!.value)
+
+    if ((result as QueryError).code !== undefined) {    // ISE when getting session, authenticate again
+        console.log(result)
+        return AUTH_CODES.NOT_AUTHENTICATED
+    }
+
+    
+
+    const session: Session[] = (result as [Session[], FieldPacket[]])[0]
+
+    if (session.length === 0 || isSessionExpired(session[0].expires_at)) // session not found or expired, authenticate again
+        return AUTH_CODES.NOT_AUTHENTICATED
+
+    // At this point user has valid session, now check if empire selected
+
+    result = await dbCheckCredentials(cookieList.get('username')!.value)    // grab user info
+
+    if ((result as QueryError).code !== undefined) {    // ISE when getting user info, authenticate again
+        console.log(result)
+        return AUTH_CODES.NOT_AUTHENTICATED
+    }
+
+    const credentials: User[] = (result as [User[], FieldPacket[]])[0]
+
+    if (credentials.length === 0)   // user info not found, authenticate again
+        return AUTH_CODES.NOT_AUTHENTICATED
+
+    if (credentials[0].empire === null) // user authenticated but empire not selected
+        return AUTH_CODES.NULL_EMPIRE
+
+    return AUTH_CODES.LOGGED_IN // user authenticated and empire is selected
+}
+
+// handle user's auth status
+export async function handleAuthentication(pathname: string): Promise<number> {
+    // skip auth in development
+    //if (process.env.ENV === 'dev') 
+    //    return AUTH_CODES.EXEMPT
+
+    // handle auth exempt routes
+    if (AUTH_EXEMPT_ROUTES.includes(pathname))
+        return AUTH_CODES.EXEMPT
+
+    // check user's authentication status
+    return await isAuthenticated()
+}
+
 // generate auth cookies' options uniformly
 async function generateAuthCookieOptions(expiry: Date) {
     return {
@@ -146,8 +150,14 @@ async function generateAuthCookieOptions(expiry: Date) {
 }
 
 // Submit credential authentication form handler
-export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug, urlParams: { [key: string]: string | string[] | undefined }) {
+export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug, urlParams: { [key: string]: string | string[] | undefined }): Promise<string | void> {
     if (isNewUser) {    // create new user
+
+        // validate name
+        const invalidName: string | void = await validateName(details.firstname!, details.lastname!)
+
+        if (invalidName) 
+            return invalidName
 
         // validate username
         if (details.username === details.password)
@@ -169,8 +179,8 @@ export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug
             return invalidPassword
 
         // add user
-        const hash: string = await bcrypt.hash(details.password, PASSWORD_SALT_ROUNDS)
-        let result: [QueryResult, FieldPacket[]] | QueryError = await dbCreateUser(uuidv4(), details.username, hash, dateToSQLDate(new Date()))
+        const hashPassword: string = await hash(details.password, PASSWORD_SALT_ROUNDS)
+        let result: [QueryResult, FieldPacket[]] | QueryError = await dbCreateUser(uuidv4(), details.firstname!, details.lastname!, details.username, hashPassword, dateToSQLDate(new Date()))
 
         if ((result as QueryError).code !== undefined) 
             return 'User already exists'
@@ -186,7 +196,7 @@ export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug
 
         const credentials: User[] = (result as [User[], FieldPacket[]])[0]
         
-        if (credentials.length === 0 || !await bcrypt.compare(details.password, credentials[0].password))
+        if (credentials.length === 0 || !await compare(details.password, credentials[0].password))
             return 'Username/Password not found'
 
     }

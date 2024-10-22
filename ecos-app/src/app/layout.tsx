@@ -1,4 +1,3 @@
-import { handleAuthentication } from "./server/auth"
 import { JetBrains_Mono } from "next/font/google"
 import type { Metadata } from "next"
 import "./globals.css"
@@ -18,8 +17,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-  await handleAuthentication()
 
   return (
     <html lang="en">
