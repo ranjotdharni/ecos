@@ -1,5 +1,11 @@
 {
   "scripts": {
     "dev": "cd ecos-app && npx next dev"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1"
   }
 }

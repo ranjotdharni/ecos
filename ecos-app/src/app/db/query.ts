@@ -1,29 +1,14 @@
-import { FieldPacket, QueryResult, QueryError, RowDataPacket } from "mysql2";
+import { FieldPacket, QueryResult, QueryError } from "mysql2";
+import { Session, User } from "@/customs/utils/types";
 import { db } from "./config";
 
-// user table row data
-export interface User extends RowDataPacket {
-    user_id: string
-    username: string
-    password: string
-    empire: number | null
-    created_at: Date
-}
-
-// auth table row data
-export interface Session extends RowDataPacket {
-    user_id: string,
-    auth_token: string,
-    expires_at: Date
-}
-
 // Add a new user to the database
-export async function dbCreateUser(id: string, username: string, password: string, created_at: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+export async function dbCreateUser(id: string, firstname: string, lastname: string, username: string, password: string, created_at: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
     try {
         const conn = await db.getConnection()
 
-        const query: string = 'INSERT INTO users (user_id, username, password, created_at) VALUES (?, ?, ?, ?)'
-        const params: string[] = [id, username, password, created_at]
+        const query: string = 'INSERT INTO users (user_id, first_name, last_name, username, password, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+        const params: string[] = [id, firstname, lastname, username, password, created_at]
         const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
         conn.release()
 
