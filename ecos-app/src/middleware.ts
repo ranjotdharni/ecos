@@ -1,21 +1,24 @@
-import { AUTH_CODES, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE } from "./customs/utils/constants"
-import { handleAuthentication } from "./app/server/auth"
+import { AUTH_CODES, AUTH_EXEMPT_ROUTES, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE } from "./customs/utils/constants"
 import { NextResponse, NextRequest } from "next/server"
+import { isAuthenticated } from "./app/server/auth"
 
 // pass current path as header to server
 export async function middleware(request: NextRequest) {
   const origin: string = request.nextUrl.origin
   const pathname: string = request.nextUrl.pathname
-  const status: number = await handleAuthentication(pathname)
 
-  if (status === AUTH_CODES.NOT_AUTHENTICATED && pathname !== AUTH_ROUTE) {   // not authenticated and not on auth route already
-    return NextResponse.redirect(`${origin}${AUTH_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
-  }
-  else if (status === AUTH_CODES.NULL_EMPIRE && pathname !== NEW_EMPIRE_ROUTE) {  // empire not selected and not on empire selection route
-    return NextResponse.redirect(`${origin}${NEW_EMPIRE_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
-  }
-  else if (status === AUTH_CODES.LOGGED_IN && (pathname === NEW_EMPIRE_ROUTE || pathname === AUTH_ROUTE)) {   // logged in but on an auth or empire select route
-    return NextResponse.redirect(`${origin}${DEFAULT_SUCCESS_ROUTE}`)
+  if (process.env.ENV !== 'dev' && !AUTH_EXEMPT_ROUTES.includes(pathname)) { // bypass for auth exempt routes and development mode
+    const status: number = await isAuthenticated(origin + '/api/session')  // get auth status
+
+    if (status === AUTH_CODES.NOT_AUTHENTICATED && pathname !== AUTH_ROUTE) {   // not authenticated and not on auth route already
+      return NextResponse.redirect(`${origin}${AUTH_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
+    }
+    else if (status === AUTH_CODES.NULL_EMPIRE && pathname !== NEW_EMPIRE_ROUTE) {  // empire not selected and not on empire selection route
+      return NextResponse.redirect(`${origin}${NEW_EMPIRE_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE && pathname !== AUTH_ROUTE ? `?next=${pathname}` : ``)}`)
+    }
+    else if (status === AUTH_CODES.LOGGED_IN && (pathname === NEW_EMPIRE_ROUTE || pathname === AUTH_ROUTE)) {   // logged in but on an auth or empire select route
+      return NextResponse.redirect(`${origin}${DEFAULT_SUCCESS_ROUTE}`)
+    }
   }
   
   return NextResponse.next()
