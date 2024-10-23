@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 
 // Store and clear an error string, optionally specify seconds until error clears (default 8s)
 export default function useError(initialValue?: string, clearTimeout?: number): [string, (error: string) => void] {

@@ -1,6 +1,6 @@
-import { FieldPacket, QueryResult, QueryError } from "mysql2";
-import { Session, User } from "@/customs/utils/types";
-import { db } from "./config";
+import { FieldPacket, QueryResult, QueryError } from "mysql2"
+import { Session, User } from "@/customs/utils/types"
+import { db } from "./config"
 
 // Add a new user to the database
 export async function dbCreateUser(id: string, firstname: string, lastname: string, username: string, password: string, created_at: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
@@ -66,7 +66,7 @@ export async function dbGetSession(username: string, token: string): Promise<[Se
 }
 
 // Check login credentials
-export async function dbCheckCredentials(username: string): Promise<[User[], FieldPacket[]] | QueryError> {
+export async function dbGetUser(username: string): Promise<[User[], FieldPacket[]] | QueryError> {
     try {
         const conn = await db.getConnection()
 
@@ -76,6 +76,23 @@ export async function dbCheckCredentials(username: string): Promise<[User[], Fie
         conn.release()
 
         return response as [User[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// Set empire
+export async function dbSetEmpire(username: string, empire: number): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `UPDATE users SET empire = ? WHERE username = ?`
+        const params: (string | number)[] = [empire, username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
 
     } catch (error) {
         return error as QueryError

@@ -1,10 +1,10 @@
 'use client'
 
-import { FormEvent, MouseEvent, useState } from "react"
 import { userAuthenticate } from "@/customs/utils/actions"
+import { FormEvent, MouseEvent, useState } from "react"
 import { AuthFormSlug } from "@/customs/utils/types"
 import useError from "@/customs/hooks/useError"
-import styles from './auth.module.css'
+import styles from "./auth.module.css"
 
 // individual Auth form props
 export interface AuthFormProps {

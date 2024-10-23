@@ -1,8 +1,8 @@
 'use server'
 
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
-import { DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS } from "../../customs/utils/constants"
-import { dbCheckCredentials, dbCreateUser, dbGenerateSession } from "../../app/db/query"
+import { AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS } from "../../customs/utils/constants"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire } from "../../app/db/query"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { User, AuthFormSlug } from "@/customs/utils/types"
 import { dateToSQLDate } from "@/customs/utils/tools"
@@ -55,7 +55,7 @@ export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug
     
     }
     else {  // log in existing user
-        const result: [QueryResult, FieldPacket[]] | QueryError = await dbCheckCredentials(details.username)
+        const result: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(details.username)
 
         if ((result as QueryError).code !== undefined) {
             console.log(result)
@@ -95,6 +95,51 @@ export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug
         nextRoute = (isNewUser ? `${NEW_EMPIRE_ROUTE}?next=${urlParams.next[0]}` : urlParams.next[0])
     else 
         nextRoute = (isNewUser ? `${NEW_EMPIRE_ROUTE}?next=${urlParams.next}` : urlParams.next)
+
+    // redirect
+    redirect(nextRoute)
+}
+
+// select empire
+export async function selectEmpire(empire: number, urlParams: { [key: string]: string | string[] | undefined }): Promise<string | void> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    let result: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((result as QueryError).code !== undefined) {    // ISE when getting user info
+        console.log(result)
+        return '500 Internal Server Error'
+    }
+
+    const user: User[] = (result as [User[], FieldPacket[]])[0]
+
+    if (user.length === 0)
+        return 'User Not Found'
+
+    if (user[0].empire !== null)
+        return 'Empire Already Selected'
+
+    result = await dbSetEmpire(username, empire)
+
+    if ((result as QueryError).code !== undefined) {
+        console.log(result)
+        return '500 Internal Server Error'
+    }
+
+    // determine if redirect route param was passed
+    let nextRoute: string
+
+    if (urlParams.next === undefined)
+        nextRoute = DEFAULT_SUCCESS_ROUTE
+    else if (Array.isArray(urlParams.next))
+        nextRoute = urlParams.next[0]
+    else 
+        nextRoute = urlParams.next
 
     // redirect
     redirect(nextRoute)
