@@ -51,3 +51,15 @@ export interface EmpireData {
     sigil: StaticImageData
     desc: string
 }
+
+//***********************//
+//                       //
+//  Business Data Types  //
+//                       //
+//***********************//
+
+// client-side Business data
+export interface BusinessData {
+    type: number
+    title: string
+}

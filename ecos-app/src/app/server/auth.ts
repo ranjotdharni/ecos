@@ -1,9 +1,9 @@
 'use server'
 
-import { dbCheckCredentials, dbGetSession } from "../db/query"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { AUTH_CODES } from "../../customs/utils/constants"
 import { Session, User } from "@/customs/utils/types"
+import { dbGetUser, dbGetSession } from "../db/query"
 import { cookies } from "next/headers"
 
 const PASSWORD_SPECIAL_CHARACTERS: RegExp = /[~`!@#$%^&*()\-_+={}[\]|\\;:"<>,./?]/
@@ -92,7 +92,7 @@ export async function getAuthentication(username: string, token: string): Promis
 
     // At this point user has valid session, now check if empire selected
 
-    result = await dbCheckCredentials(username)    // grab user info
+    result = await dbGetUser(username)   // grab user info
 
     if ((result as QueryError).code !== undefined) {    // ISE when getting user info, authenticate again
         console.log(result)

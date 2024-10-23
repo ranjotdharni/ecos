@@ -1,9 +1,10 @@
 
 
-export const DEFAULT_SUCCESS_ROUTE: string = '/'
+export const DEFAULT_SUCCESS_ROUTE: string = '/game/home'
 export const AUTH_ROUTE: string = '/welcome'
 export const NEW_EMPIRE_ROUTE: string = '/pickempire'
 export const AUTH_EXEMPT_ROUTES: string[] = [
+    '/',
     '/api/session' // session check route
 ]
 
