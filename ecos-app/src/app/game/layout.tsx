@@ -1,3 +1,4 @@
+import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "@/customs/utils/constants"
 import UserProvider from "../components/context/UserProvider"
 import { UserDetails } from "@/customs/utils/types"
 import NavBar from "../components/navbar/NavBar"
@@ -19,9 +20,9 @@ export default async function Layout({ children } : { children: React.ReactNode 
             }
 
         if (!cookieList.get('username') || !cookieList.get('token'))
-            redirect(`${process.env.ORIGIN}/welcome`)
+            redirect(`${process.env.ORIGIN}${AUTH_ROUTE}`)
 
-        const response = await fetch(`${process.env.ORIGIN}/api/user`, {   // contact api for db status check (because middleware on edge runtime can't query, smh why nextjs WHY?!?!)
+        const response = await fetch(`${process.env.ORIGIN}${API_USER_DETAILS_ROUTE}`, {   // contact api for db status check (because middleware on edge runtime can't query, smh why nextjs WHY?!?!)
             method: 'POST',
             body: JSON.stringify({
                 username: cookieList.get('username')!.value,
@@ -33,7 +34,7 @@ export default async function Layout({ children } : { children: React.ReactNode 
         const result = await response.json()  // parse response
 
         if (result.error)
-            redirect(`${process.env.ORIGIN}/welcome`)
+            redirect(`${process.env.ORIGIN}${AUTH_ROUTE}`)
 
         return result
     }

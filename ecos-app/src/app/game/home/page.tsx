@@ -1,10 +1,11 @@
 'use client'
 
+import { BUSINESS_ICON, BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_PAGE_ROUTE, EMPIRE_PAGE_ROUTE, JOB_ICON, JOB_PAGE_ROUTE, STATE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
+import { UserContext } from "@/app/components/context/UserProvider"
 import { MouseEvent, useContext, useState } from "react"
+import { EMPIRE_DATA } from "@/app/server/empire"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
-import { UserContext } from "@/app/components/context/UserProvider"
-import { EMPIRE_DATA } from "@/app/server/empire"
 
 const EMPIRE_INDEX: number = 0
 const JOB_INDEX: number = 1
@@ -13,11 +14,11 @@ const CONGREGATION_INDEX: number = 3
 const STATE_INDEX: number = 4
 
 const LINKS: string[] = [
-    '/game/empire',    // empire page
-    '/game/job',    // job page
-    '/game/business',    // business page
-    '/game/congregation',    // congregation page
-    '/game/state'     // state page
+    EMPIRE_PAGE_ROUTE,    // empire page
+    JOB_PAGE_ROUTE,    // job page
+    BUSINESS_PAGE_ROUTE,    // business page
+    CONGREGATION_PAGE_ROUTE,    // congregation page
+    STATE_PAGE_ROUTE     // state page
 ]
 
 export default function Home() {
@@ -53,25 +54,25 @@ export default function Home() {
             </div>
 
             <div className={`${styles.job} ${selectView === JOB_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(JOB_INDEX)}>
-                <img src='https://img.icons8.com/color/96/parse-from-clipboard.png' />
+                <img src={JOB_ICON} />
                 <h2>Your Job</h2>
                 <button onClick={confirmOrView(JOB_INDEX)} className={selectView === JOB_INDEX ? styles.visible : ''}>View</button>
             </div>
 
             <div className={`${styles.businesses} ${selectView === BUSINESS_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(BUSINESS_INDEX)}>
-                <img src='https://img.icons8.com/color/96/money-bag.png' />
+                <img src={BUSINESS_ICON} />
                 <h2>Your Businesses</h2>
                 <button onClick={confirmOrView(BUSINESS_INDEX)} className={selectView === BUSINESS_INDEX ? styles.visible : ''}>View</button>
             </div>
 
             <div className={`${styles.congregations} ${selectView === CONGREGATION_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(CONGREGATION_INDEX)}>
-                <img src='https://img.icons8.com/color/96/castle.png' />
+                <img src={CONGREGATION_ICON} />
                 <h2>Your Congregations</h2>
                 <button onClick={confirmOrView(CONGREGATION_INDEX)} className={selectView === CONGREGATION_INDEX ? styles.visible : ''}>View</button>
             </div>
 
             <div className={`${styles.states} ${selectView === STATE_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(STATE_INDEX)}>
-                <img src='https://img.icons8.com/color/96/israeli-parliament.png' />
+                <img src={STATE_ICON} />
                 <h2>Your States</h2>
                 <button onClick={confirmOrView(STATE_INDEX)} className={selectView === STATE_INDEX ? styles.visible : ''}>View</button>
             </div>

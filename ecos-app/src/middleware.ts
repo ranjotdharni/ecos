@@ -1,4 +1,4 @@
-import { AUTH_CODES, AUTH_EXEMPT_ROUTES, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE } from "./customs/utils/constants"
+import { API_SESSION_ROUTE, AUTH_CODES, AUTH_EXEMPT_ROUTES, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE } from "./customs/utils/constants"
 import { NextResponse, NextRequest } from "next/server"
 import { isAuthenticated } from "./app/server/auth"
 
@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const pathname: string = request.nextUrl.pathname
 
   if (process.env.ENV !== 'dev' && !AUTH_EXEMPT_ROUTES.includes(pathname)) { // bypass for auth exempt routes and development mode
-    const status: number = await isAuthenticated(`${process.env.ORIGIN}/api/session`)  // get auth status
+    const status: number = await isAuthenticated(`${process.env.ORIGIN}${API_SESSION_ROUTE}`)  // get auth status
 
     if (status === AUTH_CODES.NOT_AUTHENTICATED && pathname !== AUTH_ROUTE) {   // not authenticated and not on auth route already
       return NextResponse.redirect(`${process.env.ORIGIN}${AUTH_ROUTE}${(pathname !== DEFAULT_SUCCESS_ROUTE ? `?next=${pathname}` : ``)}`)
