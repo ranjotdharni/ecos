@@ -74,7 +74,7 @@ export function UserCreateForm(props : AuthFormProps) {
             <input type='password' placeholder='Confirm Password' onChange={editConfirm} />
 
             
-            <button onClick={submit} disabled={props.loader}>{props.loader ? <div style={{width: '5%', height: '50%'}}><Loading /></div> : 'Submit'}</button>
+            <button onClick={submit} disabled={props.loader}>{props.loader ? <div style={{width: '5%', height: '50%'}}><Loading color='var(--color--text)' /></div> : 'Submit'}</button>
             <p className={styles.swap}>Already a user? <a onClick={props.swap}>Log In</a></p>
             <p className={styles.error}>{props.error}</p>
         </form>
@@ -117,7 +117,7 @@ export function UserLoginForm(props: AuthFormProps) {
             <input className={styles.hidden} disabled  />
 
             
-            <button onClick={submit} disabled={props.loader}>{props.loader ? <div style={{width: '5%', height: '50%'}}><Loading /></div> : 'Submit'}</button>
+            <button onClick={submit} disabled={props.loader}>{props.loader ? <div style={{width: '5%', height: '50%'}}><Loading color='var(--color--text)' /></div> : 'Submit'}</button>
             <p className={styles.swap}>Not a user? <a onClick={props.swap}>Sign Up</a></p>
             <p className={styles.error}>{props.error}</p>
         </form>
@@ -126,7 +126,7 @@ export function UserLoginForm(props: AuthFormProps) {
 
 // Authenticate a user
 export default function AuthForm({ urlParams } : { urlParams: { [key: string]: string | string[] | undefined } }) {
-    const [newUser, setNewUser] = useState<boolean>(true) // track create form vs login form
+    const [newUser, setNewUser] = useState<boolean>(false) // track create form vs login form
     const [error, throwError] = useError()
     const [loader, setLoader] = useState<boolean>(false)
 

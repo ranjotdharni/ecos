@@ -1,9 +1,9 @@
 'use server'
 
+import { API_SESSION_ROUTE, AUTH_CODES } from "../../customs/utils/constants"
+import { dbGetUser, dbGetSession, dbDropSession } from "../db/query"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
-import { AUTH_CODES } from "../../customs/utils/constants"
 import { Session, User } from "@/customs/utils/types"
-import { dbGetUser, dbGetSession } from "../db/query"
 import { cookies } from "next/headers"
 
 const PASSWORD_SPECIAL_CHARACTERS: RegExp = /[~`!@#$%^&*()\-_+={}[\]|\\;:"<>,./?]/
@@ -110,7 +110,7 @@ export async function getAuthentication(username: string, token: string): Promis
     return AUTH_CODES.LOGGED_IN // user authenticated and empire is selected
 }
 
-// confirm user's auth status, requires full session api route, this works from client components
+// confirm user's auth status, requires full session api route, this works in functions where a request comes from a client component
 export async function isAuthenticated(route: string): Promise<number> {
     // check authentication
     const cookieList = cookies()
@@ -133,7 +133,7 @@ export async function isAuthenticated(route: string): Promise<number> {
 
 // confirm user's auth status, this works from server components
 export async function manualAuthentication(username: string, token: string, key: string): Promise<number> { 
-    const response = await fetch(`${process.env.ORIGIN}/api/session`, {   // contact api for db status check (because middleware on edge runtime can't query, smh why nextjs WHY?!?!)
+    const response = await fetch(`${process.env.ORIGIN}${API_SESSION_ROUTE}`, {   // contact api for db status check (because middleware on edge runtime can't query, smh why nextjs WHY?!?!)
         method: 'POST',
         body: JSON.stringify({
             username: username,
@@ -153,5 +153,20 @@ export async function generateAuthCookieOptions(expiry: Date) {
         httpOnly: true,
         sameSite: true,
         secure: process.env.ENV === 'prod'
+    }
+}
+
+// sign user out
+export async function signOut(username: string): Promise<string | void> {
+    const cookieList = cookies()
+
+    cookieList.delete('username')
+    cookieList.delete('token')
+
+    let result: [QueryResult, FieldPacket[]] | QueryError = await dbDropSession(username)
+
+    if ((result as QueryError).code !== undefined) {    // ISE when dropping session
+        console.log(result)
+        return '500 Internal Server Error'
     }
 }

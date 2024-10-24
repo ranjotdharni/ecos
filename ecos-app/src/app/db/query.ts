@@ -98,3 +98,20 @@ export async function dbSetEmpire(username: string, empire: number): Promise<[Qu
         return error as QueryError
     }
 }
+
+// Drop user session
+export async function dbDropSession(username: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `DELETE FROM auth WHERE user_id = (SELECT user_id FROM users WHERE username = ?)`
+        const params: (string | number)[] = [username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
