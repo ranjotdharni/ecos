@@ -1,0 +1,91 @@
+.page {
+    width: 100%; 
+    height: 90vh;
+    min-height: 500px;
+    padding: 20px;
+    gap: 15px;
+    display: grid;
+    grid-template-areas: 
+    "empire job businesses"
+    "empire congregations states";
+}
+
+.page div {
+    background-color: var(--color--accent);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.page div button {
+    opacity: 0;
+    width: 80%;
+    height: 5vh;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--color--accent);
+    font-family: var(--font-jb-sans);
+
+    &:hover {
+        cursor: pointer
+    }
+}
+
+.highlightCard {
+    background-color: var(--color--contrast) !important;
+
+    &:hover {
+        cursor: default !important;
+    }
+}
+
+.visible {
+    opacity: 1 !important;
+}
+
+.empire {
+    grid-area: empire;
+}
+
+.job {
+    grid-area: job;
+}
+
+.businesses {
+    grid-area: businesses;
+}
+
+.congregations {
+    grid-area: congregations;
+}
+
+.states {
+    grid-area: states;
+}
+
+@media (max-width: 808px) {
+    .page {
+        height: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+    }
+    
+    .page div {
+        width: 85%;
+        height: 70vh;
+    
+        &:hover {
+            cursor: pointer;
+        }
+    }
+}

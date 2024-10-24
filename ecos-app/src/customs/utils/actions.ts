@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from "uuid"
 // I used one of these functions in a client component so NextJS would not
 // shut up about using a server component in a client component with a specific 
 // import. So, I was basically forced to move this to this newly created file which
-// I'm now using for server actions in client components.
+// I'm now using for server actions in general for client components.
 
 // Submit credential authentication form handler
 export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug, urlParams: { [key: string]: string | string[] | undefined }): Promise<string | void> {

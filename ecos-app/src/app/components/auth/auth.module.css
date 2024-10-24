@@ -70,6 +70,10 @@
     color: var(--color--text);
     background-color: var(--color--accent);
     font-family: var(--font-jb-sans);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 
     &:hover {
         cursor: pointer;

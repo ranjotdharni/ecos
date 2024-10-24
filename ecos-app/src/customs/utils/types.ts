@@ -29,6 +29,9 @@ export interface User extends RowDataPacket {
     password: string
     empire: number | null
     created_at: Date
+    first_name: string
+    last_name: string
+    gold: number
 }
 
 // auth table row data
@@ -36,6 +39,21 @@ export interface Session extends RowDataPacket {
     user_id: string,
     auth_token: string,
     expires_at: Date
+}
+
+//***********************//
+//                       //
+//    User Data Types    //
+//                       //
+//***********************//
+
+// client-side user details
+export interface UserDetails {
+    username: string
+    firstname: string
+    lastname: string
+    empire: number
+    gold: number
 }
 
 //*********************//
