@@ -5,12 +5,14 @@ import { FormEvent, MouseEvent, useState } from "react"
 import { AuthFormSlug } from "@/customs/utils/types"
 import useError from "@/customs/hooks/useError"
 import styles from "./auth.module.css"
+import Loading from "@/app/loading"
 
 // individual Auth form props
 export interface AuthFormProps {
     swap: (event: MouseEvent<HTMLAnchorElement>) => void
     submit: (slug: AuthFormSlug) => void
     error?: string
+    loader: boolean
 }
 
 // Create a new user account
@@ -72,7 +74,7 @@ export function UserCreateForm(props : AuthFormProps) {
             <input type='password' placeholder='Confirm Password' onChange={editConfirm} />
 
             
-            <button onClick={submit}>Submit</button>
+            <button onClick={submit} disabled={props.loader}>{props.loader ? <div style={{width: '5%', height: '50%'}}><Loading /></div> : 'Submit'}</button>
             <p className={styles.swap}>Already a user? <a onClick={props.swap}>Log In</a></p>
             <p className={styles.error}>{props.error}</p>
         </form>
@@ -115,7 +117,7 @@ export function UserLoginForm(props: AuthFormProps) {
             <input className={styles.hidden} disabled  />
 
             
-            <button onClick={submit}>Submit</button>
+            <button onClick={submit} disabled={props.loader}>{props.loader ? <div style={{width: '5%', height: '50%'}}><Loading /></div> : 'Submit'}</button>
             <p className={styles.swap}>Not a user? <a onClick={props.swap}>Sign Up</a></p>
             <p className={styles.error}>{props.error}</p>
         </form>
@@ -126,14 +128,18 @@ export function UserLoginForm(props: AuthFormProps) {
 export default function AuthForm({ urlParams } : { urlParams: { [key: string]: string | string[] | undefined } }) {
     const [newUser, setNewUser] = useState<boolean>(true) // track create form vs login form
     const [error, throwError] = useError()
+    const [loader, setLoader] = useState<boolean>(false)
 
     // pass up form data for credential authentication
     async function authenticate(slug: AuthFormSlug) {
-        // apparently getTimezoneOffset give positive value if behind utc time
+        setLoader(true)
+        
         await userAuthenticate(newUser, slug, urlParams).then(error => {
-            if (error)
+            if (error) 
                 throwError(error)
         })
+
+        setLoader(false)
     }
 
     // switch between create and login form
@@ -144,7 +150,7 @@ export default function AuthForm({ urlParams } : { urlParams: { [key: string]: s
 
     return (
         <section className={styles.page}>
-            {newUser ? <UserCreateForm swap={swapForm} submit={authenticate} error={error} /> : <UserLoginForm swap={swapForm} submit={authenticate} error={error} />}
+            {newUser ? <UserCreateForm swap={swapForm} submit={authenticate} error={error} loader={loader} /> : <UserLoginForm swap={swapForm} submit={authenticate} error={error} loader={loader} />}
         </section>
     )
 }

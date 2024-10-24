@@ -16,3 +16,5 @@ export const AUTH_CODES = {
     NULL_EMPIRE: 1,          // logged in but needs to select empire
     LOGGED_IN: 2             // logged in and empire selected
 }
+
+export const COIN_ICON: string = 'https://img.icons8.com/color/96/average.png'
