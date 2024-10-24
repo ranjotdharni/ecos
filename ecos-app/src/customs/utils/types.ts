@@ -36,9 +36,21 @@ export interface User extends RowDataPacket {
 
 // auth table row data
 export interface Session extends RowDataPacket {
-    user_id: string,
-    auth_token: string,
+    user_id: string
+    auth_token: string
     expires_at: Date
+}
+
+// business table row data
+export interface Business extends RowDataPacket {
+    business_id: string
+    congregation_id: string
+    business_owner_id: string | null
+    business_name: string
+    business_type: number
+    base_earning_rate: number
+    rank_earning_increase: number
+    hiring: number
 }
 
 //***********************//
@@ -68,16 +80,4 @@ export interface EmpireData {
     name: string
     sigil: StaticImageData
     desc: string
-}
-
-//***********************//
-//                       //
-//  Business Data Types  //
-//                       //
-//***********************//
-
-// client-side Business data
-export interface BusinessData {
-    type: number
-    title: string
 }

@@ -1,5 +1,5 @@
+import { Business, Session, User } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
-import { Session, User } from "@/customs/utils/types"
 import { db } from "./config"
 
 // Add a new user to the database
@@ -111,6 +111,22 @@ export async function dbDropSession(username: string): Promise<[QueryResult, Fie
 
         return response as [QueryResult, FieldPacket[]]
 
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// Get businesses of a given empire
+export async function dbGetBusinessesInEmpire(empire: number): Promise<[Business[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = 'SELECT * FROM businesses WHERE congregation_id IN (SELECT congregation_id FROM congregations WHERE empire = ?)'
+        const params: (string | number)[] = [empire]
+        const response: [Business[], FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Business[], FieldPacket[]]
     } catch (error) {
         return error as QueryError
     }

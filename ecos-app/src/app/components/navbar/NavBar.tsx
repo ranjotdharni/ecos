@@ -66,32 +66,32 @@ export default function NavBar() {
                     </div>
                 </div>
 
-                <a href={DEFAULT_SUCCESS_ROUTE} className={`${styles.item} ${pathname === DEFAULT_SUCCESS_ROUTE ? styles.highlight : ``}`}>
+                <a href={DEFAULT_SUCCESS_ROUTE} className={`${styles.item} ${pathname.includes(DEFAULT_SUCCESS_ROUTE) ? styles.highlight : ``}`}>
                     <img src={HOMEPAGE_ICON} />
                     <p>Home</p>
                 </a>
 
-                <a href={EMPIRE_PAGE_ROUTE} className={`${styles.item} ${pathname === EMPIRE_PAGE_ROUTE ? styles.highlight : ``}`}>
+                <a href={EMPIRE_PAGE_ROUTE} className={`${styles.item} ${pathname.includes(EMPIRE_PAGE_ROUTE) ? styles.highlight : ``}`}>
                     <img src={EMPIRE_DATA.find(empire => empire.code === user.empire)?.sigil.src} />
                     <p>Empire</p>
                 </a>
 
-                <a href={JOB_PAGE_ROUTE} className={`${styles.item} ${pathname === JOB_PAGE_ROUTE ? styles.highlight : ``}`}>
+                <a href={JOB_PAGE_ROUTE} className={`${styles.item} ${pathname.includes(JOB_PAGE_ROUTE) ? styles.highlight : ``}`}>
                     <img src={JOB_ICON} />
                     <p>Job</p>
                 </a>
 
-                <a href={BUSINESS_PAGE_ROUTE} className={`${styles.item} ${pathname === BUSINESS_PAGE_ROUTE ? styles.highlight : ``}`}>
+                <a href={BUSINESS_PAGE_ROUTE} className={`${styles.item} ${pathname.includes(BUSINESS_PAGE_ROUTE) ? styles.highlight : ``}`}>
                     <img src={BUSINESS_ICON} />
                     <p>Businesses</p>
                 </a>
 
-                <a href={CONGREGATION_PAGE_ROUTE} className={`${styles.item} ${pathname === CONGREGATION_PAGE_ROUTE ? styles.highlight : ``}`}>
+                <a href={CONGREGATION_PAGE_ROUTE} className={`${styles.item} ${pathname.includes(CONGREGATION_PAGE_ROUTE) ? styles.highlight : ``}`}>
                     <img src={CONGREGATION_ICON} />
                     <p>Congregations</p>
                 </a>
 
-                <a href={STATE_PAGE_ROUTE} className={`${styles.item} ${pathname === STATE_PAGE_ROUTE ? styles.highlight : ``}`}>
+                <a href={STATE_PAGE_ROUTE} className={`${styles.item} ${pathname.includes(STATE_PAGE_ROUTE) ? styles.highlight : ``}`}>
                     <img src={STATE_ICON} />
                     <p>States</p>
                 </a>
