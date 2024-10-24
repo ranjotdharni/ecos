@@ -1,6 +1,6 @@
-import { BusinessData } from "@/customs/utils/types"
 
-export const BUSINESSES: BusinessData[] = [
+
+export const BUSINESS_TYPES: {type: number, title: string}[] = [
     {
         type: 1,
         title: 'Food Service'
