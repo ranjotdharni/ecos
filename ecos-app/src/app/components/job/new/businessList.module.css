@@ -1,6 +1,23 @@
+.error {
+    position: absolute;
+    margin-top: 80vh;
+    color: crimson;
+    width: 100%;
+    display: grid;
+    place-items: center;
+}
+
+.blank {
+    color: var(--color--contrast);
+}
+
+.loader {
+    width: 100px;
+    aspect-ratio: 1 / 1;
+}
+
 .list {
-    width: 60%;
-    height: 80%;
+    width: 80%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -8,7 +25,135 @@
 }
 
 .item {
-    height: 150px;
-    width: 70%;
+    height: 200px;
+    width: 100%;
+    max-width: 800px;
     margin-top: 2.5%;
+    border-radius: 1rem;
+    background-color: var(--color--accent);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.itemHeader {
+    height: 20%;
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.itemHeader h2 {
+    color: var(--color--text);
+}
+
+.itemHeader img {
+    height: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.itemContent {
+    height: 70%;
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.itemContent div {
+    width: 50%;
+    height: 100%;
+}
+
+.itemLeft {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.itemLeft p {
+    margin-left: 5px;
+    font-size: small;
+
+    &::before {
+        font-size: 0.6rem;
+        color: var(--color--subtext);
+    }
+}
+
+.itemType {
+    font-size: smaller;
+    color: var(--color--subtext);
+}
+
+.itemEarning {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column-reverse;
+
+    &::before {
+        content: "Base Earning Rate";
+    }
+}
+
+.itemRank {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column-reverse;
+
+    &::before {
+        content: "Rank Earning Increase";
+    }
+}
+
+.itemRight {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.itemRight p {
+    margin-bottom: 10px;
+    color: var(--color--contrast);
+}
+
+.itemRight button {
+    width: 100%;
+    height: 35%;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--color--contrast);
+    font-family: var(--font-jb-sans);
+    font-size: large;
+    color: var(--color--text);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+@media (max-width: 724px) {
+    .list {
+        width: 90vw;
+    }
+
+    .item {
+        height: 300px;
+    }
+
+    .itemHeader h2 {
+        font-size: small;
+    }
 }

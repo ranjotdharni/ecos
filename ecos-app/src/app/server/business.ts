@@ -1,28 +1,35 @@
+import { FOOD_SERVICE_ICON, MEDICINE_ICON, MILITARY_ICON, CONSTRUCTION_ICON, RELIGIOUS_ICON, RESIDENTIAL_ICON } from "@/customs/utils/constants"
+import { BusinessType } from "@/customs/utils/types"
 
-
-export const BUSINESS_TYPES: {type: number, title: string}[] = [
+export const BUSINESS_TYPES: BusinessType[] = [
     {
         type: 1,
-        title: 'Food Service'
+        title: 'Food Service',
+        icon: FOOD_SERVICE_ICON
     },
     {
         type: 2,
-        title: 'Military'
+        title: 'Military',
+        icon: MILITARY_ICON
     },
     {
         type: 3,
-        title: 'Residential'
+        title: 'Residential',
+        icon: RESIDENTIAL_ICON
     },
     {
         type: 4,
-        title: 'Religious'
+        title: 'Religious',
+        icon: RELIGIOUS_ICON
     },
     {
         type: 5,
-        title: 'Medicine'
+        title: 'Medicine',
+        icon: MEDICINE_ICON
     },
     {
         type: 6,
-        title: 'Real Estate'
+        title: 'Construction',
+        icon: CONSTRUCTION_ICON
     }
 ]

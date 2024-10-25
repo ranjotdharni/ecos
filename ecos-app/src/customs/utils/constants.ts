@@ -29,9 +29,15 @@ export const AUTH_CODES = {
     EXEMPT: -1,     // Auth exempt
 }
 
+export const CONSTRUCTION_ICON: string = 'https://img.icons8.com/color/96/full-tool-storage-box-.png'
+export const FOOD_SERVICE_ICON: string = 'https://img.icons8.com/color/96/vegetarian-food.png'
 export const STATE_ICON: string = 'https://img.icons8.com/color/96/israeli-parliament.png'
 export const JOB_ICON: string = 'https://img.icons8.com/color/96/parse-from-clipboard.png'
 export const CONGREGATION_ICON: string = 'https://img.icons8.com/color/96/castle.png'
+export const RELIGIOUS_ICON: string = 'https://img.icons8.com/color/96/cathedral.png'
 export const BUSINESS_ICON: string = 'https://img.icons8.com/color/96/money-bag.png'
 export const HOMEPAGE_ICON: string = 'https://img.icons8.com/color/96/booking.png'
+export const MILITARY_ICON: string = 'https://img.icons8.com/color/96/cannon.png'
+export const RESIDENTIAL_ICON: string = 'https://img.icons8.com/color/96/bed.png'
+export const MEDICINE_ICON: string = 'https://img.icons8.com/color/96/pills.png'
 export const COIN_ICON: string = 'https://img.icons8.com/color/96/average.png'

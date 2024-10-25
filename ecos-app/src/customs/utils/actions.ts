@@ -2,9 +2,9 @@
 
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
 import { AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire } from "../../app/db/query"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs } from "../../app/db/query"
+import { User, AuthFormSlug, GenericError, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
-import { User, AuthFormSlug } from "@/customs/utils/types"
 import { dateToSQLDate } from "@/customs/utils/tools"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
@@ -144,4 +144,34 @@ export async function selectEmpire(empire: number, urlParams: { [key: string]: s
 
     // redirect
     redirect(nextRoute)
+}
+
+export async function selectJob(businessId: string): Promise<string | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+    const workerId: string = uuidv4()
+
+    const result: [Worker[], FieldPacket[]] | QueryError = await dbGetJobs(username)
+
+    if ((result as QueryError).code !== undefined) {
+        console.log(result)
+        return { error: true, message: '500 INTERNAL SERVER ERROR' }
+    }
+
+    if ((result as [Worker[], FieldPacket[]])[0].length !== 0) {
+        return { error: true, message: 'You cannot hold another job' }
+    }
+
+    const response: [QueryResult, FieldPacket[]] | QueryError = await dbSelectJob(workerId, username, businessId)
+
+    if ((response as QueryError).code !== undefined) {
+        console.log(response)
+        return { error: true, message: '500 INTERNAL SERVER ERROR' }
+    }
+
+    return 'Job Selected'
 }
