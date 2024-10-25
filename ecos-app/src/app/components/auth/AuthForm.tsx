@@ -126,7 +126,7 @@ export function UserLoginForm(props: AuthFormProps) {
 
 // Authenticate a user
 export default function AuthForm({ urlParams } : { urlParams: { [key: string]: string | string[] | undefined } }) {
-    const [newUser, setNewUser] = useState<boolean>(false) // track create form vs login form
+    const [newUser, setNewUser] = useState<boolean>(urlParams.newUser === 'true' ? true : false) // track create form vs login form
     const [error, throwError] = useError()
     const [loader, setLoader] = useState<boolean>(false)
 

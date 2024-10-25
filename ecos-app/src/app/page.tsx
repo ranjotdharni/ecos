@@ -1,95 +1,41 @@
+import { BUSINESS_ICON, CONGREGATION_ICON, CROWN_ICON, GAME_ICON, JOB_ICON } from "@/customs/utils/constants"
 import styles from "./page.module.css"
-import Image from "next/image"
+
+function ContentCard({ icon, text } : { icon: string, text: string }) {
+  return (
+    <div className={styles.card}>
+      <img src={icon} />
+      <p>{text}</p>
+    </div>
+  )
+}
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <>
+      <div className={styles.header}>
+        <div className={styles.title}>
+          <img src={GAME_ICON} />
+          <h1>Hegemony</h1>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        <div className={styles.nav}>
+          <a href='/game/home'>Home</a>
+          <a href='/welcome'>Login</a>
+          <a href='https://github.com/ranjotdharni/ecos'>About</a>
+          <a href='/'>Contact</a>
+        </div>
+      </div>
+      <section className={styles.page}>
+        <div className={styles.content}>
+          <ContentCard icon={CROWN_ICON} text='Select an empire to build wealth in and make your future fortune. Represent your country by working to help grow its economy.' />
+          <ContentCard icon={JOB_ICON} text='Work your job of choice in a fantasy world. Accumulate your newfound wealth by working along with other real-world players.' />
+          <ContentCard icon={BUSINESS_ICON} text="Save up your gold to start your own businesses. Make money more steadily even while you're immediately logged off of Hegemony." />
+          <ContentCard icon={CONGREGATION_ICON} text='Start your own settlements and slowly grow them into prosperous cities. Form your cities into states under your control.' />
+        </div>
+        <div className={styles.buttons}>
+          <a href='/welcome?newUser=true'>Play</a>
+        </div>
+      </section>
+    </>
+  )
 }
