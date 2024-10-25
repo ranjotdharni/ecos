@@ -7,6 +7,12 @@ import { RowDataPacket } from "mysql2"
 //                     //
 //*********************//
 
+// Generic error type
+export interface GenericError {
+    error: boolean
+    message: string
+}
+
 // Auth forms submit slug
 export interface AuthFormSlug {
     firstname?: string

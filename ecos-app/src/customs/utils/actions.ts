@@ -1,7 +1,7 @@
 'use server'
 
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
-import { AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS } from "../../customs/utils/constants"
+import { AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire } from "../../app/db/query"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { User, AuthFormSlug } from "@/customs/utils/types"
@@ -72,8 +72,9 @@ export async function userAuthenticate(isNewUser: boolean, details: AuthFormSlug
     // create session
     const session_expiration: Date = await generateSessionExpirationDate()
     const session_token: string = uuidv4() 
+    const session_hash: string = await hash(`${session_token}${process.env.TOKEN_SECRET}`, TOKEN_SALT_ROUNDS)
 
-    const result: [QueryResult, FieldPacket[]] | QueryError = await dbGenerateSession(details.username, session_token, dateToSQLDate(session_expiration))    // automatically destroys any existing session(s)
+    const result: [QueryResult, FieldPacket[]] | QueryError = await dbGenerateSession(details.username, session_hash, dateToSQLDate(session_expiration))    // automatically destroys any existing session(s)
 
     if ((result as QueryError).code !== undefined) {
         console.log(result)

@@ -13,13 +13,14 @@ export const API_BUSINESS_EMPIRE_ROUTE: string = '/api/business' // get business
 export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details
 export const API_SESSION_ROUTE: string = '/api/session' // check session
 
+export const PASSWORD_SALT_ROUNDS: number = 10
+export const TOKEN_SALT_ROUNDS: number = 10
+
 export const AUTH_EXEMPT_ROUTES: string[] = [
     API_BUSINESS_EMPIRE_ROUTE,
     API_SESSION_ROUTE,
     '/'
 ]
-
-export const PASSWORD_SALT_ROUNDS: number = 10
 
 export const AUTH_CODES = {
     NOT_AUTHENTICATED: 0,   // Needs to login

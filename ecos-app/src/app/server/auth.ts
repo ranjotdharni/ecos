@@ -1,9 +1,9 @@
 'use server'
 
 import { API_SESSION_ROUTE, AUTH_CODES } from "../../customs/utils/constants"
-import { dbGetUser, dbGetSession, dbDropSession } from "../db/query"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
-import { Session, User } from "@/customs/utils/types"
+import { GenericError, Session } from "@/customs/utils/types"
+import { dbGetSession, dbDropSession } from "../db/query"
 import { cookies } from "next/headers"
 
 const PASSWORD_SPECIAL_CHARACTERS: RegExp = /[~`!@#$%^&*()\-_+={}[\]|\\;:"<>,./?]/
@@ -76,42 +76,22 @@ export async function isSessionExpired(expiry: Date): Promise<boolean> {
 }
 
 // grab auth status from db
-export async function getAuthentication(username: string, token: string): Promise<number> {
+export async function getAuthentication(username: string): Promise<Session[] | GenericError> {
     // get session
-    let result: [QueryResult, FieldPacket[]] | QueryError = await dbGetSession(username, token)
+    let result: [QueryResult, FieldPacket[]] | QueryError = await dbGetSession(username)
 
     if ((result as QueryError).code !== undefined) {    // ISE when getting session, authenticate again
         console.log(result)
-        return AUTH_CODES.NOT_AUTHENTICATED
+        return { error: true, message: 'DATABASE ERROR' }
     }
 
     const session: Session[] = (result as [Session[], FieldPacket[]])[0]
 
-    if (session.length === 0 || await isSessionExpired(session[0].expires_at)) // session not found or expired, authenticate again
-        return AUTH_CODES.NOT_AUTHENTICATED
-
-    // At this point user has valid session, now check if empire selected
-
-    result = await dbGetUser(username)   // grab user info
-
-    if ((result as QueryError).code !== undefined) {    // ISE when getting user info, authenticate again
-        console.log(result)
-        return AUTH_CODES.NOT_AUTHENTICATED
-    }
-
-    const credentials: User[] = (result as [User[], FieldPacket[]])[0]
-
-    if (credentials.length === 0)   // user info not found, authenticate again
-        return AUTH_CODES.NOT_AUTHENTICATED
-
-    if (credentials[0].empire === null) // user authenticated but empire not selected
-        return AUTH_CODES.NULL_EMPIRE
-
-    return AUTH_CODES.LOGGED_IN // user authenticated and empire is selected
+    return session
 }
 
 // confirm user's auth status, requires full session api route, this works in functions where a request comes from a client component
-export async function isAuthenticated(route: string): Promise<number> {
+export async function isAuthenticated(route: string): Promise<number | GenericError> {
     // check authentication
     const cookieList = cookies()
 
@@ -128,11 +108,15 @@ export async function isAuthenticated(route: string): Promise<number> {
     })
 
     const data = await response.json()  // parse response
-    return data.session // return status
+
+    if (data.error)
+        return data.error as GenericError
+
+    return data.session as number // return status
 }
 
 // confirm user's auth status, this works from server components
-export async function manualAuthentication(username: string, token: string, key: string): Promise<number> { 
+export async function manualAuthentication(username: string, token: string, key: string): Promise<number | GenericError> { 
     const response = await fetch(`${process.env.ORIGIN}${API_SESSION_ROUTE}`, {   // contact api for db status check (because middleware on edge runtime can't query, smh why nextjs WHY?!?!)
         method: 'POST',
         body: JSON.stringify({
@@ -143,7 +127,11 @@ export async function manualAuthentication(username: string, token: string, key:
     })
 
     const data = await response.json()  // parse response
-    return data.session // return status
+
+    if (data.error)
+        return data.error as GenericError
+
+    return data.session as number // return status
 }
 
 // generate auth cookies' options uniformly
