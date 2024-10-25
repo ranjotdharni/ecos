@@ -1,4 +1,4 @@
-import { User, UserDetails } from "@/customs/utils/types"
+import { GenericError, User, UserDetails } from "@/customs/utils/types"
 import { manualAuthentication } from "@/app/server/auth"
 import { NextRequest, NextResponse } from "next/server"
 import { AUTH_CODES } from "@/customs/utils/constants"
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (!data.username || !data.token || !data.key)
         return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
 
-    const authStatus: number = await manualAuthentication(data.username, data.token, data.key)
+    const authStatus: number | GenericError = await manualAuthentication(data.username, data.token, data.key)
 
     if (authStatus !== AUTH_CODES.LOGGED_IN)
         return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 })

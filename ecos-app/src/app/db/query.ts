@@ -47,14 +47,14 @@ export async function dbGenerateSession(username: string, token: string, expiry:
 }
 
 // Get session
-export async function dbGetSession(username: string, token: string): Promise<[Session[], FieldPacket[]] | QueryError> {
+export async function dbGetSession(username: string): Promise<[Session[], FieldPacket[]] | QueryError> {
     try {
         const conn = await db.getConnection()
 
-        const query: string = `SELECT * FROM auth WHERE auth_token = ? AND user_id = (
+        const query: string = `SELECT * FROM auth WHERE user_id = (
             SELECT user_id FROM users WHERE username = ?
         )`
-        const params: string[] = [token, username]
+        const params: string[] = [username]
         const response: [Session[], FieldPacket[]] = await conn.execute<Session[]>(query, params)
         conn.release()
 
