@@ -39,5 +39,7 @@ export const BUSINESS_ICON: string = 'https://img.icons8.com/color/96/money-bag.
 export const HOMEPAGE_ICON: string = 'https://img.icons8.com/color/96/booking.png'
 export const MILITARY_ICON: string = 'https://img.icons8.com/color/96/cannon.png'
 export const RESIDENTIAL_ICON: string = 'https://img.icons8.com/color/96/bed.png'
+export const CROWN_ICON: string = 'https://img.icons8.com/color/96/fairytale.png'
 export const MEDICINE_ICON: string = 'https://img.icons8.com/color/96/pills.png'
 export const COIN_ICON: string = 'https://img.icons8.com/color/96/average.png'
+export const GAME_ICON: string = 'https://img.icons8.com/color/96/coins.png'
