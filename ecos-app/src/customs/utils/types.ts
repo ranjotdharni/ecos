@@ -59,6 +59,13 @@ export interface Business extends RowDataPacket {
     hiring: number
 }
 
+export interface Worker extends RowDataPacket {
+    worker_id: string
+    user_id: string
+    business_id: string
+    worker_rank: number
+}
+
 //***********************//
 //                       //
 //    User Data Types    //
@@ -86,4 +93,17 @@ export interface EmpireData {
     name: string
     sigil: StaticImageData
     desc: string
+}
+
+//***********************//
+//                       //
+//  Business Data Types  //
+//                       //
+//***********************//
+
+// client-side business type data
+export interface BusinessType {
+    type: number 
+    title: string 
+    icon: string
 }

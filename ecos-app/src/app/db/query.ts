@@ -1,4 +1,4 @@
-import { Business, Session, User } from "@/customs/utils/types"
+import { Business, Session, User, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
 import { db } from "./config"
 
@@ -127,6 +127,38 @@ export async function dbGetBusinessesInEmpire(empire: number): Promise<[Business
         conn.release()
 
         return response as [Business[], FieldPacket[]]
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// get job(s)
+export async function dbGetJobs(username: string): Promise<[Worker[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `SELECT * FROM workers WHERE user_id = (SELECT user_id FROM users WHERE username = ?)`
+        const params: (string | number)[] = [username]
+        const response: [Worker[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [Worker[], FieldPacket[]]
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// Select a job
+export async function dbSelectJob(workerId: string, username: string, businessId: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `INSERT INTO workers (worker_id, business_id, worker_rank, user_id) VALUES (?, ?, 0, (SELECT user_id FROM users WHERE username = ?))`
+        const params: (string | number)[] = [workerId, businessId, username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
     } catch (error) {
         return error as QueryError
     }
