@@ -41,8 +41,8 @@ function BusinessItem({ business, throwError } : { business: Business, throwErro
             <div className={styles.itemContent}>
                 <div className={styles.itemLeft}>
                     <p className={styles.itemType}>{businessTypeData?.title}</p>
-                    <p className={styles.itemEarning}>{business.base_earning_rate}/s</p>
-                    <p className={styles.itemRank}>{business.rank_earning_increase * 100}%</p>
+                    <p className={styles.itemEarning}>{(business.base_earning_rate * 1).toFixed(2)}/s</p>
+                    <p className={styles.itemRank}>{(business.rank_earning_increase * 100).toFixed(2)}%</p>
                 </div>
                 <div className={styles.itemRight}>
                     <p>{business.hiring === 1 ? 'Hiring' : 'Not Hiring'}</p>
