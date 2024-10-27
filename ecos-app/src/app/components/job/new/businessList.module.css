@@ -64,12 +64,9 @@
     align-items: center;
 }
 
-.itemContent div {
+.itemLeft {
     width: 50%;
     height: 100%;
-}
-
-.itemLeft {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -77,7 +74,7 @@
 }
 
 .itemLeft p {
-    margin-left: 5px;
+    margin-left: 2px;
     font-size: small;
 
     &::before {
@@ -91,27 +88,45 @@
     color: var(--color--subtext);
 }
 
-.itemEarning {
+.itemLeftContent {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 50% 50%;
+}
+
+.itemLeftContent p {
     margin-top: 15px;
     display: flex;
     flex-direction: column-reverse;
+}
 
+.itemEarning {
     &::before {
-        content: "Base Earning Rate";
+        content: "Base Earning Rate (/s)";
     }
 }
 
 .itemRank {
-    margin-top: 15px;
-    display: flex;
-    flex-direction: column-reverse;
-
     &::before {
-        content: "Rank Earning Increase";
+        content: "Rank Earning Increase (%)";
+    }
+}
+
+.itemTaxC {
+    &::before {
+        content: "Congregation Tax Rate (%)";
+    }
+}
+
+.itemTaxS {
+    &::before {
+        content: "State Tax Rate (%)";
     }
 }
 
 .itemRight {
+    width: 50%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -155,5 +170,12 @@
 
     .itemHeader h2 {
         font-size: small;
+    }
+
+    .itemLeftContent {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
     }
 }

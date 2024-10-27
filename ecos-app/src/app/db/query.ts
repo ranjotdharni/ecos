@@ -121,12 +121,41 @@ export async function dbGetBusinessesInEmpire(empire: number): Promise<[Business
     try {
         const conn = await db.getConnection()
 
-        const query: string = 'SELECT * FROM businesses WHERE congregation_id IN (SELECT congregation_id FROM congregations WHERE empire = ?)'
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            b.congregation_id AS business_congregation_id,
+            b.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ub.first_name AS business_owner_first_name,
+            ub.last_name AS business_owner_last_name
+        FROM 
+            states s
+        JOIN 
+            congregations c ON s.state_id = c.state_id
+        JOIN 
+            businesses b ON c.congregation_id = b.congregation_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        LEFT JOIN 
+            users ub ON b.business_owner_id = ub.user_id
+        WHERE 
+            s.empire = ?
+        `
         const params: (string | number)[] = [empire]
-        const response: [Business[], FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
         conn.release()
 
         return response as [Business[], FieldPacket[]]
+
     } catch (error) {
         return error as QueryError
     }
