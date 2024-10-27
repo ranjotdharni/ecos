@@ -47,16 +47,35 @@ export interface Session extends RowDataPacket {
     expires_at: Date
 }
 
-// business table row data
+// state -> congregation -> business joined tables row data (+ owner names)
 export interface Business extends RowDataPacket {
-    business_id: string
+    state_state_id: string
+    state_id: string
+    state_owner_id: string | null
+    empire: number
+    state_name: string
+    state_tax_rate: number
+    congregation_congregation_id: string
     congregation_id: string
+    congregation_owner_id: string | null
+    congregation_name: string
+    labor_split: number
+    congregation_status: number
+    congregation_tax_rate: number
+    business_congregation_id: string
+    business_id: string
     business_owner_id: string | null
     business_name: string
     business_type: number
     base_earning_rate: number
     rank_earning_increase: number
     hiring: number
+    state_owner_first_name: string | null
+    state_owner_last_name: string | null
+    congregation_owner_first_name: string | null
+    congregation_owner_last_name: string | null
+    business_owner_first_name: string | null
+    business_owner_last_name: string | null
 }
 
 export interface Worker extends RowDataPacket {
@@ -95,6 +114,17 @@ export interface EmpireData {
     desc: string
 }
 
+//***************************//
+//                           //
+//  Congregation Data Types  //
+//                           //
+//***************************//
+
+export interface CongregationType {
+    type: number
+    title: string
+}
+
 //***********************//
 //                       //
 //  Business Data Types  //
@@ -106,4 +136,43 @@ export interface BusinessType {
     type: number 
     title: string 
     icon: string
+}
+
+//**********************************//
+//                                  //
+//  Client-side General Data Types  //
+//                                  //
+//**********************************//
+
+export interface BusinessSlug {
+    business_id: string
+    congregation: CongregationSlug
+    business_owner_firstname: string | null
+    business_owner_lastname: string | null
+    business_name: string
+    business_type: number
+    base_earning_rate: number
+    rank_earning_increase: number
+    hiring: boolean
+}
+
+export interface CongregationSlug {
+    congregation_id: string
+    empire: number
+    state: StateSlug
+    congregation_owner_firstname: string | null
+    congregation_owner_lastname: string | null
+    congregation_name: string
+    labor_split: number
+    congregation_status: number
+    congregation_tax_rate: number
+}
+
+export interface StateSlug {
+    state_id: string
+    state_owner_firstname: string | null
+    state_owner_lastname: string | null
+    empire: number
+    state_name: string
+    state_tax_rate: number
 }
