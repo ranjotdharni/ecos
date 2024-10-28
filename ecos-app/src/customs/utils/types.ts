@@ -176,3 +176,9 @@ export interface StateSlug {
     state_name: string
     state_tax_rate: number
 }
+
+export interface WorkerSlug {
+    worker_id: string
+    business: BusinessSlug
+    worker_rank: number
+}

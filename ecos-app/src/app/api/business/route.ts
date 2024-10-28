@@ -1,5 +1,5 @@
+import { dbGetBusinessById, dbGetBusinessesInEmpire } from "@/app/db/query"
 import { Business, BusinessSlug } from "@/customs/utils/types"
-import { dbGetBusinessesInEmpire } from "@/app/db/query"
 import { NextRequest, NextResponse } from "next/server"
 import { FieldPacket, QueryError } from "mysql2"
 
@@ -9,17 +9,22 @@ export async function POST(request: NextRequest) {
     
     const data = await request.json()
 
-    if (!data.empire || isNaN(data.empire))
+    if ((!data.empire || isNaN(data.empire)) && (!data.businessId))
         return NextResponse.json({ error: 'BAD REQUEST' }, { status: 401 }) 
 
-    const result: [Business[], FieldPacket[]] | QueryError = await dbGetBusinessesInEmpire(data.empire)
+    let result: [Business[], FieldPacket[]] | QueryError
 
-    if ((result as QueryError).code !== undefined || (result as [Business[], FieldPacket[]])[0].length === 0) {    // ISE when getting business info
-        console.log('Query Error in /api/user: ', result)
+    if (data.empire)
+        result = await dbGetBusinessesInEmpire(data.empire)
+    else if (data.businessId) 
+        result = await dbGetBusinessById(data.businessId)
+
+    if ((result! as QueryError).code !== undefined || (result! as [Business[], FieldPacket[]])[0].length === 0) {    // ISE when getting business info
+        console.log('Query Error in /api/business: ', result!)
         return NextResponse.json({ error: 'INTERNAL SERVER ERROR' }, { status: 500 })
     }
 
-    const rawBusinesses: Business[] = (result as [Business[], FieldPacket[]])[0]
+    const rawBusinesses: Business[] = (result! as [Business[], FieldPacket[]])[0]
     const businesses: BusinessSlug[] = rawBusinesses.map(raw => {
         return {
             business_id: raw.business_id,

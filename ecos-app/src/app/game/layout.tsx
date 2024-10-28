@@ -1,5 +1,6 @@
 import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "@/customs/utils/constants"
 import UserProvider from "../components/context/UserProvider"
+import GameProvider from "../components/context/GameProvider"
 import { UserDetails } from "@/customs/utils/types"
 import NavBar from "../components/navbar/NavBar"
 import { redirect } from "next/navigation"
@@ -41,9 +42,11 @@ export default async function Layout({ children } : { children: React.ReactNode 
 
     return (
         <UserProvider userDetails={await getUserDetails()}>
-            {/* Always leave 5vh at top of each page for navbar */}
-            <NavBar />
-            {children}
+            <GameProvider>
+                {/* Always leave 5vh at top of each page for navbar */}
+                <NavBar />
+                {children}
+            </GameProvider>
         </UserProvider>
     )
 }
