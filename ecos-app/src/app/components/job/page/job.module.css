@@ -134,15 +134,15 @@
     }
 }
 
-.itemTaxC {
+.itemSplit {
     &::before {
-        content: "Congregation Tax Rate (%)";
+        content: "Labor Split (%/w)";
     }
 }
 
-.itemTaxS {
+.itemWorker {
     &::before {
-        content: "State Tax Rate (%)";
+        content: "Worker Count";
     }
 }
 
@@ -174,6 +174,36 @@
     &:hover {
         cursor: pointer;
     }
+}
+
+.earnings {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.earnings div {
+    width: 100%;
+    height: 50%;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.earnings img {
+    height: 25px;
+    aspect-ratio: 1 / 1;
+    margin-top: 2px;
+}
+
+.earnings p {
+    font-size: x-large;
+    margin: 0 !important;
 }
 
 .itemRight p {
@@ -220,5 +250,13 @@
             font-size: 0.6rem;
             color: var(--color--subtext);
         }
+    }
+
+    .earnings p {
+        font-size: medium;
+    }
+
+    .earnings img {
+        height: 15px;
     }
 }

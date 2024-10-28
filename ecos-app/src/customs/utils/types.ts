@@ -70,6 +70,7 @@ export interface Business extends RowDataPacket {
     base_earning_rate: number
     rank_earning_increase: number
     hiring: number
+    worker_count: number
     state_owner_first_name: string | null
     state_owner_last_name: string | null
     congregation_owner_first_name: string | null
@@ -153,6 +154,7 @@ export interface BusinessSlug {
     business_type: number
     base_earning_rate: number
     rank_earning_increase: number
+    worker_count: number
     hiring: boolean
 }
 

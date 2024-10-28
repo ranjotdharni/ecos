@@ -112,15 +112,15 @@
     }
 }
 
-.itemTaxC {
+.itemSplit {
     &::before {
-        content: "Congregation Tax Rate (%)";
+        content: "Labor Split (%/w)";
     }
 }
 
-.itemTaxS {
+.itemWorker {
     &::before {
-        content: "State Tax Rate (%)";
+        content: "Worker Count";
     }
 }
 

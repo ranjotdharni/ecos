@@ -134,7 +134,8 @@ export async function dbGetBusinessesInEmpire(empire: number): Promise<[Business
             uc.first_name AS congregation_owner_first_name,
             uc.last_name AS congregation_owner_last_name,
             ub.first_name AS business_owner_first_name,
-            ub.last_name AS business_owner_last_name
+            ub.last_name AS business_owner_last_name,
+            COALESCE(w.worker_count, 0) AS worker_count
         FROM 
             states s
         JOIN 
@@ -147,6 +148,15 @@ export async function dbGetBusinessesInEmpire(empire: number): Promise<[Business
             users uc ON c.congregation_owner_id = uc.user_id
         LEFT JOIN 
             users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) w ON b.business_id = w.business_id
         WHERE 
             s.empire = ?
         `
@@ -179,7 +189,8 @@ export async function dbGetBusinessById(businessId: string): Promise<[Business[]
             uc.first_name AS congregation_owner_first_name,
             uc.last_name AS congregation_owner_last_name,
             ub.first_name AS business_owner_first_name,
-            ub.last_name AS business_owner_last_name
+            ub.last_name AS business_owner_last_name,
+            COALESCE(w.worker_count, 0) AS worker_count
         FROM 
             states s
         JOIN 
@@ -192,6 +203,15 @@ export async function dbGetBusinessById(businessId: string): Promise<[Business[]
             users uc ON c.congregation_owner_id = uc.user_id
         LEFT JOIN 
             users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) w ON b.business_id = w.business_id
         WHERE 
             b.business_id = ?
         `
