@@ -1,9 +1,8 @@
 'use client'
 
-import { BusinessSlug, BusinessType, CongregationType, GenericError } from "@/customs/utils/types"
-import { API_BUSINESS_EMPIRE_ROUTE, JOB_PAGE_ROUTE } from "@/customs/utils/constants"
+import { BusinessSlug, BusinessType, GenericError } from "@/customs/utils/types"
+import { API_BUSINESS_ROUTE, JOB_PAGE_ROUTE } from "@/customs/utils/constants"
 import { MouseEvent, useContext, useEffect, useState } from "react"
-import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import { UserContext } from "../../context/UserProvider"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import { selectJob } from "@/customs/utils/actions"
@@ -14,7 +13,6 @@ import Loading from "@/app/loading"
 
 function BusinessItem({ business, throwError } : { business: BusinessSlug, throwError: (error: string) => void }) {
     const [businessTypeData, setBusinessTypeData] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === business.business_type))
-    const [congregationTypeData, setCongregationTypeData] = useState<CongregationType | undefined>(CONGREGATION_TYPES.find(c => c.type === business.congregation.congregation_status))
     const [loader, setLoader] = useState<boolean>(false)
 
     const router = useRouter()
@@ -51,7 +49,8 @@ function BusinessItem({ business, throwError } : { business: BusinessSlug, throw
                     </div>
                 </div>
                 <div className={styles.itemRight}>
-                    <p>{congregationTypeData?.title}</p>
+                    <p className={styles.itemState}>{business.congregation.state.state_name}</p>
+                    <p className={business.congregation.congregation_status === 0 ? styles.itemSettlement : styles.itemCity}>{business.congregation.congregation_name}</p>
                     <button onClick={setJob}>
                         {
                             loader ?
@@ -69,13 +68,13 @@ export default function BusinessList() {
     const { user } = useContext(UserContext)
 
     const [businesses, setBusinesses] = useState<BusinessSlug[]>([])
-    const [loader, setLoader] = useState<boolean>(false)
+    const [loader, setLoader] = useState<boolean>(true)
     const [error, throwError] = useError()
 
     async function getBusinesses() {
         setLoader(true)
 
-        const response = await fetch(`${window.location.origin}${API_BUSINESS_EMPIRE_ROUTE}`, {
+        const response = await fetch(`${window.location.origin}${API_BUSINESS_ROUTE}`, {
             method: 'POST',
             body: JSON.stringify({
                 empire: user.empire
