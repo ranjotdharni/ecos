@@ -1,11 +1,12 @@
 'use client'
 
-import { API_BUSINESS_ROUTE, API_WORKER_ROUTE, JOB_NEW_PAGE_ROUTE } from "@/customs/utils/constants"
+import { API_BUSINESS_ROUTE, API_WORKER_ROUTE, COIN_ICON, JOB_NEW_PAGE_ROUTE } from "@/customs/utils/constants"
 import { BusinessSlug, BusinessType, WorkerSlug, Worker } from "@/customs/utils/types"
 import { MouseEvent, useContext, useEffect, useState } from "react"
 import { UserContext } from "../../context/UserProvider"
 import { GameContext } from "../../context/GameProvider"
 import { BUSINESS_TYPES } from "@/app/server/business"
+import { calculateWage } from "@/customs/utils/tools"
 import styles from "./job.module.css"
 import Loading from "@/app/loading"
 
@@ -23,6 +24,7 @@ function WorkModule({ worker } : { worker: WorkerSlug }) {
 
     const [businessTypeData, setBusinessTypeData] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === worker.business.business_type))
     const [business, setBusiness] = useState<BusinessSlug>(worker.business)
+    const [wage, setWage] = useState<number>(calculateWage(business.base_earning_rate, business.rank_earning_increase, business.worker_count, worker.worker_rank, business.congregation.labor_split))
 
     function clockIn(event: MouseEvent<HTMLButtonElement>) {
         event.preventDefault()
@@ -45,19 +47,21 @@ function WorkModule({ worker } : { worker: WorkerSlug }) {
                     <div className={styles.itemLeftContent}>
                         <p className={styles.itemEarning}>{(business.base_earning_rate * 1).toFixed(2)}</p>
                         <p className={styles.itemRank}>{(business.rank_earning_increase * 100).toFixed(2)}</p>
-                        <p className={styles.itemTaxC}>{(business.congregation.congregation_tax_rate * 100).toFixed(2)}</p>
-                        <p className={styles.itemTaxS}>{(business.congregation.state.state_tax_rate * 100).toFixed(2)}</p>
+                        <p className={styles.itemSplit}>{(business.congregation.labor_split * 100).toFixed(2)}</p>
+                        <p className={styles.itemWorker}>{business.worker_count}</p>
                     </div>
                 </div>
                 <div className={styles.itemRight}>
+                    <div className={styles.earnings}>
+                        <div>
+                            <p>{(wage * time).toFixed(2)}</p>
+                            <img src={COIN_ICON} />
+                        </div>
+                    </div>
                     <p className={styles.itemState}>{business.congregation.state.state_name}</p>
                     <p className={business.congregation.congregation_status === 0 ? styles.itemSettlement : styles.itemCity}>{business.congregation.congregation_name}</p>
                     <button onClick={clockIn}>
-                        {
-                            started ?
-                            time : 
-                            'Clock In'
-                        }
+                        { started ? 'Clock Out' : 'Clock In' }
                     </button>
                 </div>
             </div>

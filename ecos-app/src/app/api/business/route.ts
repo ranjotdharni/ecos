@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
             business_type: raw.business_type,
             base_earning_rate: raw.base_earning_rate,
             rank_earning_increase: raw.rank_earning_increase,
+            worker_count: raw.worker_count,
             hiring: raw.hiring !== 0,
             business_owner_firstname: raw.business_owner_first_name,
             business_owner_lastname: raw.business_owner_last_name
