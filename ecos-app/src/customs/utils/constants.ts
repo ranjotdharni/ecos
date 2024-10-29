@@ -13,15 +13,16 @@ export const JOB_PAGE_ROUTE: string = '/game/job'    // job page
 export const API_BUSINESS_ROUTE: string = '/api/business' // get businesses by empire
 export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details
 export const API_SESSION_ROUTE: string = '/api/session' // check session
-export const API_WORKER_ROUTE: string = '/api/job' // get user's job
+export const API_WORKER_ROUTE: string = '/api/worker' // get user's job
 
+export const MIN_CLOCK_REFRESH_TIME: number = 57600 // minimum wait seconds before you may clock in again after clocking out
 export const PASSWORD_SALT_ROUNDS: number = 10
 export const TOKEN_SALT_ROUNDS: number = 10
+export const MAX_CLOCK_TIME: number = 28800 // maximum payable clocked in seconds, any TIME > MAX_CLOCK_TIME = overtime (not payed)
 
 export const AUTH_EXEMPT_ROUTES: string[] = [
     API_BUSINESS_ROUTE,
     API_SESSION_ROUTE,
-    API_WORKER_ROUTE,
     '/'
 ]
 

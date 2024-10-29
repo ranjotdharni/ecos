@@ -1,12 +1,13 @@
 'use client'
 
-import { API_BUSINESS_ROUTE, API_WORKER_ROUTE, COIN_ICON, JOB_NEW_PAGE_ROUTE } from "@/customs/utils/constants"
-import { BusinessSlug, BusinessType, WorkerSlug, Worker } from "@/customs/utils/types"
-import { MouseEvent, useContext, useEffect, useState } from "react"
+import { API_BUSINESS_ROUTE, API_WORKER_ROUTE, COIN_ICON, JOB_NEW_PAGE_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME } from "@/customs/utils/constants"
+import { BusinessSlug, BusinessType, WorkerSlug, Worker, GenericError, GenericSuccess } from "@/customs/utils/types"
+import { calculateWage, timerString, timeSince } from "@/customs/utils/tools"
+import { MouseEvent, useContext, useEffect, useRef, useState } from "react"
 import { UserContext } from "../../context/UserProvider"
-import { GameContext } from "../../context/GameProvider"
 import { BUSINESS_TYPES } from "@/app/server/business"
-import { calculateWage } from "@/customs/utils/tools"
+import { clockInOut } from "@/customs/utils/actions"
+import useError from "@/customs/hooks/useError"
 import styles from "./job.module.css"
 import Loading from "@/app/loading"
 
@@ -19,21 +20,107 @@ function NoJobModule() {
     )
 }
 
-function WorkModule({ worker } : { worker: WorkerSlug }) {
-    const { time, started, startTimer, stopTimer } = useContext(GameContext)
+function WorkModule({ worker, getJob, throwError } : { worker: WorkerSlug, getJob: () => Promise<void>, throwError: (error: string) => void }) {
+    const { getUser } = useContext(UserContext)
+    
+    // Ref to hold the interval ID so it's always up-to-date
+    const intervalRef = useRef<NodeJS.Timeout | null>(null)
+    const [id, setId] = useState<NodeJS.Timeout>()
 
     const [businessTypeData, setBusinessTypeData] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === worker.business.business_type))
     const [business, setBusiness] = useState<BusinessSlug>(worker.business)
     const [wage, setWage] = useState<number>(calculateWage(business.base_earning_rate, business.rank_earning_increase, business.worker_count, worker.worker_rank, business.congregation.labor_split))
+    const [started, setStarted] = useState<boolean>(worker.clocked_in !== null && (worker.clocked_out === null || new Date(worker.clocked_in) > new Date(worker.clocked_out)))
+    const [time, setTime] = useState<number>(started && worker.clocked_in !== null ? timeSince(new Date(worker.clocked_in)) : 0)
+    const [timer, setTimer] = useState<string>(worker.clocked_in !== null && (worker.clocked_out === null || new Date(worker.clocked_in) > new Date(worker.clocked_out)) ? timerString(time) : (worker.clocked_in !== null && worker.clocked_out !== null && (new Date(worker.clocked_out) > new Date(worker.clocked_in)) && (MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) > 0) ? timerString(MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!))) : 'Ready to Clock In'))
 
-    function clockIn(event: MouseEvent<HTMLButtonElement>) {
+    function clockIn() {
+        if (id !== undefined)
+            clearInterval(id)
+
+        setId(setInterval(() => {
+            setTime((prevTime) => {
+                const newTime = prevTime + 1
+                setTimer(timerString(newTime))
+                return newTime
+            })
+        }, 1000))
+
+        if (!started)
+            setStarted(true)
+    }
+
+    async function clockOut() {
+        if (id !== undefined)
+            clearInterval(id)
+        setTime(0)
+        setStarted(false)
+        getUser()
+        await getJob()
+    }
+
+    async function clock(event: MouseEvent<HTMLButtonElement>) {
         event.preventDefault()
         
-        if (started)
-            stopTimer()
-        else
-            startTimer()
+        if (started) {
+            const result: GenericSuccess | GenericError = await clockInOut()
+            if ((result as GenericError).error) {
+                throwError(result.message)
+                return
+            }
+            clockOut()
+
+        }
+        else {
+            const result: GenericSuccess | GenericError = await clockInOut()
+            if ((result as GenericError).error) {
+                throwError(result.message)
+                return
+            }
+            clockIn()
+        }
     }
+
+    useEffect(() => {
+    
+        // Cleanup function to clear the interval
+        const clearExistingInterval = () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+                intervalRef.current = null
+            }
+        }
+    
+        if (
+            worker.clocked_in !== null &&
+            worker.clocked_out !== null &&
+            new Date(worker.clocked_out) > new Date(worker.clocked_in) &&
+            MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) > 0
+        ) {
+            // Clear any existing interval before setting a new one
+            clearExistingInterval()
+            
+            intervalRef.current = setInterval(() => {
+                if (MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) < 1) {
+                    clearExistingInterval()
+                    setTimer('Ready to Clock In')
+                } else {
+                    setTimer(timerString(MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!))))
+                }
+            }, 1000);
+        } else if (!started) {
+            setTimer('Ready to Clock In')
+            clearExistingInterval()
+        }
+    
+        // Cleanup interval on component unmount or on effect re-run
+        return () => clearExistingInterval()
+    }, [time, started, worker.clocked_in, worker.clocked_out, MIN_CLOCK_REFRESH_TIME])
+
+    useEffect(() => {
+        if (started)
+            clockIn()
+    }, [])
 
     return (
         <div className={styles.item}>
@@ -49,18 +136,21 @@ function WorkModule({ worker } : { worker: WorkerSlug }) {
                         <p className={styles.itemRank}>{(business.rank_earning_increase * 100).toFixed(2)}</p>
                         <p className={styles.itemSplit}>{(business.congregation.labor_split * 100).toFixed(2)}</p>
                         <p className={styles.itemWorker}>{business.worker_count}</p>
+                        <div className={styles.timer}>
+                            <p className={started ? styles.tickUp : (timer !== 'Ready to Clock In' ? styles.tickDown : '')}>{timer}</p>
+                        </div>
                     </div>
                 </div>
                 <div className={styles.itemRight}>
                     <div className={styles.earnings}>
                         <div>
-                            <p>{(wage * time).toFixed(2)}</p>
+                            <p>{(Math.min(wage * time, wage * MAX_CLOCK_TIME)).toFixed(2)}</p>
                             <img src={COIN_ICON} />
                         </div>
                     </div>
                     <p className={styles.itemState}>{business.congregation.state.state_name}</p>
                     <p className={business.congregation.congregation_status === 0 ? styles.itemSettlement : styles.itemCity}>{business.congregation.congregation_name}</p>
-                    <button onClick={clockIn}>
+                    <button onClick={clock}>
                         { started ? 'Clock Out' : 'Clock In' }
                     </button>
                 </div>
@@ -70,21 +160,18 @@ function WorkModule({ worker } : { worker: WorkerSlug }) {
 }
 
 export default function JobModule() {
-    const { user } = useContext(UserContext)
-
+    const [error, throwError] = useError()
     const [loader, setLoader] = useState<boolean>(true)
     const [worker, setWorker] = useState<WorkerSlug | undefined | void>()
 
     async function getJob() {
-        setLoader(true)
+        setLoader(true) 
 
-        const worker: WorkerSlug | void = await fetch(`${window.location.origin}${API_WORKER_ROUTE}`, {   // fetch user's job
-            method: 'POST',
-            body: JSON.stringify({
-                username: user.username
-            })
-        }).then(async response => {
+        // fetch user's job
+        const worker: WorkerSlug | void = await fetch(`${window.location.origin}${API_WORKER_ROUTE}`).then(async response => {
+
             return await response.json()
+
         }).then(async (response) => {
             if (response.empty) // user has no job
                 return
@@ -98,7 +185,7 @@ export default function JobModule() {
                 })
             }).then(async response => {
 
-                return response.json()
+                return await response.json()
 
             }).then(response => {
 
@@ -107,7 +194,9 @@ export default function JobModule() {
                 return {
                     worker_id: worker.worker_id,
                     business: business,
-                    worker_rank: worker.worker_rank
+                    worker_rank: worker.worker_rank,
+                    clocked_in: worker.clocked_in,
+                    clocked_out: worker.clocked_out
                 }
 
             })
@@ -129,10 +218,11 @@ export default function JobModule() {
                 <div className={styles.loader}><Loading color='var(--color--text)' /></div> :
                 (
                     worker ?    // if user has job, show work module
-                    <WorkModule worker={worker} /> :
-                    <NoJobModule /> // if no job show, show no job module
+                    <WorkModule worker={worker} getJob={getJob} throwError={throwError} /> :
+                    <NoJobModule /> // if no job, show no job module
                 )
             }
+            <p className={styles.error}>{error}</p>
         </div>
     )
 }
