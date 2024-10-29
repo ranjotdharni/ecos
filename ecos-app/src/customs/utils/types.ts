@@ -13,6 +13,12 @@ export interface GenericError {
     message: string
 }
 
+// Generic success type
+export interface GenericSuccess {
+    success: boolean
+    message: string
+}
+
 // Auth forms submit slug
 export interface AuthFormSlug {
     firstname?: string
@@ -79,11 +85,14 @@ export interface Business extends RowDataPacket {
     business_owner_last_name: string | null
 }
 
+// workers table row data
 export interface Worker extends RowDataPacket {
     worker_id: string
     user_id: string
     business_id: string
     worker_rank: number
+    clocked_in: Date | null
+    clocked_out: Date | null
 }
 
 //***********************//
@@ -183,4 +192,6 @@ export interface WorkerSlug {
     worker_id: string
     business: BusinessSlug
     worker_rank: number
+    clocked_in: Date | null
+    clocked_out: Date | null
 }

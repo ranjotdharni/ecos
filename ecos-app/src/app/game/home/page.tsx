@@ -2,7 +2,9 @@
 
 import { BUSINESS_ICON, BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_PAGE_ROUTE, EMPIRE_PAGE_ROUTE, JOB_ICON, JOB_PAGE_ROUTE, STATE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
 import { UserContext } from "@/app/components/context/UserProvider"
-import { MouseEvent, useContext, useState } from "react"
+import { MouseEvent, useContext, useEffect, useState } from "react"
+import { UserDetails } from "@/customs/utils/types"
+import { fetchUser } from "@/customs/utils/tools"
 import { EMPIRE_DATA } from "@/app/server/empire"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
@@ -22,10 +24,11 @@ const LINKS: string[] = [
 ]
 
 export default function Home() {
-    const { user } = useContext(UserContext)
+    const { userTrigger } = useContext(UserContext)
     const router = useRouter()
 
     const [selectView, setView] = useState<number | undefined>()
+    const [user, setUser] = useState<UserDetails>()
 
     function confirmView(choice: number) {
         return function (event: MouseEvent<HTMLDivElement>) {
@@ -45,10 +48,19 @@ export default function Home() {
         }
     }
 
+    async function getUser() {
+        const u: UserDetails = await fetchUser()
+        setUser(u)
+    }
+
+    useEffect(() => {
+        getUser()
+    }, [userTrigger])
+
     return (
         <section className={styles.page}>
             <div className={`${styles.empire} ${selectView === EMPIRE_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(EMPIRE_INDEX)}>
-                <img src={EMPIRE_DATA.find(empire => empire.code === user.empire)?.sigil.src} alt='Sigil' />
+                <img src={EMPIRE_DATA.find(empire => empire.code === user?.empire)?.sigil.src} alt='Sigil' />
                 <h2>Your Empire</h2>
                 <button onClick={confirmOrView(EMPIRE_INDEX)} className={selectView === EMPIRE_INDEX ? styles.visible : ''}>View</button>
             </div>

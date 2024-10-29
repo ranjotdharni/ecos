@@ -1,11 +1,11 @@
 'use server'
 
+import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold } from "../../app/db/query"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
-import { AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs } from "../../app/db/query"
-import { User, AuthFormSlug, GenericError, Worker } from "@/customs/utils/types"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug } from "@/customs/utils/types"
+import { calculateWage, dateToSQLDate, timeSince } from "@/customs/utils/tools"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
-import { dateToSQLDate } from "@/customs/utils/tools"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
@@ -173,5 +173,88 @@ export async function selectJob(businessId: string): Promise<string | GenericErr
         return { error: true, message: '500 INTERNAL SERVER ERROR' }
     }
 
-    return 'Job Selected'
+    return 'Job Selected'   // success, return string
+}
+
+export async function clockIn(job: Worker): Promise<GenericSuccess | GenericError> {
+    if (job.clocked_in === null) {
+        const response: [QueryResult, FieldPacket[]] | QueryError = await dbClockIn(new Date(), job.worker_id)
+
+        if ((response as QueryError).code !== undefined) {
+            console.log(response)
+            return { error: true, message: '500 INTERNAL SERVER ERROR' }
+        }
+
+        return { success: true, message: 'Clocked In' }
+    }
+    if (job.clocked_out !== null && timeSince(job.clocked_out) < MIN_CLOCK_REFRESH_TIME) {
+        return { error: true, message: 'Too early to clock in right now' }
+    }
+
+    const response: [QueryResult, FieldPacket[]] | QueryError = await dbClockIn(new Date(), job.worker_id)
+
+    if ((response as QueryError).code !== undefined) {
+        console.log(response)
+        return { error: true, message: '500 INTERNAL SERVER ERROR' }
+    }
+
+    return { success: true, message: 'Clocked In' }
+}
+
+export async function clockOut(job: Worker, wage: number): Promise<GenericSuccess | GenericError> {
+    const time: Date = new Date()
+
+    let response: [QueryResult, FieldPacket[]] | QueryError = await dbClockOut(time, job.worker_id)
+
+    if ((response as QueryError).code !== undefined) {
+        console.log(response)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Clock)' }
+    }
+
+    response = await dbAddGold(job.user_id, wage * Math.min(MAX_CLOCK_TIME, timeSince(job.clocked_in!, time)))
+
+    if ((response as QueryError).code !== undefined) {
+        console.log(response)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Gold Update)' }
+    }
+
+    return { success: true, message: 'Clocked Out' }
+}
+
+export async function clockInOut(): Promise<GenericSuccess | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const jobResponse: [Worker[], FieldPacket[]] | QueryError = await dbGetJobs(username)
+
+    if ((jobResponse as QueryError).code !== undefined || (jobResponse as [Worker[], FieldPacket[]])[0].length === 0) {
+        console.log(jobResponse)
+        return { error: true, message: '500 INTERNAL SERVER ERROR' }
+    }
+
+    const job: Worker = (jobResponse as [Worker[], FieldPacket[]])[0][0]
+
+    if (job.clocked_in === null) {  // clock in  
+        return await clockIn(job)
+    }
+    else if (job.clocked_out === null || job.clocked_in > job.clocked_out) {    // clock out
+        const business: BusinessSlug = await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_BUSINESS_ROUTE}`, {     // fetch business data of user's job
+            method: 'POST',
+            body: JSON.stringify({
+                businessId: job.business_id
+            })
+        }).then(async response => {
+            return await response.json()
+        }).then(response => {
+            return response.businesses[0]
+        })
+        return await clockOut(job, calculateWage(business.base_earning_rate, business.rank_earning_increase, business.worker_count, job.worker_rank, business.congregation.labor_split))
+    }
+    else {  // clock in
+        return await clockIn(job)
+    }
 }

@@ -1,9 +1,11 @@
 'use client'
 
 import { AUTH_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, COIN_ICON, CONGREGATION_ICON, CONGREGATION_PAGE_ROUTE, DEFAULT_SUCCESS_ROUTE, EMPIRE_PAGE_ROUTE, HOMEPAGE_ICON, JOB_ICON, JOB_PAGE_ROUTE, STATE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
-import { MouseEvent, useContext, useState } from "react"
+import { MouseEvent, useContext, useEffect, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { UserContext } from "../context/UserProvider"
+import { UserDetails } from "@/customs/utils/types"
+import { fetchUser } from "@/customs/utils/tools"
 import { EMPIRE_DATA } from "@/app/server/empire"
 import { signOut } from "@/app/server/auth"
 import styles from "./navbar.module.css"
@@ -12,10 +14,11 @@ import Loading from "@/app/loading"
 export default function NavBar() {
     const router = useRouter()
     const pathname = usePathname()
-    const { user } = useContext(UserContext)
+    const { userTrigger } = useContext(UserContext)
 
     const [isOpen, setOpen] = useState<boolean>(false)
     const [isLoading, setLoading] = useState<boolean>(false)
+    const [user, setUser] = useState<UserDetails>()
 
     function open(event: MouseEvent<HTMLButtonElement>) {
         event.preventDefault()
@@ -29,6 +32,9 @@ export default function NavBar() {
 
     async function signUserOut(event: MouseEvent<HTMLButtonElement>) {
         event.preventDefault()
+
+        if (!user)
+            return
         
         setLoading(true)
 
@@ -42,6 +48,15 @@ export default function NavBar() {
         setLoading(false)
     }
 
+    async function getUser() {
+        const u: UserDetails = await fetchUser()
+        setUser(u)
+    }
+
+    useEffect(() => {
+        getUser()
+    }, [userTrigger])
+
     return (
         <section className={styles.container}>
             <button onClick={open} className={styles.start}>
@@ -52,17 +67,17 @@ export default function NavBar() {
 
             <div className={styles.end}>
                 <img src={COIN_ICON} />
-                <p>{user.gold}</p>
+                <p>{user?.gold}</p>
             </div>
 
             <section onClick={close} className={`${styles.cover} ${isOpen ? styles.open : ''}`}></section>
 
             <div className={`${styles.content} ${isOpen ? styles.slide : ''}`}>
                 <div className={styles.header}>
-                    <p>{user.firstname.length + user.lastname.length > 32 ? user.firstname : `${user.firstname} ${user.lastname}`}</p>
+                    <p>{user && user.firstname.length + user.lastname.length > 32 ? user.firstname : `${user?.firstname} ${user?.lastname}`}</p>
                     <div className={styles.gold}>
                         <img src={COIN_ICON} />
-                        <p>{user.gold}</p>
+                        <p>{user?.gold}</p>
                     </div>
                 </div>
 
@@ -72,7 +87,7 @@ export default function NavBar() {
                 </a>
 
                 <a href={EMPIRE_PAGE_ROUTE} className={`${styles.item} ${pathname.includes(EMPIRE_PAGE_ROUTE) ? styles.highlight : ``}`}>
-                    <img src={EMPIRE_DATA.find(empire => empire.code === user.empire)?.sigil.src} />
+                    <img src={EMPIRE_DATA.find(empire => empire.code === user?.empire)?.sigil.src} />
                     <p>Empire</p>
                 </a>
 

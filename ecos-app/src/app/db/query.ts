@@ -1,5 +1,6 @@
 import { Business, Session, User, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
+import { dateToSQLDate } from "@/customs/utils/tools"
 import { db } from "./config"
 
 // Add a new user to the database
@@ -242,6 +243,22 @@ export async function dbGetJobs(username: string): Promise<[Worker[], FieldPacke
     }
 }
 
+// set user's gold value
+export async function dbAddGold(userId: string, gold: number): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `UPDATE users SET gold = gold + ? WHERE user_id = ?`
+        const params: (string | number)[] = [gold, userId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
 // Select a job
 export async function dbSelectJob(workerId: string, username: string, businessId: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
     try {
@@ -249,6 +266,38 @@ export async function dbSelectJob(workerId: string, username: string, businessId
 
         const query: string = `INSERT INTO workers (worker_id, business_id, worker_rank, user_id) VALUES (?, ?, 0, (SELECT user_id FROM users WHERE username = ?))`
         const params: (string | number)[] = [workerId, businessId, username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// clock worker in
+export async function dbClockIn(time: Date, workerId: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `UPDATE workers SET clocked_in = ? WHERE worker_id = ?`
+        const params: (string | number)[] = [dateToSQLDate(time), workerId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// clock worker out
+export async function dbClockOut(time: Date, workerId: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `UPDATE workers SET clocked_out = ? WHERE worker_id = ?`
+        const params: (string | number)[] = [dateToSQLDate(time), workerId]
         const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
         conn.release()
 

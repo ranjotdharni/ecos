@@ -7,7 +7,7 @@ import { dbGetSession, dbDropSession } from "../db/query"
 import { cookies } from "next/headers"
 
 const PASSWORD_SPECIAL_CHARACTERS: RegExp = /[~`!@#$%^&*()\-_+={}[\]|\\;:"<>,./?]/
-const SESSION_VALIDITY_PERIOD: number = 2   // minutes that the session is valid for
+const SESSION_VALIDITY_PERIOD: number = 60   // minutes that the session is valid for
 
 // ensure first and last name pass rules, return error string or void
 export async function validateName(firstname: string, lastname: string): Promise<string | void> {
@@ -117,7 +117,7 @@ export async function isAuthenticated(route: string): Promise<number | GenericEr
 
 // confirm user's auth status, this works from server components
 export async function manualAuthentication(username: string, token: string, key: string): Promise<number | GenericError> { 
-    const response = await fetch(`${process.env.ORIGIN}${API_SESSION_ROUTE}`, {   // contact api for db status check (because middleware on edge runtime can't query, smh why nextjs WHY?!?!)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_SESSION_ROUTE}`, {   // contact api for db status check (because middleware on edge runtime can't query, smh why nextjs WHY?!?!)
         method: 'POST',
         body: JSON.stringify({
             username: username,
@@ -140,7 +140,7 @@ export async function generateAuthCookieOptions(expiry: Date) {
         maxAge: (expiry.getTime() - (new Date()).getTime()) / 1000,
         httpOnly: true,
         sameSite: true,
-        secure: process.env.ENV === 'prod'
+        secure: process.env.NEXT_PUBLIC_ENV === 'prod'
     }
 }
 

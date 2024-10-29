@@ -1,21 +1,16 @@
 'use client'
 
 import ConfirmModal, { Confirm } from "../confirm/ConfirmModal"
-import { UserDetails } from "@/customs/utils/types"
 import React, { useState } from "react"
 
-export const UserContext = React.createContext<{ user: UserDetails, setModal: (slug: Confirm) => void }>({
-    user: {
-        username: '',
-        firstname: '',
-        lastname: '',
-        empire: 0,
-        gold: 0
-    },
-    setModal: () => {}
+export const UserContext = React.createContext<{ setModal: (slug: Confirm) => void, userTrigger: boolean, getUser: () => void }>({
+    userTrigger: true,
+    setModal: () => {},
+    getUser: () => {}
 })
 
-export default function UserProvider({ children, userDetails } : { children: React.ReactNode, userDetails: UserDetails }) {
+export default function UserProvider({ children } : { children: React.ReactNode }) {
+    const [trigger, setTrigger] = useState<boolean>(true)
 
     const [modalSlug, setModal] = useState<Confirm>({
         title: '',
@@ -24,8 +19,12 @@ export default function UserProvider({ children, userDetails } : { children: Rea
         callback: () => {}
     })
 
+    function getUser() {
+        setTrigger(!trigger)
+    }
+
     return (
-        <UserContext.Provider value={ { user: userDetails, setModal: setModal } }>
+        <UserContext.Provider value={ { setModal: setModal, userTrigger: trigger, getUser: getUser } }>
             <ConfirmModal slug={modalSlug} />
             {children}
         </UserContext.Provider>
