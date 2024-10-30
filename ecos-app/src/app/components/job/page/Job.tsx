@@ -203,7 +203,7 @@ export default function JobModule() {
         setLoader(true) // set loader
 
         // fetch user's job
-        const worker: WorkerSlug | void = await fetch(`${window.location.origin}${API_WORKER_ROUTE}`).then(async response => {
+        const worker: WorkerSlug | void = await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_WORKER_ROUTE}`).then(async response => {
 
             return await response.json()
 
@@ -213,7 +213,7 @@ export default function JobModule() {
 
             const worker: Worker = response.worker
 
-            return await fetch(`${window.location.origin}${API_BUSINESS_ROUTE}`, {     // fetch business data of user's job
+            return await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_BUSINESS_ROUTE}`, {     // fetch business data of user's job
                 method: 'POST',
                 body: JSON.stringify({
                     businessId: worker.business_id

@@ -1,0 +1,25 @@
+.container {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding-left: 5%;
+}
+
+.container img {
+    height: 70%;
+    aspect-ratio: 1 / 1;
+}
+
+.container h1 {
+    color: var(--color--gold);
+    
+    &::after {
+        content: "Total Revenue";
+        font-size: small;
+        margin-left: 5px;
+        color: var(--color--subtext);
+    }
+}

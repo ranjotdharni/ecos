@@ -1,0 +1,144 @@
+.page {
+    width: 100%;
+    height: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 1.25%;
+}
+
+.newBusinessModule {
+    width: 70%;
+    height: 100%;
+    background-color: var(--color--accent);
+    border-radius: 1rem;
+}
+
+.newHeaderContainer {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 1%;
+    padding-right: 2.5%;
+}
+
+.newHeaderContainer h2 {
+    color: var(--color--text);
+}
+
+.newHeaderContainer img {
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.newNameContainer {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.newNameContainer label {
+    color: var(--color--text);
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.newNameContainer input {
+    height: 50%;
+    width: 40%;
+    outline: none;
+    border: none;
+    border-bottom: solid 1px var(--color--contrast);
+    background: none;
+    font-family: var(--font-jb-sans);
+}
+
+.newContentContainer {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.newContentSearch {
+    width: 100%;
+    height: 30%;
+    display: grid;
+    grid-template-areas: 
+    "s s s s b"
+    "c c c c b";
+    gap: 2.5%;
+    padding: 2.5%;
+}
+
+.stateInput {
+    grid-area: s;
+    outline: none;
+    border: none;
+    border-bottom: solid 1px var(--color--contrast);
+    background: none;
+    font-family: var(--font-jb-sans);
+}
+
+.congregationInput {
+    grid-area: c;
+    outline: none;
+    border: none;
+    border-bottom: solid 1px var(--color--contrast);
+    background: none;
+    font-family: var(--font-jb-sans);
+}
+
+.searchButton {
+    grid-area: b;
+    outline: none;
+    border: none;
+    border-radius: 0.5rem;
+    background-color: var(--color--contrast);
+    color: var(--color--text);
+    font-family: var(--font-jb-sans);
+    font-size: large;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.searchResults {
+    list-style: none;
+    width: 90%;
+    height: 70%;
+    background-color: var(--color--contrast);
+    border-radius: 1rem;
+    overflow-y: scroll;
+    padding: 10px;
+}
+
+.searchResult {
+    width: 100%;
+    height: 60px;
+    margin-bottom: 10px;
+    border-radius: 0.25rem;
+    background-color: var(--color--accent);
+}
+
+.newFooterContainer {
+    width: 100%;
+    height: 10%;
+}
+
+.businessListModule {
+    width: 25%;
+    height: 100%;
+    background-color: var(--color--accent);
+    border-radius: 1rem;
+}
