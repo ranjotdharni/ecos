@@ -37,6 +37,7 @@ export const CONSTRUCTION_ICON: string = 'https://img.icons8.com/color/96/full-t
 export const FOOD_SERVICE_ICON: string = 'https://img.icons8.com/color/96/vegetarian-food.png'
 export const STATE_ICON: string = 'https://img.icons8.com/color/96/israeli-parliament.png'
 export const JOB_ICON: string = 'https://img.icons8.com/color/96/parse-from-clipboard.png'
+export const LABOR_SPLIT_ICON: string = 'https://img.icons8.com/color/96/coin-in-hand.png'
 export const CONGREGATION_ICON: string = 'https://img.icons8.com/color/96/castle.png'
 export const RELIGIOUS_ICON: string = 'https://img.icons8.com/color/96/cathedral.png'
 export const BUSINESS_ICON: string = 'https://img.icons8.com/color/96/money-bag.png'
