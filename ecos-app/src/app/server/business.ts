@@ -1,6 +1,8 @@
 import { FOOD_SERVICE_ICON, MEDICINE_ICON, MILITARY_ICON, CONSTRUCTION_ICON, RELIGIOUS_ICON, RESIDENTIAL_ICON } from "@/customs/utils/constants"
 import { BusinessType } from "@/customs/utils/types"
 
+export const NEW_BUSINESS_COST: number = 250000
+
 export const BUSINESS_TYPES: BusinessType[] = [
     {
         type: 1,

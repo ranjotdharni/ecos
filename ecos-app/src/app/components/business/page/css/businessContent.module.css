@@ -116,9 +116,8 @@
 .searchResults {
     list-style: none;
     width: 90%;
-    height: 70%;
+    height: 65%;
     background-color: var(--color--contrast);
-    border-radius: 1rem;
     overflow-y: scroll;
     padding: 10px;
 }
@@ -129,11 +128,118 @@
     margin-bottom: 10px;
     border-radius: 0.25rem;
     background-color: var(--color--accent);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.searchResultItem {
+    width: 25%;
+    height: 80%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.searchResultItem img {
+    height: 70%;
+    aspect-ratio: 1 / 1;
+}
+
+.searchResultItem p {
+    font-size: small;
+    color: var(--color--text);
+}
+
+.searchResult button {
+    width: 15%;
+    height: 50%;
+    outline: none;
+    border: none;
+    border-radius: 0.5rem;
+    font-family: var(--font-jb-sans);
+    background-color: var(--color--contrast);
+
+    &:hover {
+        cursor: pointer;
+    }
 }
 
 .newFooterContainer {
     width: 100%;
     height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 2.5%;
+    padding-right: 2.5%;
+}
+
+.dropListWrapper {
+    width: 40%;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.submitButton {
+    width: 20%;
+    height: 75%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    outline: none;
+    border: none;
+    border-radius: 0.5rem;
+    font-family: var(--font-jb-sans);
+    background-color: var(--color--contrast);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.submitButton img {
+    height: 70%;
+    aspect-ratio: 1 / 1;
+}
+
+.submitButton p {
+    color: var(--color--text);
+    font-size: large;
+}
+
+.dropListItem {
+    width: 100%;
+    height: 100%;
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color--contrast);
+    border-radius: 0.5rem;
+}
+
+.dropListItem img {
+    height: 80%;
+    aspect-ratio: 1 / 1;
+    margin-right: 5px;
+}
+
+.dropListItemHover {
+    border-radius: 0;
+    &:hover {
+        cursor: pointer;
+        color: var(--color--accent);
+        background-color: var(--color--text);
+    }
 }
 
 .businessListModule {
