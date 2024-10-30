@@ -24,39 +24,55 @@ function WorkModule({ worker, getJob, throwError } : { worker: WorkerSlug, getJo
     const { getUser } = useContext(UserContext)
     
     // Ref to hold the interval ID so it's always up-to-date
-    const intervalRef = useRef<NodeJS.Timeout | null>(null)
+    const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
+    const clockedIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const [id, setId] = useState<NodeJS.Timeout>()
 
     const [businessTypeData, setBusinessTypeData] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === worker.business.business_type))
     const [business, setBusiness] = useState<BusinessSlug>(worker.business)
-    const [wage, setWage] = useState<number>(calculateWage(business.base_earning_rate, business.rank_earning_increase, business.worker_count, worker.worker_rank, business.congregation.labor_split))
-    const [started, setStarted] = useState<boolean>(worker.clocked_in !== null && (worker.clocked_out === null || new Date(worker.clocked_in) > new Date(worker.clocked_out)))
-    const [time, setTime] = useState<number>(started && worker.clocked_in !== null ? timeSince(new Date(worker.clocked_in)) : 0)
-    const [timer, setTimer] = useState<string>(worker.clocked_in !== null && (worker.clocked_out === null || new Date(worker.clocked_in) > new Date(worker.clocked_out)) ? timerString(time) : (worker.clocked_in !== null && worker.clocked_out !== null && (new Date(worker.clocked_out) > new Date(worker.clocked_in)) && (MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) > 0) ? timerString(MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!))) : 'Ready to Clock In'))
+    const [wage, setWage] = useState<number>(
+        calculateWage(
+            business.base_earning_rate, 
+            business.rank_earning_increase, 
+            business.worker_count, 
+            worker.worker_rank, 
+            business.congregation.labor_split
+        )
+    )
+
+    const [started, setStarted] = useState<boolean>(
+        worker.clocked_in !== null && 
+        (
+            worker.clocked_out === null || 
+            new Date(worker.clocked_in) > new Date(worker.clocked_out)
+        )
+    )
+    const [time, setTime] = useState<number>(
+        started && worker.clocked_in !== null ?     // if worker already clocked in,
+        timeSince(new Date(worker.clocked_in)) :    // then time = time since clock in (in seconds)
+        0                                           // otherwise 0 seconds since clock in
+    )
+    const [timer, setTimer] = useState<string>(
+        worker.clocked_in !== null && (worker.clocked_out === null || new Date(worker.clocked_in) > new Date(worker.clocked_out)) ? // if worker clocked in,
+        timerString(time) : // then timer string = time since clock in (in seconds)
+        (   // otherwise, if waiting for clock in refresh delay
+            worker.clocked_in !== null && worker.clocked_out !== null && (new Date(worker.clocked_out) > new Date(worker.clocked_in)) && (MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) > 0) ? 
+            timerString(MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!))) : // then timer string = time remaining until clock in refreshes
+            'Ready to Clock In' // otherwise, timer string = clock in ready indication
+        )
+    )
 
     function clockIn() {
-        if (id !== undefined)
-            clearInterval(id)
-
-        setId(setInterval(() => {
-            setTime((prevTime) => {
-                const newTime = prevTime + 1
-                setTimer(timerString(newTime))
-                return newTime
-            })
-        }, 1000))
-
         if (!started)
-            setStarted(true)
+            setStarted(true)    // timer for clock in time is started
     }
 
     async function clockOut() {
-        if (id !== undefined)
-            clearInterval(id)
-        setTime(0)
-        setStarted(false)
-        getUser()
-        await getJob()
+        if (started)
+            setStarted(false)   // timer for clock in time is stopped
+        setTime(0)  // reset the time variable
+        getUser()   // trigger user detail refetch so gold value in client refreshes to show updates
+        await getJob()  // refetch job details to get updated clock out time, component will then re-update and show values accordingly
     }
 
     async function clock(event: MouseEvent<HTMLButtonElement>) {
@@ -83,44 +99,63 @@ function WorkModule({ worker, getJob, throwError } : { worker: WorkerSlug, getJo
 
     useEffect(() => {
     
-        // Cleanup function to clear the interval
-        const clearExistingInterval = () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current)
-                intervalRef.current = null
+        // Cleanup functions to clear the intervals
+        const clearExistingClockedInterval = () => {
+            if (clockedIntervalRef.current) {
+                clearInterval(clockedIntervalRef.current)
+                clockedIntervalRef.current = null
             }
         }
+
+        const clearExistingRefreshInterval = () => {
+            if (refreshIntervalRef.current) {
+                clearInterval(refreshIntervalRef.current)
+                refreshIntervalRef.current = null
+            }
+        }
+
+        const clearAllIntervals = () => {
+            clearExistingClockedInterval()
+            clearExistingRefreshInterval()
+        }
     
-        if (
+        if (started) {  // clocked in
+            // Clear any existing interval before setting a new one
+            clearAllIntervals()
+
+            clockedIntervalRef.current = setInterval(() => {
+                setTime((prevTime) => {
+                    const newTime = prevTime + 1
+                    setTimer(timerString(newTime))
+                    return newTime
+                })
+            }, 1000)
+        }
+        else if (   // waiting for refresh time until next clock in available
             worker.clocked_in !== null &&
             worker.clocked_out !== null &&
             new Date(worker.clocked_out) > new Date(worker.clocked_in) &&
             MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) > 0
         ) {
             // Clear any existing interval before setting a new one
-            clearExistingInterval()
+            clearAllIntervals()
             
-            intervalRef.current = setInterval(() => {
-                if (MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) < 1) {
-                    clearExistingInterval()
+            refreshIntervalRef.current = setInterval(() => {
+                if (MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!)) < 1) {    // refresh time is up, clear interval
+                    clearExistingRefreshInterval()
                     setTimer('Ready to Clock In')
                 } else {
-                    setTimer(timerString(MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!))))
+                    setTimer(timerString(MIN_CLOCK_REFRESH_TIME - timeSince(new Date(worker.clocked_out!))))    // otherwise update timer with remaining time
                 }
             }, 1000);
-        } else if (!started) {
+        } else if (!started) {  // clock in is ready, THIS MUST COME LAST
             setTimer('Ready to Clock In')
-            clearExistingInterval()
+            clearAllIntervals()
         }
     
-        // Cleanup interval on component unmount or on effect re-run
-        return () => clearExistingInterval()
+        // Cleanup intervals on component unmount or on effect re-run
+        return () => clearAllIntervals()
     }, [time, started, worker.clocked_in, worker.clocked_out, MIN_CLOCK_REFRESH_TIME])
-
-    useEffect(() => {
-        if (started)
-            clockIn()
-    }, [])
 
     return (
         <div className={styles.item}>
@@ -165,7 +200,7 @@ export default function JobModule() {
     const [worker, setWorker] = useState<WorkerSlug | undefined | void>()
 
     async function getJob() {
-        setLoader(true) 
+        setLoader(true) // set loader
 
         // fetch user's job
         const worker: WorkerSlug | void = await fetch(`${window.location.origin}${API_WORKER_ROUTE}`).then(async response => {
