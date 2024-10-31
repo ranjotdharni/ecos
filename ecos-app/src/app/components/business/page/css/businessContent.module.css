@@ -44,7 +44,12 @@
     align-items: center;
 }
 
+.newNameContainer div {
+    width: 50%;
+}
+
 .newNameContainer label {
+    font-size: smaller;
     color: var(--color--text);
     margin-left: 10px;
     margin-right: 10px;
@@ -52,12 +57,19 @@
 
 .newNameContainer input {
     height: 50%;
-    width: 40%;
+    width: 55%;
     outline: none;
     border: none;
     border-bottom: solid 1px var(--color--contrast);
     background: none;
     font-family: var(--font-jb-sans);
+    margin-left: 2.5%;
+    margin-right: 5%;
+}
+
+.newNameContainer div:nth-of-type(2) input {
+    width: 15%;
+    margin: 0;
 }
 
 .newContentContainer {
@@ -247,4 +259,216 @@
     height: 100%;
     background-color: var(--color--accent);
     border-radius: 1rem;
+    padding: 10px;
+}
+
+.businessListModule h2 {
+    color: var(--color--text);
+    flex: 1;
+}
+
+.businessList {
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    list-style: none;
+    overflow-y: scroll;
+    padding: 5px;
+}
+
+.listEmpty {
+    justify-content: center;
+    text-align: center;
+}
+
+.businessListLoader {
+    width: 40px;
+    aspect-ratio: 1 / 1;
+}
+
+.businessListResult {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 10px;
+}
+
+.businessListResult a {
+    padding-left: 10px;
+    padding-right: 10px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    background-color: var(--color--contrast);
+    border-radius: 1rem;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.businessListResultName {
+    width: 100%;
+    height: 30%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.businessListResultName img {
+    height: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.businessListResultName p {
+    color: var(--color--text);
+}
+
+.businessListResultState {
+    color: var(--color--text);
+    font-size: small;
+
+    &::before {
+        content: "State:";
+        margin-right: 5px;
+        color: var(--color--subtext);
+        font-size: x-small;
+    }
+}
+
+.businessListResultCongregation {
+    color: var(--color--text);
+    font-size: small;
+
+    &::before {
+        content: "Congregation:";
+        margin-right: 5px;
+        color: var(--color--subtext);
+        font-size: x-small;
+    }
+}
+
+@media (max-width: 996px) {
+    .page {
+        width: 90%;
+        height: auto;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .newBusinessModule {
+        width: 100%;
+        height: 100vh;
+        background-color: var(--color--accent);
+        border-radius: 1rem;
+    }
+
+    .businessListModule {
+        margin-top: 20px;
+        width: 100%;
+        height: 100vh;
+        background-color: var(--color--accent);
+        border-radius: 1rem;
+        padding: 10px;
+    }
+
+    .newNameContainer {
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: flex-start;
+    }
+    
+    .newNameContainer div {
+        height: 50%;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .newNameContainer input {
+        height: 50%;
+        width: 45%;
+    }
+    
+    .newContentSearch {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+        padding: 2.5%;
+    }
+    
+    .stateInput {
+        width: 100%;
+        height: 30%;
+    }
+    
+    .congregationInput {
+        width: 100%;
+        height: 30%;
+    }
+    
+    .searchButton {
+        width: 100%;
+        height: 30%;
+        border-radius: 0.25rem;
+    }
+    
+    .searchResult {
+        width: 100%;
+        height: 175px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+    
+    .searchResultItem {
+        width: 90%;
+        height: 22.5%;
+        justify-content: flex-start;
+    }
+    
+    .searchResultItem img {
+        height: 100%;
+    }
+    
+    .searchResultItem p {
+        margin-left: 2.5%;
+    }
+    
+    .searchResult button {
+        width: 90%;
+        height: 20%;
+    }
+
+    .newFooterContainer {
+        flex-direction: column;
+        justify-content: space-evenly;
+    }
+    
+    .dropListWrapper {
+        width: 90%;
+        height: 45%;
+    }
+    
+    .submitButton {
+        width: 90%;
+        height: 45%;
+        justify-content: center;
+        border-radius: 0.25rem;
+    }
+
+    .submitButton img {
+        margin-right: 5px;
+    }
+
+    .businessListResult a {
+        align-items: center;
+    }
 }

@@ -36,6 +36,13 @@ a {
   text-decoration: none;
 }
 
+.primaryLoaderAnimatedContent {
+  width: 100%;
+  height: 100%;
+  background-size: 20% 100%;
+  animation: l1 1s infinite linear;
+}
+
 .notFound {
   width: 100%;
   height: 95vh;
@@ -54,4 +61,12 @@ a {
   html {
     color-scheme: dark;
   }
+}
+
+@keyframes l1 {
+  0%  {background-size: 20% 100%,20% 100%,20% 100%}
+  33% {background-size: 20% 10% ,20% 100%,20% 100%}
+  50% {background-size: 20% 100%,20% 10% ,20% 100%}
+  66% {background-size: 20% 100%,20% 100%,20% 10% }
+  100%{background-size: 20% 100%,20% 100%,20% 100%}
 }

@@ -1,4 +1,4 @@
-import styles from "./page.module.css"
+import "./globals.css"
 
 export default function Loading({ color } : { color: string }) {
     const b: string = `
@@ -8,6 +8,6 @@ export default function Loading({ color } : { color: string }) {
     `
 
     return (
-        <div className={styles.loader} style={{background: b}}></div>
+        <div className='primaryLoaderAnimatedContent' style={{background: b}}></div>
     )
 }
