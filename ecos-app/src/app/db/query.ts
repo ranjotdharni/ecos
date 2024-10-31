@@ -178,11 +178,11 @@ export async function dbSearchCongregationsByNames(congregation?: string, state?
         LEFT JOIN 
             users uc ON c.congregation_owner_id = uc.user_id
         WHERE 
-            (? != '' AND c.congregation_name LIKE CONCAT('%', ?, '%')) 
-            OR 
-            (? != '' AND s.state_name LIKE CONCAT('%', ?, '%'))
+            c.congregation_name LIKE CONCAT('%', ?, '%') 
+            AND 
+            s.state_name LIKE CONCAT('%', ?, '%')
         `
-        const params: (string | number)[] = [congregation ? congregation : '', congregation ? congregation : '', state ? state : '', state ? state : '']
+        const params: (string | number)[] = [congregation ? congregation : '', state ? state : '']
         const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
         conn.release()
 

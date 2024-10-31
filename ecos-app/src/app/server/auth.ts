@@ -7,7 +7,7 @@ import { dbGetSession, dbDropSession } from "../db/query"
 import { cookies } from "next/headers"
 
 const PASSWORD_SPECIAL_CHARACTERS: RegExp = /[~`!@#$%^&*()\-_+={}[\]|\\;:"<>,./?]/
-const SESSION_VALIDITY_PERIOD: number = 60   // minutes that the session is valid for
+const SESSION_VALIDITY_PERIOD: number = 120   // minutes that a user's session is valid for
 
 // ensure first and last name pass rules, return error string or void
 export async function validateName(firstname: string, lastname: string): Promise<string | void> {

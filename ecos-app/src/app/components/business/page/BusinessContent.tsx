@@ -1,15 +1,15 @@
 'use client'
 
 import { API_BUSINESS_ROUTE, API_CONGREGATION_ROUTE, API_CONGREGATION_SEARCH_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, COIN_ICON, CONGREGATION_ICON, LABOR_SPLIT_ICON, STATE_ICON } from "@/customs/utils/constants"
-import { BUSINESS_TYPES, NEW_BUSINESS_COST } from "@/app/server/business"
 import { BusinessSlug, BusinessType, CongregationSlug, GenericSuccess } from "@/customs/utils/types"
 import { ChangeEvent, MouseEvent, useContext, useEffect, useState } from "react"
-import styles from "./css/businessContent.module.css"
-import DropList from "../../app/DropList"
-import Loading from "@/app/loading"
-import useError from "@/customs/hooks/useError"
+import { BUSINESS_TYPES, NEW_BUSINESS_COST } from "@/app/server/business"
 import { purchaseBusiness } from "@/customs/utils/actions"
 import { UserContext } from "../../context/UserProvider"
+import styles from "./css/businessContent.module.css"
+import useError from "@/customs/hooks/useError"
+import DropList from "../../app/DropList"
+import Loading from "@/app/loading"
 
 function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { throwError: (error: string) => void, refetchBusinesses: () => void, refetchGold: () => void }) {
     const [searchLoader, setSearchLoader] = useState<boolean>(false)
@@ -78,6 +78,8 @@ function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { th
 
     async function search(event: MouseEvent<HTMLButtonElement>) {
         event.preventDefault()
+
+        setChosenCongregation(undefined)
 
         if (congregation.trim() === '' && state.trim() === '') {
             await getCongregations()

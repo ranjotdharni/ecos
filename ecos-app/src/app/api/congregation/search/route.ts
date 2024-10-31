@@ -1,8 +1,7 @@
-import { dbGetCongregationsByUserEmpire, dbSearchCongregationsByNames } from "@/app/db/query"
 import { Congregation, CongregationSlug } from "@/customs/utils/types"
-import { FieldPacket, QueryError } from "mysql2"
-import { cookies } from "next/headers"
+import { dbSearchCongregationsByNames } from "@/app/db/query"
 import { NextRequest, NextResponse } from "next/server"
+import { FieldPacket, QueryError } from "mysql2"
 
 export async function POST(request: NextRequest) {
     if (request.method !== 'POST')
