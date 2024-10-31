@@ -117,6 +117,61 @@ export async function dbDropSession(username: string): Promise<[QueryResult, Fie
     }
 }
 
+// Get business by owner
+export async function dbGetBusinessesByOwner(username: string): Promise<[Business[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            b.congregation_id AS business_congregation_id,
+            b.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ub.first_name AS business_owner_first_name,
+            ub.last_name AS business_owner_last_name,
+            COALESCE(w.worker_count, 0) AS worker_count
+        FROM 
+            states s
+        JOIN 
+            congregations c ON s.state_id = c.state_id
+        JOIN 
+            businesses b ON c.congregation_id = b.congregation_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        LEFT JOIN 
+            users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) w ON b.business_id = w.business_id
+        WHERE 
+            b.business_owner_id = (SELECT user_id FROM users WHERE username = ?)
+        `
+        const params: (string | number)[] = [username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Business[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
 // Get businesses of a given empire
 export async function dbGetBusinessesInEmpire(empire: number): Promise<[Business[], FieldPacket[]] | QueryError> {
     try {

@@ -1,26 +1,15 @@
 'use client'
 
-import { MouseEvent, useState } from "react"
 import styles from "./css/dropList.module.css"
 
-interface GenericProps {
-    title: string
-}
-
-interface DropListProps<T extends GenericProps> {
+interface DropListProps<T> {
     data: T[]
     render: (item: T, selected?: number) => JSX.Element | JSX.Element[]
     selected: number
     topMargin?: string
 }
 
-export default function DropList<T extends GenericProps>({ data, render, selected, topMargin } : DropListProps<T>) {
-    const [open, setOpen] = useState<boolean>(false)
-
-    function openOrClose(event: MouseEvent<HTMLDivElement>) {
-        event.preventDefault()
-        setOpen(!open)
-    }
+export default function DropList<T>({ data, render, selected, topMargin } : DropListProps<T>) {
 
     return (
         <div className={styles.container} style={{flexDirection: (topMargin !== undefined ? 'column-reverse' : 'column')}} tabIndex={0}>
@@ -36,4 +25,4 @@ export default function DropList<T extends GenericProps>({ data, render, selecte
             </ul>
         </div>
     )
-} // {`${styles.list}${open ? ` ${styles.open}` : ``}`}
+}
