@@ -6,9 +6,6 @@ export const MAX_STARTING_EARNING_RATE: number = 250
 
 // MAY NOT RETURN EMPTY STRING!!!!
 export async function validateBusinessName(name: string): Promise<string | void> {
-    if (name.indexOf(' ') >= 0) 
-        return 'Name may not contain whitespaces'
-
     if (name.length < 2) 
         return 'Name must be at least 2 characters'
 

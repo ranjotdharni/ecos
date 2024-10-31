@@ -1,8 +1,8 @@
-import { dbGetCongregationsByUserEmpire } from "@/app/db/query"
 import { Congregation, CongregationSlug } from "@/customs/utils/types"
+import { dbGetCongregationsByUserEmpire } from "@/app/db/query"
+import { NextRequest, NextResponse } from "next/server"
 import { FieldPacket, QueryError } from "mysql2"
 import { cookies } from "next/headers"
-import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
     if (request.method !== 'GET')

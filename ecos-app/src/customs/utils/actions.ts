@@ -2,6 +2,7 @@
 
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness } from "../../app/db/query"
+import { BUSINESS_TYPES, MAX_STARTING_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
 import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType } from "@/customs/utils/types"
 import { calculateWage, dateToSQLDate, timeSince } from "@/customs/utils/tools"
@@ -10,7 +11,6 @@ import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
 import { v4 as uuidv4 } from "uuid"
-import { BUSINESS_TYPES, MAX_STARTING_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
 
 // NOTE
 // I used one of these functions in a client component so NextJS would not
