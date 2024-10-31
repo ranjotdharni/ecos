@@ -1,15 +1,16 @@
 'use server'
 
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold } from "../../app/db/query"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness } from "../../app/db/query"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug } from "@/customs/utils/types"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType } from "@/customs/utils/types"
 import { calculateWage, dateToSQLDate, timeSince } from "@/customs/utils/tools"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
 import { v4 as uuidv4 } from "uuid"
+import { BUSINESS_TYPES, MAX_STARTING_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
 
 // NOTE
 // I used one of these functions in a client component so NextJS would not
@@ -257,4 +258,68 @@ export async function clockInOut(): Promise<GenericSuccess | GenericError> {
     else {  // clock in
         return await clockIn(job)
     }
+}
+
+export async function purchaseBusiness(name: string, rank: string, type: BusinessType, congregation: CongregationSlug): Promise<GenericSuccess | GenericError> {
+    const invalidBusinessName = await validateBusinessName(name)
+    const invalidRankIncrease = await validateBusinessRankIncrease(rank)
+
+    if (invalidBusinessName)
+        return { error: true, message: invalidBusinessName }
+
+    if (invalidRankIncrease)
+        return { error: true, message: invalidRankIncrease }
+
+    if (BUSINESS_TYPES.find(b => b.icon === type.icon && b.title === type.title && b.type === type.type) === undefined)
+        return { error: true, message: 'Invalid Business Type' }
+
+    let result: [QueryResult, FieldPacket[]] | QueryError = await dbCheckCongregationExists(congregation)
+
+    if ((result as QueryError).code !== undefined || (result as [User[], FieldPacket[]])[0].length === 0) {    // ISE when getting congregation info
+        console.log(result)
+        return { error: true, message: 'Selected Congregation Not Found' }
+    }
+
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    result = await dbGetUser(username)
+
+    if ((result as QueryError).code !== undefined) {    // ISE when getting user info
+        console.log(result)
+        return { error: true, message: '500 Internal Server Error' }
+    }
+
+    const users: User[] = (result as [User[], FieldPacket[]])[0]
+
+    if (users.length === 0)
+        return { error: true, message: '500 Internal Server Error' }
+
+    const user: User = users[0]
+
+    if (congregation.empire !== user.empire || congregation.state.empire !== user.empire)
+        return { error: true, message: 'New Business must be in your Empire' }
+
+    if (user.gold < NEW_BUSINESS_COST)
+        return { error: true, message: 'You cannot afford a New Business' }
+
+    result = await dbAddGold(user.user_id, -NEW_BUSINESS_COST)
+
+    if ((result as QueryError).code !== undefined) {
+        console.log(result)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Gold Update)' }
+    }
+
+    result = await dbNewBusiness(uuidv4(), congregation.congregation_id, user.user_id, name, type.type, MAX_STARTING_EARNING_RATE, rank, 1)
+
+    if ((result as QueryError).code !== undefined) {
+        console.log(result)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Purchase Update)' }
+    }
+
+    return { success: true, message: 'Business Purchased' }
 }

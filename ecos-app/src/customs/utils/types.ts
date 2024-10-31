@@ -53,6 +53,23 @@ export interface Session extends RowDataPacket {
     expires_at: Date
 }
 
+// state -> congregation joined tables row data
+export interface Congregation extends RowDataPacket {
+    state_state_id: string
+    state_id: string
+    state_owner_id: string | null
+    empire: number
+    state_name: string
+    state_tax_rate: number
+    congregation_congregation_id: string
+    congregation_id: string
+    congregation_owner_id: string | null
+    congregation_name: string
+    labor_split: number
+    congregation_status: number
+    congregation_tax_rate: number
+}
+
 // state -> congregation -> business joined tables row data (+ owner names)
 export interface Business extends RowDataPacket {
     state_state_id: string

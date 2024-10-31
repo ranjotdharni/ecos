@@ -1,88 +1,115 @@
 'use client'
 
-import { API_BUSINESS_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, COIN_ICON, CONGREGATION_ICON, LABOR_SPLIT_ICON, STATE_ICON } from "@/customs/utils/constants"
+import { API_BUSINESS_ROUTE, API_CONGREGATION_ROUTE, API_CONGREGATION_SEARCH_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, COIN_ICON, CONGREGATION_ICON, LABOR_SPLIT_ICON, STATE_ICON } from "@/customs/utils/constants"
 import { BUSINESS_TYPES, NEW_BUSINESS_COST } from "@/app/server/business"
-import { BusinessSlug, BusinessType } from "@/customs/utils/types"
-import { MouseEvent, useEffect, useState } from "react"
+import { BusinessSlug, BusinessType, CongregationSlug, GenericSuccess } from "@/customs/utils/types"
+import { ChangeEvent, MouseEvent, useContext, useEffect, useState } from "react"
 import styles from "./css/businessContent.module.css"
 import DropList from "../../app/DropList"
 import Loading from "@/app/loading"
+import useError from "@/customs/hooks/useError"
+import { purchaseBusiness } from "@/customs/utils/actions"
+import { UserContext } from "../../context/UserProvider"
 
-const test: SearchResult[] = [
-    { 
-        stateId: '1',
-        congregationId: '1',
-        state: 'State Name', 
-        str: 0.025095, 
-        congregation: 'Congregation Name', 
-        ctr: 0.075365,
-        ls: 0.004575
-    },
-    { 
-        stateId: '1',
-        congregationId: '2',
-        state: 'State Name', 
-        str: 0.025095, 
-        congregation: 'Congregation Name', 
-        ctr: 0.075365,
-        ls: 0.004575
-    },
-    { 
-        stateId: '1',
-        congregationId: '3',
-        state: 'State Name', 
-        str: 0.025095, 
-        congregation: 'Congregation Name', 
-        ctr: 0.075365,
-        ls: 0.004575 
-    },
-    { 
-        stateId: '1',
-        congregationId: '4',
-        state: 'State Name', 
-        str: 0.025095, 
-        congregation: 'Congregation Name', 
-        ctr: 0.075365,
-        ls: 0.004575
-    },
-    { 
-        stateId: '1',
-        congregationId: '5',
-        state: 'State Name', 
-        str: 0.025095, 
-        congregation: 'Congregation Name', 
-        ctr: 0.075365,
-        ls: 0.004575
-    },
-    { 
-        stateId: '1',
-        congregationId: '6',
-        state: 'State Name', 
-        str: 0.025095, 
-        congregation: 'Congregation Name', 
-        ctr: 0.075365,
-        ls: 0.004575
-    }
-]
+function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { throwError: (error: string) => void, refetchBusinesses: () => void, refetchGold: () => void }) {
+    const [searchLoader, setSearchLoader] = useState<boolean>(false)
 
-interface SearchResult { 
-    stateId: string
-    congregationId: string
-    state: string 
-    str: number 
-    congregation: string 
-    ctr: number 
-    ls: number
-}
-
-function NewBusinessModule() {
     const [businessType, setBusinessType] = useState<number>(0)
+    const [congregations, setCongregations] = useState<CongregationSlug[]>([])
+    const [chosenCongregation, setChosenCongregation] = useState<CongregationSlug | undefined>()
+
+    const [name, setName] = useState<string>('')
+    const [rank, setRank] = useState<string>('')
+    const [state, setState] = useState<string>('')
+    const [congregation, setCongregation] = useState<string>('')
+
+    async function getCongregations() {
+        if (process.env.NEXT_PUBLIC_ENV === 'dev')
+            return
+
+        setSearchLoader(true)
+
+        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_CONGREGATION_ROUTE}`).then(async response => {
+            return await response.json()
+        }).then(response => {
+            setCongregations(response.congregations)
+        })
+
+        setSearchLoader(false)
+    }
+
+    async function searchCongregations() {
+        setSearchLoader(true)
+
+        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_CONGREGATION_SEARCH_ROUTE}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                congregation: congregation.trim(),
+                state: state.trim()
+            })
+        }).then(async response => {
+            return await response.json()
+        }).then(response => {
+            setCongregations(response.congregations)
+        })
+
+        setSearchLoader(false)
+    }
+
+    function changeName(event: ChangeEvent<HTMLInputElement>) {
+        event.preventDefault()
+        setName(event.target.value)
+    }
+
+    function changeRank(event: ChangeEvent<HTMLInputElement>) {
+        event.preventDefault()
+        setRank(event.target.value)
+    }
+
+    function changeState(event: ChangeEvent<HTMLInputElement>) {
+        event.preventDefault()
+        setState(event.target.value)
+    }
+
+    function changeCongregation(event: ChangeEvent<HTMLInputElement>) {
+        event.preventDefault()
+        setCongregation(event.target.value)
+    }
+
+    async function search(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+
+        if (congregation.trim() === '' && state.trim() === '') {
+            await getCongregations()
+        }
+        else {
+            await searchCongregations()
+        }
+    }
 
     function selectBusinessType(selected: number): (event: MouseEvent<HTMLLIElement>) => void {
         return (event: MouseEvent<HTMLLIElement>) => {
             event.preventDefault()
             setBusinessType(selected)
         }
+    }
+
+    async function submit(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+
+        if (name.trim() === '' || rank.trim() === '' || chosenCongregation === undefined) {
+            throwError('Please Fill All Required Fields')
+            return
+        }
+
+        await purchaseBusiness(name.trim(), rank.trim(), BUSINESS_TYPES[businessType], chosenCongregation).then(result => {
+            throwError(result.message)
+
+            if ((result as GenericSuccess).success) {
+                refetchBusinesses()
+                refetchGold()
+            }
+        })
     }
 
     function dropListRender(item: BusinessType, selected?: number): JSX.Element | JSX.Element[] {
@@ -94,29 +121,38 @@ function NewBusinessModule() {
         )
     }
 
-    function SearchResult({ props } : { props: SearchResult }) {
+    function SearchResult({ congregation, selected, passUp } : { congregation: CongregationSlug, selected: boolean, passUp: (congregation: CongregationSlug) => void }) {
+
+        function onClick(event: MouseEvent<HTMLButtonElement>) {
+            event.preventDefault()
+            passUp(congregation)
+        }
 
         return (
             <li className={styles.searchResult}>
                 <div className={styles.searchResultItem}>
                     <img src={STATE_ICON} />
-                    <p>{`${props.state} (${(props.str * 100).toFixed(4)}%)`}</p>
+                    <p>{`${congregation.state.state_name} (${(congregation.state.state_tax_rate * 100).toFixed(4)}%)`}</p>
                 </div>
                 <div className={styles.searchResultItem}>
                     <img src={CONGREGATION_ICON} />
-                    <p>{`${props.congregation} (${(props.ctr * 100).toFixed(4)}%)`}</p>
+                    <p>{`${congregation.congregation_name} (${(congregation.congregation_tax_rate * 100).toFixed(4)}%)`}</p>
                 </div>
                 <div className={styles.searchResultItem}>
                     <img src={LABOR_SPLIT_ICON} />
-                    <p>{`${(props.ls * 100).toFixed(4)}%`}</p>
+                    <p>{`${(congregation.labor_split * 100).toFixed(4)}%`}</p>
                 </div>
-                <button>Select</button>
+                <button className={selected ? styles.highlightButton : ''} onClick={onClick}>{selected ? 'Selected' : 'Select'}</button>
             </li>
         )
     }
 
+    useEffect(() => {
+        getCongregations()
+    }, [])
+
     return (
-        <section className={styles.newBusinessModule}>
+        <form className={styles.newBusinessModule}>
             <div className={styles.newHeaderContainer}>
                 <img src={BUSINESS_ICON} />
                 <h2>Start New Business</h2>
@@ -125,27 +161,40 @@ function NewBusinessModule() {
             <div className={styles.newNameContainer}>
                 <div>
                     <label>Name Your Business:</label>
-                    <input placeholder='Enter Name' />
+                    <input value={name} onChange={changeName} placeholder='Enter Name' />
                 </div>
                 <div>
                     <label>Employee Rank Increase:</label>
-                    <input />
+                    <input value={rank} onChange={changeRank} />
                 </div>
             </div>
 
             <div className={styles.newContentContainer}>
                 <div className={styles.newContentSearch}>
-                    <input className={styles.stateInput} placeholder='Search by State' />
-                    <input className={styles.congregationInput} placeholder='Search by Congregation' />
-                    <button className={styles.searchButton}>Search</button>
+                    <input className={styles.stateInput} value={state} onChange={changeState} placeholder='Search by State' />
+                    <input className={styles.congregationInput} value={congregation} onChange={changeCongregation} placeholder='Search by Congregation' />
+                    <button className={styles.searchButton} onClick={search}>Search</button>
                 </div>
-                <ul className={styles.searchResults} >
+                <ul className={`${styles.searchResults}${searchLoader || congregations.length === 0 ? ` ${styles.searchResultsEmpty}` : ''}`}>
                     {
-                        test.map(result => {
-                            return (
-                                <SearchResult key={`${result.stateId}${result.congregationId}`} props={result} />
-                            )
-                        })
+                        searchLoader ?
+                        <div className={styles.searchResultsLoader}><Loading color='var(--color--subtext)' /></div> :
+                        (
+                            congregations.length === 0 ? 
+                            <p style={{color: 'var(--color--subtext)', fontSize: 'smaller'}}>No Results</p> : 
+                            congregations.map(congregation => {
+                                return <SearchResult 
+                                    key={`${congregation.state.state_id}_${congregation.congregation_id}`} 
+                                    congregation={congregation} 
+                                    selected={
+                                        chosenCongregation !== undefined && 
+                                        chosenCongregation.state.state_id === congregation.state.state_id && 
+                                        chosenCongregation.congregation_id === congregation.congregation_id
+                                    }
+                                    passUp={setChosenCongregation}
+                                />
+                            })
+                        )
                     }
                 </ul>
             </div>
@@ -154,16 +203,16 @@ function NewBusinessModule() {
                 <div className={styles.dropListWrapper}>
                     <DropList<BusinessType> selected={businessType} data={BUSINESS_TYPES} render={dropListRender} topMargin='-625%' />
                 </div>
-                <button className={styles.submitButton}>
+                <button className={styles.submitButton} type='submit' onClick={submit}>
                     <img src={COIN_ICON} />
                     <p>{NEW_BUSINESS_COST}</p>
                 </button>
             </div>
-        </section>
+        </form>
     )
 }
 
-function BusinessListModule() {
+function BusinessListModule( { businessFetchTrigger } : { businessFetchTrigger: boolean } ) {
     const [loader, setLoader] = useState<boolean>(false)
 
     const [businesses, setBusinesses] = useState<BusinessSlug[]>([])
@@ -202,7 +251,7 @@ function BusinessListModule() {
 
     useEffect(() => {
         getBusinesses()
-    }, [])
+    }, [businessFetchTrigger])
 
     return (
         <section className={styles.businessListModule}>
@@ -225,11 +274,20 @@ function BusinessListModule() {
 }
 
 export default function BusinessContent() {
+    const { getUser } = useContext(UserContext)
+    const [error, throwError] = useError()
+
+    const [businessFetchTrigger, setBusinessFetchTrigger] = useState<boolean>(true)
+
+    function refetchBusinesses() {
+        setBusinessFetchTrigger(!businessFetchTrigger)
+    }
 
     return (
         <div className={styles.page}>
-            <NewBusinessModule />
-            <BusinessListModule />
+            <p className={styles.error}>{error}</p>
+            <NewBusinessModule throwError={throwError} refetchBusinesses={refetchBusinesses} refetchGold={getUser} />
+            <BusinessListModule businessFetchTrigger={businessFetchTrigger} />
         </div>
     )
 }
