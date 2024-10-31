@@ -1,4 +1,4 @@
-import { Business, Session, User, Worker } from "@/customs/utils/types"
+import { Business, Congregation, CongregationSlug, Session, User, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
 import { dateToSQLDate } from "@/customs/utils/tools"
 import { db } from "./config"
@@ -111,6 +111,141 @@ export async function dbDropSession(username: string): Promise<[QueryResult, Fie
         conn.release()
 
         return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// get congregations and their associated state by empire
+export async function dbGetCongregationsByUserEmpire(username: string): Promise<[Congregation[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name
+        FROM 
+            states s
+        LEFT JOIN 
+            congregations c ON s.state_id = c.state_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        WHERE 
+            s.empire = (SELECT empire FROM users WHERE username = ?)
+        `
+        const params: (string | number)[] = [username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Congregation[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// search congregation by name or state name
+export async function dbSearchCongregationsByNames(congregation?: string, state?: string): Promise<[Congregation[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name
+        FROM 
+            states s
+        LEFT JOIN 
+            congregations c ON s.state_id = c.state_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        WHERE 
+            (? != '' AND c.congregation_name LIKE CONCAT('%', ?, '%')) 
+            OR 
+            (? != '' AND s.state_name LIKE CONCAT('%', ?, '%'))
+        `
+        const params: (string | number)[] = [congregation ? congregation : '', congregation ? congregation : '', state ? state : '', state ? state : '']
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Congregation[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// get congregation by slug, primarily for existence check
+export async function dbCheckCongregationExists(congregation: CongregationSlug): Promise<[Congregation[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name
+        FROM 
+            states s
+        LEFT JOIN 
+            congregations c ON s.state_id = c.state_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        WHERE 
+            c.congregation_id = ? 
+            AND
+            s.state_id = ?
+        `
+        const params: (string | number)[] = [congregation.congregation_id, congregation.state.state_id]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Congregation[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// create a new business
+export async function dbNewBusiness(businessId: string, congregationId: string, ownerId: string, name: string, type: number, ber: number, rank: string, hiring: number): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        INSERT INTO businesses (business_id, congregation_id, business_owner_id, business_name, business_type, base_earning_rate, rank_earning_increase, hiring)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `
+        const params: (string | number)[] = [businessId, congregationId, ownerId, name, type, ber, rank, hiring]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Congregation[], FieldPacket[]]
 
     } catch (error) {
         return error as QueryError

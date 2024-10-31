@@ -23,3 +23,9 @@
         color: var(--color--subtext);
     }
 }
+
+@media (max-width: 996px) {
+    .container {
+        height: 10vh;
+    }
+}

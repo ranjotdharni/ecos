@@ -10,6 +10,8 @@ export const EMPIRE_PAGE_ROUTE: string = '/game/empire'    // empire page
 export const STATE_PAGE_ROUTE: string = '/game/state'   // state page
 export const JOB_PAGE_ROUTE: string = '/game/job'    // job page
 
+export const API_CONGREGATION_SEARCH_ROUTE: string = '/api/congregation/search' // search congregation data
+export const API_CONGREGATION_ROUTE: string = '/api/congregation' // get congregation data
 export const API_BUSINESS_ROUTE: string = '/api/business' // get businesses by empire
 export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details
 export const API_SESSION_ROUTE: string = '/api/session' // check session

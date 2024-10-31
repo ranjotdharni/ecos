@@ -2,6 +2,28 @@ import { FOOD_SERVICE_ICON, MEDICINE_ICON, MILITARY_ICON, CONSTRUCTION_ICON, REL
 import { BusinessType } from "@/customs/utils/types"
 
 export const NEW_BUSINESS_COST: number = 250000
+export const MAX_STARTING_EARNING_RATE: number = 250
+
+// MAY NOT RETURN EMPTY STRING!!!!
+export async function validateBusinessName(name: string): Promise<string | void> {
+    if (name.indexOf(' ') >= 0) 
+        return 'Name may not contain whitespaces'
+
+    if (name.length < 2) 
+        return 'Name must be at least 2 characters'
+
+    if (name.length > 32)
+        return 'Name may be at most 32 characters'
+}
+
+// MAY NOT RETURN EMPTY STRING!!!!
+export async function validateBusinessRankIncrease(rank: string): Promise<string | void> {
+    if (rank.indexOf(' ') >= 0 || isNaN(Number(rank))) 
+        return 'Invalid Rank Increase'
+
+    if (Number(rank) < 0)
+        return 'Rank Increase cannot be negative'
+}
 
 export const BUSINESS_TYPES: BusinessType[] = [
     {
