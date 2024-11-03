@@ -118,7 +118,16 @@ export interface Worker extends RowDataPacket {
 //                       //
 //***********************//
 
-// client-side user details
+/**
+ * Non-sensitive user details for client-side use.
+ *
+ * @interface UserDetails
+ * @property {string} username - The unique username of the user.
+ * @property {string} firstname - The user's first name.
+ * @property {string} lastname - The user's last name.
+ * @property {number} empire - The user's empire (numeric, corresponds to empire).
+ * @property {number} gold - The user's gold amount.
+ */
 export interface UserDetails {
     username: string
     firstname: string
