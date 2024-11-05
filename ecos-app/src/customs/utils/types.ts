@@ -102,7 +102,7 @@ export interface Business extends RowDataPacket {
     business_owner_last_name: string | null
 }
 
-// workers table row data
+// state -> congregation -> business -> worker joined tables row data (+ owner names + worker name)
 export interface Worker extends RowDataPacket {
     worker_id: string
     user_id: string
@@ -110,6 +110,36 @@ export interface Worker extends RowDataPacket {
     worker_rank: number
     clocked_in: Date | null
     clocked_out: Date | null
+    worker_business_id: string
+    worker_first_name: string
+    worker_last_name: string
+    state_state_id: string
+    state_id: string
+    state_owner_id: string | null
+    empire: number
+    state_name: string
+    state_tax_rate: number
+    congregation_congregation_id: string
+    congregation_id: string
+    congregation_owner_id: string | null
+    congregation_name: string
+    labor_split: number
+    congregation_status: number
+    congregation_tax_rate: number
+    business_congregation_id: string
+    business_owner_id: string | null
+    business_name: string
+    business_type: number
+    base_earning_rate: number
+    rank_earning_increase: number
+    hiring: number
+    worker_count: number
+    state_owner_first_name: string | null
+    state_owner_last_name: string | null
+    congregation_owner_first_name: string | null
+    congregation_owner_last_name: string | null
+    business_owner_first_name: string | null
+    business_owner_last_name: string | null
 }
 
 //***********************//
@@ -217,6 +247,8 @@ export interface StateSlug {
 export interface WorkerSlug {
     worker_id: string
     business: BusinessSlug
+    firstname: string
+    lastname: string
     worker_rank: number
     clocked_in: Date | null
     clocked_out: Date | null

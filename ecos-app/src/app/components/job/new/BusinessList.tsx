@@ -1,11 +1,11 @@
 'use client'
 
-import { BusinessSlug, BusinessType, GenericError } from "@/customs/utils/types"
+import { BusinessSlug, BusinessType, GenericError, UserDetails } from "@/customs/utils/types"
 import { API_BUSINESS_ROUTE, JOB_PAGE_ROUTE } from "@/customs/utils/constants"
-import { MouseEvent, useContext, useEffect, useState } from "react"
-import { UserContext } from "../../context/UserProvider"
+import { MouseEvent, useEffect, useState } from "react"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import { selectJob } from "@/customs/utils/actions"
+import { fetchUser } from "@/customs/utils/tools"
 import useError from "@/customs/hooks/useError"
 import styles from "./businessList.module.css"
 import { useRouter } from "next/navigation"
@@ -65,14 +65,14 @@ function BusinessItem({ business, throwError } : { business: BusinessSlug, throw
 }
 
 export default function BusinessList() {
-    const { user } = useContext(UserContext)
-
     const [businesses, setBusinesses] = useState<BusinessSlug[]>([])
     const [loader, setLoader] = useState<boolean>(true)
     const [error, throwError] = useError()
 
     async function getBusinesses() {
         setLoader(true)
+
+        const user: UserDetails = await fetchUser()
 
         const response = await fetch(`${window.location.origin}${API_BUSINESS_ROUTE}`, {
             method: 'POST',

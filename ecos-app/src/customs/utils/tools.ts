@@ -3,8 +3,7 @@ import { redirect } from "next/navigation"
 import { UserDetails } from "./types"
 
 /**
- * @typedef {import('./types').UserDetails} UserDetails
- * @see {@link UserDetails}
+ * @typedef {import('./types').UserDetails} @see {@link UserDetails}
  * @async<br>
  * 
  * Grabs non-sensitive user data using session authentication.
