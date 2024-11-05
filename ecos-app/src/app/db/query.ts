@@ -417,6 +417,59 @@ export async function dbGetBusinessById(businessId: string): Promise<[Business[]
     }
 }
 
+// get workers belonging to a business
+export async function dbGetWorkersByBusinessId(businessId: string): Promise<[Worker[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            b.congregation_id AS business_congregation_id,
+            b.*,
+            w.business_id AS worker_business_id,
+            w.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ub.first_name AS business_owner_first_name,
+            ub.last_name AS business_owner_last_name,
+            uw.first_name AS worker_first_name,
+            uw.last_name AS worker_last_name
+        FROM 
+            states s
+        JOIN 
+            congregations c ON s.state_id = c.state_id
+        JOIN 
+            businesses b ON c.congregation_id = b.congregation_id
+        JOIN
+            workers w ON b.business_id = w.business_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        LEFT JOIN 
+            users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN 
+            users uw ON w.user_id = uw.user_id
+        WHERE 
+            b.business_id = ?
+        `
+        const params: (string | number)[] = [businessId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Worker[]>(query, params)
+        conn.release()
+
+        return response as [Worker[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
 // get job(s)
 export async function dbGetJobs(username: string): Promise<[Worker[], FieldPacket[]] | QueryError> {
     try {
