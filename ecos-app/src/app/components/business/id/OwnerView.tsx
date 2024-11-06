@@ -1,24 +1,25 @@
 'use client'
 
-import { BusinessEarnings, BusinessSlug, BusinessType, WorkerSlug } from "@/customs/utils/types"
-import styles from "../css/ownerView.module.css"
 import { API_BUSINESS_EARNINGS_ROUTE, AUTH_ROUTE, BUSINESS_OWNER_ICON, COIN_ICON } from "@/customs/utils/constants"
-import { useEffect, useRef, useState } from "react"
-import { BUSINESS_TYPES } from "@/app/server/business"
+import { BusinessEarnings, BusinessSlug, BusinessType, GenericSuccess, WorkerSlug } from "@/customs/utils/types"
+import { MouseEvent, useContext, useEffect, useRef, useState } from "react"
 import { calculateEarningRate, timeSince } from "@/customs/utils/tools"
+import { collectBusinessEarnings } from "@/customs/utils/actions"
+import { UserContext } from "../../context/UserProvider"
+import { BUSINESS_TYPES } from "@/app/server/business"
+import styles from "../css/ownerView.module.css"
+import useError from "@/customs/hooks/useError"
 import { useRouter } from "next/navigation"
 import Loading from "@/app/loading"
 
-function BusinessHeader({ businessId, earningRate } : { businessId: string, earningRate: number }) {
+function BusinessHeader({ businessId, earningRate, collectLoader } : { businessId: string, earningRate: number, collectLoader: boolean }) {
     const router = useRouter()
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
-    const [loader, setLoader] = useState<boolean>(false)
 
     const [earnings, setEarnings] = useState<BusinessEarnings>()
     const [time, setTime] = useState<number>(0)
 
     async function getEarnings() {
-        setLoader(true)
 
         await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_BUSINESS_EARNINGS_ROUTE}`).then(response => {
             return response.json()
@@ -39,8 +40,6 @@ function BusinessHeader({ businessId, earningRate } : { businessId: string, earn
                 }
             }
         })
-
-        setLoader(false)
     }
 
     useEffect(() => {
@@ -66,24 +65,41 @@ function BusinessHeader({ businessId, earningRate } : { businessId: string, earn
 
     useEffect(() => {
         getEarnings()
-    }, [])
+    }, [collectLoader])
 
     return (
         <div className={styles.headerContainer}>
             {
-                loader ? 
+                collectLoader ? 
                 <div style={{height: '50%', marginLeft: '10%', aspectRatio: 1}}><Loading color='var(--color--text)' /></div> : 
                 <>
                     <img src={COIN_ICON} />
-                    <h1>{earnings === undefined ? '0.00' : (Number(earnings.last_earning) + (earningRate * time)).toFixed(2)}</h1>
+                    <h1>{earnings === undefined ? '---' : (Number(earnings.last_earning) + (earningRate * time)).toFixed(2)}</h1>
                 </>
             }
         </div>
     )
 }
 
-function BusinessDetailsModule({ business } : { business: BusinessSlug }) {
+function BusinessDetailsModule({ business, collectLoader, setCollectLoader, throwError } : { business: BusinessSlug, collectLoader: boolean, setCollectLoader: (setting: boolean) => void, throwError: (error: string) => void }) {
+    const { getUser } = useContext(UserContext)
+    
     const [businessTypeData, setBusinessTypeData] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === business.business_type))
+
+    async function collect(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+
+        setCollectLoader(true)
+
+        await collectBusinessEarnings(business.business_id).then(result => {
+            throwError(result.message)
+
+            if ((result as GenericSuccess).success)
+                getUser()
+        })
+
+        setCollectLoader(false)
+    }
 
     return (
         <div className={styles.item}>
@@ -110,7 +126,13 @@ function BusinessDetailsModule({ business } : { business: BusinessSlug }) {
                     </div>
                     <p className={styles.itemState}>{`${business.congregation.state.state_name} - ${(business.congregation.state.state_tax_rate * 100).toFixed(4)}`}</p>
                     <p className={business.congregation.congregation_status === 0 ? styles.itemSettlement : styles.itemCity}>{`${business.congregation.congregation_name} - ${(business.congregation.congregation_tax_rate * 100).toFixed(4)}`}</p>
-                    <button>Collect</button>
+                    <button onClick={collect}>
+                        {
+                            collectLoader ? 
+                            <div style={{height: '50%', marginLeft: '10%', aspectRatio: 1}}><Loading color='var(--color--text)' /></div> : 
+                            'Collect'
+                        }
+                    </button>
                 </div>
             </div>
         </div>
@@ -118,13 +140,19 @@ function BusinessDetailsModule({ business } : { business: BusinessSlug }) {
 }
 
 export default function OwnerView({ workers } : { workers: WorkerSlug[] }) {
+    const [error, throwError] = useError()
+    const [collectLoader, setCollectLoader] = useState<boolean>(false)
+
     const [business, setBusiness] = useState<BusinessSlug>(workers[0].business)
     const [earningRate, setEarningRate] = useState<number>(calculateEarningRate(business, workers))
 
     return (
-        <div className={styles.container}>
-            <BusinessHeader businessId={business.business_id} earningRate={earningRate} />
-            <BusinessDetailsModule business={business} />
-        </div>
+        <>
+            <div className={styles.container}>
+                <BusinessHeader businessId={business.business_id} earningRate={earningRate} collectLoader={collectLoader} />
+                <BusinessDetailsModule business={business} collectLoader={collectLoader} setCollectLoader={setCollectLoader} throwError={throwError} />
+            </div>
+            <p className={styles.error}>{error}</p>
+        </>
     )
 }

@@ -1,10 +1,10 @@
 'use client'
 
 import { BusinessSlug, BusinessType } from "@/customs/utils/types"
-import styles from "../css/basicView.module.css"
-import { BUSINESS_OWNER_ICON, COIN_ICON } from "@/customs/utils/constants"
-import { useState } from "react"
+import { BUSINESS_OWNER_ICON } from "@/customs/utils/constants"
 import { BUSINESS_TYPES } from "@/app/server/business"
+import styles from "../css/basicView.module.css"
+import { useState } from "react"
 
 function BusinessDetailsModule({ business } : { business: BusinessSlug }) {
     const [businessTypeData, setBusinessTypeData] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === business.business_type))

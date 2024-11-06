@@ -467,6 +467,70 @@ export async function dbGetBusinessesEarnings(username: string): Promise<[Busine
     }
 }
 
+// get business earnings by business id
+export async function dbGetBusinessEarningsByBusiness(businessId: string): Promise<[BusinessEarnings[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            * 
+        FROM 
+            business_earnings 
+        WHERE
+            business_id = ? 
+        `
+        const params: (string | number)[] = [businessId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Worker[]>(query, params)
+        conn.release()
+
+        return response as [BusinessEarnings[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// update business earnings 
+export async function dbUpdateBusinessEarnings(username: string, businessId: string, lastEarning: number, lastUpdate: Date): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        UPDATE 
+            business_earnings 
+        SET 
+            last_earning = ?, last_update = ? 
+        WHERE 
+            business_id = (
+                SELECT 
+                    business_id 
+                FROM 
+                    businesses 
+                WHERE 
+                    business_id = ? 
+                AND 
+                    business_owner_id = (
+                        SELECT 
+                            user_id 
+                        FROM 
+                            users 
+                        WHERE 
+                            username = ?
+                    )
+            )
+        `
+        const params: (string | number)[] = [lastEarning, dateToSQLDate(lastUpdate), businessId, username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Worker[]>(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
 // get workers belonging to a business
 export async function dbGetWorkersByBusinessId(businessId: string): Promise<[Worker[], FieldPacket[]] | QueryError> {
     try {

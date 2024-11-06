@@ -1,11 +1,11 @@
 'use server'
 
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings } from "../../app/db/query"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness } from "../../app/db/query"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings } from "@/customs/utils/types"
 import { BUSINESS_TYPES, MAX_STARTING_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType } from "@/customs/utils/types"
-import { calculateWage, dateToSQLDate, timeSince } from "@/customs/utils/tools"
+import { businessesToSlugs, calculateEarningRate, calculateWage, dateToSQLDate, timeSince, workersToSlugs } from "@/customs/utils/tools"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
@@ -322,4 +322,77 @@ export async function purchaseBusiness(name: string, rank: string, type: Busines
     }
 
     return { success: true, message: 'Business Purchased' }
+}
+
+export async function collectBusinessEarnings(businessId: string): Promise<GenericSuccess | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    const ownerCheckResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetBusinessesByOwner(user.username)
+
+    if ((ownerCheckResult as QueryError).code !== undefined) {
+        console.log(ownerCheckResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find Business)' }
+    }
+
+    const ownerCheck: Business[] = (ownerCheckResult as [Business[], FieldPacket[]])[0]
+
+    if (ownerCheck.length === 0 || ownerCheck.find(b => b.business_id === businessId) === undefined)
+        return { error: true, message: 'You do not own this business' }
+
+    const business: Business = ownerCheck.find(b => b.business_id === businessId)!
+
+    const workersResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetWorkersByBusinessId(business.business_id)
+
+    if ((workersResult as QueryError).code !== undefined) {
+        console.log(workersResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find Business Workers)' }
+    }
+
+    const workers: Worker[] = (workersResult as [Worker[], FieldPacket[]])[0]
+
+    const businessEarningRate: number = calculateEarningRate(businessesToSlugs([business])[0], workersToSlugs(workers))
+
+    const businessEarningsResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetBusinessEarningsByBusiness(business.business_id)
+
+    if ((businessEarningsResult as QueryError).code !== undefined || (businessEarningsResult as [BusinessEarnings[], FieldPacket[]])[0].length === 0) {
+        console.log(businessEarningsResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find Business Earnings)' }
+    }
+
+    const businessEarnings: BusinessEarnings = (businessEarningsResult as [BusinessEarnings[], FieldPacket[]])[0][0]
+
+    const time: number = timeSince(new Date(businessEarnings.last_update))
+    const uncollectedEarnings: number = businessEarnings.last_earning
+
+    const earned: number = Number(uncollectedEarnings) + (businessEarningRate * time)
+
+    const goldUpdate: [QueryResult, FieldPacket[]] | QueryError = await dbAddGold(user.user_id, earned)
+
+    if ((goldUpdate as QueryError).code !== undefined) {
+        console.log(goldUpdate)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update Gold)' }
+    }
+
+    const earningsUpdate: [QueryResult, FieldPacket[]] | QueryError = await dbUpdateBusinessEarnings(user.username, business.business_id, 0, new Date())
+
+    if ((earningsUpdate as QueryError).code !== undefined) {
+        console.log(earningsUpdate)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update Earnings)' }
+    }
+
+    return { success: true, message: 'Collected Earnings' }
 }

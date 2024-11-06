@@ -1,5 +1,5 @@
-import { dbGetBusinessById, dbGetBusinessesByOwner, dbGetBusinessesEarnings, dbGetBusinessesInEmpire } from "@/app/db/query"
-import { Business, BusinessEarnings, BusinessSlug } from "@/customs/utils/types"
+import { dbGetBusinessesEarnings } from "@/app/db/query"
+import { BusinessEarnings } from "@/customs/utils/types"
 import { NextRequest, NextResponse } from "next/server"
 import { FieldPacket, QueryError } from "mysql2"
 import { cookies } from "next/headers"

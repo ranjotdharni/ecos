@@ -1,5 +1,5 @@
-import { Business, BusinessEarnings, BusinessSlug, User, Worker, WorkerSlug } from "@/customs/utils/types"
-import { dbGetBusinessById, dbGetBusinessesEarnings, dbGetUser, dbGetWorkersByBusinessId } from "@/app/db/query"
+import { Business, BusinessSlug, User, Worker, WorkerSlug } from "@/customs/utils/types"
+import { dbGetBusinessById, dbGetUser, dbGetWorkersByBusinessId } from "@/app/db/query"
 import { AUTH_ROUTE, NOT_FOUND_PAGE_ROUTE } from "@/customs/utils/constants"
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies"
 import OwnerView from "@/app/components/business/id/OwnerView"
