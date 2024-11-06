@@ -314,7 +314,7 @@ export async function purchaseBusiness(name: string, rank: string, type: Busines
         return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Gold Update)' }
     }
 
-    result = await dbNewBusiness(uuidv4(), congregation.congregation_id, user.user_id, name, type.type, MAX_STARTING_EARNING_RATE, rank, 1)
+    result = await dbNewBusiness(uuidv4(), congregation.congregation_id, user.user_id, name, type.type, MAX_STARTING_EARNING_RATE, rank, 1, uuidv4(), new Date())
 
     if ((result as QueryError).code !== undefined) {
         console.log(result)

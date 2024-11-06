@@ -26,7 +26,6 @@ function WorkModule({ worker, getJob, throwError } : { worker: WorkerSlug, getJo
     // Ref to hold the interval ID so it's always up-to-date
     const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const clockedIntervalRef = useRef<NodeJS.Timeout | null>(null)
-    const [id, setId] = useState<NodeJS.Timeout>()
 
     const [businessTypeData, setBusinessTypeData] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === worker.business.business_type))
     const [business, setBusiness] = useState<BusinessSlug>(worker.business)
@@ -168,8 +167,8 @@ function WorkModule({ worker, getJob, throwError } : { worker: WorkerSlug, getJo
                     <p className={styles.itemType}>{businessTypeData?.title}</p>
                     <div className={styles.itemLeftContent}>
                         <p className={styles.itemEarning}>{(business.base_earning_rate * 1).toFixed(2)}</p>
-                        <p className={styles.itemRank}>{(business.rank_earning_increase * 100).toFixed(2)}</p>
-                        <p className={styles.itemSplit}>{(business.congregation.labor_split * 100).toFixed(2)}</p>
+                        <p className={styles.itemRank}>{(business.rank_earning_increase * 100).toFixed(6)}</p>
+                        <p className={styles.itemSplit}>{(business.congregation.labor_split * 100).toFixed(4)}</p>
                         <p className={styles.itemWorker}>{business.worker_count}</p>
                         <div className={styles.timer}>
                             <p className={started ? styles.tickUp : (timer !== 'Ready to Clock In' ? styles.tickDown : '')}>{timer}</p>
@@ -229,6 +228,8 @@ export default function JobModule() {
                 return {
                     worker_id: worker.worker_id,
                     business: business,
+                    firstname: worker.worker_first_name,
+                    lastname: worker.worker_last_name,
                     worker_rank: worker.worker_rank,
                     clocked_in: worker.clocked_in,
                     clocked_out: worker.clocked_out
