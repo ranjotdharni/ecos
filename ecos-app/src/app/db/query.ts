@@ -1,4 +1,4 @@
-import { Business, Congregation, CongregationSlug, Session, User, Worker } from "@/customs/utils/types"
+import { Business, BusinessEarnings, Congregation, CongregationSlug, Session, User, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
 import { dateToSQLDate } from "@/customs/utils/tools"
 import { db } from "./config"
@@ -233,19 +233,31 @@ export async function dbCheckCongregationExists(congregation: CongregationSlug):
 }
 
 // create a new business
-export async function dbNewBusiness(businessId: string, congregationId: string, ownerId: string, name: string, type: number, ber: number, rank: string, hiring: number): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+export async function dbNewBusiness(businessId: string, congregationId: string, ownerId: string, name: string, type: number, ber: number, rank: string, hiring: number, businessEarningId: string, createdAt: Date): Promise<[QueryResult, FieldPacket[]] | QueryError> {
     try {
         const conn = await db.getConnection()
 
-        const query: string = `
-        INSERT INTO businesses (business_id, congregation_id, business_owner_id, business_name, business_type, base_earning_rate, rank_earning_increase, hiring)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        let query: string = `
+        INSERT INTO 
+            businesses (business_id, congregation_id, business_owner_id, business_name, business_type, base_earning_rate, rank_earning_increase, hiring)
+        VALUES 
+            (?, ?, ?, ?, ?, ?, ?, ?)
         `
-        const params: (string | number)[] = [businessId, congregationId, ownerId, name, type, ber, rank, hiring]
-        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        let params: (string | number)[] = [businessId, congregationId, ownerId, name, type, ber, rank, hiring]
+        let response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+
+        query = `
+        INSERT INTO 
+            business_earnings (business_earnings_id, business_id, last_earning, last_update) 
+        VALUES 
+            (?, ?, 0, ?)
+        `
+        params = [businessEarningId, businessId, dateToSQLDate(createdAt)]
+        response = await conn.execute(query, params)
+
         conn.release()
 
-        return response as [Congregation[], FieldPacket[]]
+        return response as [QueryResult, FieldPacket[]]
 
     } catch (error) {
         return error as QueryError
@@ -417,6 +429,44 @@ export async function dbGetBusinessById(businessId: string): Promise<[Business[]
     }
 }
 
+// get all business earnings of a user
+export async function dbGetBusinessesEarnings(username: string): Promise<[BusinessEarnings[], FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            * 
+        FROM 
+            business_earnings 
+        WHERE
+            business_id IN (
+                SELECT 
+                    business_id 
+                FROM
+                    businesses 
+                WHERE 
+                    business_owner_id = (
+                        SELECT 
+                            user_id 
+                        FROM 
+                            users 
+                        WHERE 
+                            username = ?
+                    )
+            ) 
+        `
+        const params: (string | number)[] = [username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Worker[]>(query, params)
+        conn.release()
+
+        return response as [BusinessEarnings[], FieldPacket[]]
+
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
 // get workers belonging to a business
 export async function dbGetWorkersByBusinessId(businessId: string): Promise<[Worker[], FieldPacket[]] | QueryError> {
     try {
@@ -439,7 +489,8 @@ export async function dbGetWorkersByBusinessId(businessId: string): Promise<[Wor
             ub.first_name AS business_owner_first_name,
             ub.last_name AS business_owner_last_name,
             uw.first_name AS worker_first_name,
-            uw.last_name AS worker_last_name
+            uw.last_name AS worker_last_name,
+            COALESCE(wb.worker_count, 0) AS worker_count
         FROM 
             states s
         JOIN 
@@ -456,6 +507,15 @@ export async function dbGetWorkersByBusinessId(businessId: string): Promise<[Wor
             users ub ON b.business_owner_id = ub.user_id
         LEFT JOIN 
             users uw ON w.user_id = uw.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id AS worker_business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) wb ON b.business_id = wb.worker_business_id
         WHERE 
             b.business_id = ?
         `
@@ -470,12 +530,58 @@ export async function dbGetWorkersByBusinessId(businessId: string): Promise<[Wor
     }
 }
 
-// get job(s)
+// get job
 export async function dbGetJobs(username: string): Promise<[Worker[], FieldPacket[]] | QueryError> {
     try {
         const conn = await db.getConnection()
 
-        const query: string = `SELECT * FROM workers WHERE user_id = (SELECT user_id FROM users WHERE username = ?)`
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            b.congregation_id AS business_congregation_id,
+            b.*,
+            w.business_id AS worker_business_id,
+            w.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ub.first_name AS business_owner_first_name,
+            ub.last_name AS business_owner_last_name,
+            uw.first_name AS worker_first_name,
+            uw.last_name AS worker_last_name,
+            COALESCE(wb.worker_count, 0) AS worker_count
+        FROM 
+            states s
+        JOIN 
+            congregations c ON s.state_id = c.state_id
+        JOIN 
+            businesses b ON c.congregation_id = b.congregation_id
+        JOIN
+            workers w ON b.business_id = w.business_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        LEFT JOIN 
+            users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN 
+            users uw ON w.user_id = uw.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id AS worker_business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) wb ON b.business_id = wb.worker_business_id
+        WHERE 
+            w.user_id = (SELECT user_id FROM users WHERE username = ?)
+        `
         const params: (string | number)[] = [username]
         const response: [Worker[], FieldPacket[]] = await conn.execute(query, params)
         conn.release()

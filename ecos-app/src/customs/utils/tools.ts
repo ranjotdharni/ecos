@@ -1,6 +1,6 @@
 import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "./constants"
 import { redirect } from "next/navigation"
-import { UserDetails } from "./types"
+import { BusinessSlug, UserDetails, WorkerSlug } from "./types"
 
 /**
  * @typedef {import('./types').UserDetails} @see {@link UserDetails}
@@ -102,4 +102,17 @@ export function timerString(seconds: number): string {
     const s = (seconds % 60).toString().padStart(2, '0');
 
     return `${hours}:${minutes}:${s}`;
+}
+
+export function calculateTotalSplit(workers: WorkerSlug[], startFrom: number = 0): number {
+    if (startFrom >= workers.length)
+        return 0
+
+    const worker: WorkerSlug = workers[startFrom]
+
+    return (worker.business.congregation.labor_split * (1 + worker.worker_rank)) + calculateTotalSplit(workers, startFrom + 1)
+}
+
+export function calculateEarningRate(business: BusinessSlug, workers: WorkerSlug[]) {
+    return (1 - business.congregation.state.state_tax_rate - business.congregation.congregation_tax_rate - calculateTotalSplit(workers)) * (business.base_earning_rate * (3 + workers.length))
 }

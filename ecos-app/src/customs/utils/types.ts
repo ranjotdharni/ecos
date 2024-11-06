@@ -102,6 +102,13 @@ export interface Business extends RowDataPacket {
     business_owner_last_name: string | null
 }
 
+export interface BusinessEarnings {
+    business_earnings_id: string
+    business_id: string
+    last_earning: number
+    last_update: Date
+}
+
 // state -> congregation -> business -> worker joined tables row data (+ owner names + worker name)
 export interface Worker extends RowDataPacket {
     worker_id: string

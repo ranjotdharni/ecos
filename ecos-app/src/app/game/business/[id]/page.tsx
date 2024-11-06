@@ -1,5 +1,5 @@
-import { Business, BusinessSlug, User, Worker, WorkerSlug } from "@/customs/utils/types"
-import { dbGetBusinessById, dbGetUser, dbGetWorkersByBusinessId } from "@/app/db/query"
+import { Business, BusinessEarnings, BusinessSlug, User, Worker, WorkerSlug } from "@/customs/utils/types"
+import { dbGetBusinessById, dbGetBusinessesEarnings, dbGetUser, dbGetWorkersByBusinessId } from "@/app/db/query"
 import { AUTH_ROUTE, NOT_FOUND_PAGE_ROUTE } from "@/customs/utils/constants"
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies"
 import OwnerView from "@/app/components/business/id/OwnerView"
@@ -7,6 +7,7 @@ import BasicView from "@/app/components/business/id/BasicView"
 import { FieldPacket, QueryError } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
+import styles from "./page.module.css"
 
 
 export default async function Page({ params } : { params: Promise<{ id: string }> }) {
@@ -67,8 +68,10 @@ export default async function Page({ params } : { params: Promise<{ id: string }
         if (rawBusinessData.business_owner_id === user.user_id) {   // if user is business owner, return priveleged view
             const result: [Worker[], FieldPacket[]] | QueryError = await dbGetWorkersByBusinessId(businessId)   // get worker data for priveleged view
 
-            if ((result as QueryError).code !== undefined)
+            if ((result as QueryError).code !== undefined) {
+                console.log(result)
                 redirect(`${process.env.NEXT_PUBLIC_ORIGIN}${NOT_FOUND_PAGE_ROUTE}`)
+            }
 
             const rawWorkerData: Worker[] = (result as [Worker[], FieldPacket[]])[0]
 
@@ -120,7 +123,7 @@ export default async function Page({ params } : { params: Promise<{ id: string }
     }
 
     return (
-        <section>
+        <section className={styles.page}>
             {await getPageProps()}
         </section>
     )
