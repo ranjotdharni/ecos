@@ -104,6 +104,10 @@ export function timerString(seconds: number): string {
     return `${hours}:${minutes}:${s}`;
 }
 
+export function getRandomDecimalInclusive(min: number, max: number): number {
+    return Math.random() * (max - min) + min;
+}
+
 export function businessesToSlugs(rawBusinesses: Business[]): BusinessSlug[] {
     return rawBusinesses.map(raw => {
         return {

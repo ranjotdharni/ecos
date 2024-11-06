@@ -19,7 +19,7 @@ export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details
 export const API_SESSION_ROUTE: string = '/api/session' // check session
 export const API_WORKER_ROUTE: string = '/api/worker' // get user's job
 
-export const MIN_CLOCK_REFRESH_TIME: number = 57600 // minimum wait seconds before you may clock in again after clocking out
+export const MIN_CLOCK_REFRESH_TIME: number = 14400 // minimum wait seconds before you may clock in again after clocking out
 export const PASSWORD_SALT_ROUNDS: number = 10
 export const TOKEN_SALT_ROUNDS: number = 10
 export const MAX_CLOCK_TIME: number = 28800 // maximum payable clocked in seconds, any TIME > MAX_CLOCK_TIME = overtime (not payed)

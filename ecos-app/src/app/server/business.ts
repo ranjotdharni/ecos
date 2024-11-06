@@ -1,8 +1,9 @@
 import { FOOD_SERVICE_ICON, MEDICINE_ICON, MILITARY_ICON, CONSTRUCTION_ICON, RELIGIOUS_ICON, RESIDENTIAL_ICON } from "@/customs/utils/constants"
 import { BusinessType } from "@/customs/utils/types"
 
-export const NEW_BUSINESS_COST: number = 250000
-export const MAX_STARTING_EARNING_RATE: number = 250
+export const NEW_BUSINESS_COST: number = 400
+export const MIN_BASE_EARNING_RATE: number = 0.03
+export const MAX_BASE_EARNING_RATE: number = 0.05
 
 // MAY NOT RETURN EMPTY STRING!!!!
 export async function validateBusinessName(name: string): Promise<string | void> {

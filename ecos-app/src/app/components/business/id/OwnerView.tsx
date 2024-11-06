@@ -111,7 +111,7 @@ function BusinessDetailsModule({ business, collectLoader, setCollectLoader, thro
                 <div className={styles.itemLeft}>
                     <p className={styles.itemType}>{businessTypeData?.title}</p>
                     <div className={styles.itemLeftContent}>
-                        <p className={styles.itemEarning}>{(business.base_earning_rate * 1).toFixed(2)}</p>
+                        <p className={styles.itemEarning}>{(business.base_earning_rate * 1).toFixed(4)}</p>
                         <p className={styles.itemRank}>{(business.rank_earning_increase * 100).toFixed(6)}</p>
                         <p className={styles.itemSplit}>{(business.congregation.labor_split * 100).toFixed(4)}</p>
                         <p className={styles.itemWorker}>{business.worker_count}</p>
