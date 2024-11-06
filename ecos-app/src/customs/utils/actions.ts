@@ -3,9 +3,9 @@
 import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings } from "../../app/db/query"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings } from "@/customs/utils/types"
-import { BUSINESS_TYPES, MAX_STARTING_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
+import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
-import { businessesToSlugs, calculateEarningRate, calculateWage, dateToSQLDate, timeSince, workersToSlugs } from "@/customs/utils/tools"
+import { businessesToSlugs, calculateEarningRate, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, workersToSlugs } from "@/customs/utils/tools"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
@@ -314,7 +314,7 @@ export async function purchaseBusiness(name: string, rank: string, type: Busines
         return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Gold Update)' }
     }
 
-    result = await dbNewBusiness(uuidv4(), congregation.congregation_id, user.user_id, name, type.type, MAX_STARTING_EARNING_RATE, rank, 1, uuidv4(), new Date())
+    result = await dbNewBusiness(uuidv4(), congregation.congregation_id, user.user_id, name, type.type, getRandomDecimalInclusive(MIN_BASE_EARNING_RATE, MAX_BASE_EARNING_RATE), rank, 1, uuidv4(), new Date())
 
     if ((result as QueryError).code !== undefined) {
         console.log(result)
