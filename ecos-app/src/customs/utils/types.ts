@@ -102,7 +102,8 @@ export interface Business extends RowDataPacket {
     business_owner_last_name: string | null
 }
 
-export interface BusinessEarnings {
+// business_earnings table row data
+export interface BusinessEarnings extends RowDataPacket {
     business_earnings_id: string
     business_id: string
     last_earning: number
