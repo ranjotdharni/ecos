@@ -1,11 +1,12 @@
 'use server'
 
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings } from "../../app/db/query"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker } from "../../app/db/query"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings } from "@/customs/utils/types"
 import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
-import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings } from "@/customs/utils/types"
 import { businessesToSlugs, calculateEarningRate, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, workersToSlugs } from "@/customs/utils/tools"
+import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
+import { FiredItem, RankChangeItem } from "@/app/components/business/id/WorkerModal"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
@@ -395,4 +396,56 @@ export async function collectBusinessEarnings(businessId: string): Promise<Gener
     }
 
     return { success: true, message: 'Collected Earnings' }
+}
+
+export async function editWorkers(businessId: string, changedRanks: RankChangeItem[], firedWorkers: FiredItem[]): Promise<GenericSuccess | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    const ownerCheckResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetBusinessesByOwner(user.username)
+
+    if ((ownerCheckResult as QueryError).code !== undefined) {
+        console.log(ownerCheckResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find Business)' }
+    }
+
+    const ownerCheck: Business[] = (ownerCheckResult as [Business[], FieldPacket[]])[0]
+
+    if (ownerCheck.length === 0 || ownerCheck.find(b => b.business_id === businessId) === undefined)
+        return { error: true, message: 'You do not own this business' }
+
+    const business: Business = ownerCheck.find(b => b.business_id === businessId)!
+
+    for (const update of changedRanks) {
+        const editRank: [QueryResult, FieldPacket[]] | QueryError = await dbEditWorkerRank(update.workerId, update.rank)
+
+        if ((editRank as QueryError).code !== undefined) {
+            console.log(editRank)
+            return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Rank Update)' }
+        }
+    }
+
+    for (const update of firedWorkers) {
+        const editRank: [QueryResult, FieldPacket[]] | QueryError = await dbFireWorker(update.workerId)
+
+        if ((editRank as QueryError).code !== undefined) {
+            console.log(editRank)
+            return { error: true, message: '500 INTERNAL SERVER ERROR (Failed To Fire Workers)' }
+        }
+    }
+
+    return { success: true, message: 'Updated Workers' }
 }

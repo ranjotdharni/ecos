@@ -10,14 +10,21 @@ import { BUSINESS_TYPES } from "@/app/server/business"
 import styles from "../css/ownerView.module.css"
 import useError from "@/customs/hooks/useError"
 import { useRouter } from "next/navigation"
+import WorkerModal from "./WorkerModal"
 import Loading from "@/app/loading"
 
-function BusinessHeader({ businessId, earningRate, collectLoader } : { businessId: string, earningRate: number, collectLoader: boolean }) {
+function BusinessHeader({ businessId, earningRate, collectLoader, setWorkerModalVisible } : { businessId: string, earningRate: number, collectLoader: boolean, setWorkerModalVisible: (visible: boolean) => void }) {
     const router = useRouter()
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     const [earnings, setEarnings] = useState<BusinessEarnings>()
     const [time, setTime] = useState<number>(0)
+
+    function showWorkers(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+
+        setWorkerModalVisible(true)
+    }
 
     async function getEarnings() {
 
@@ -72,11 +79,12 @@ function BusinessHeader({ businessId, earningRate, collectLoader } : { businessI
             {
                 collectLoader ? 
                 <div style={{height: '50%', marginLeft: '10%', aspectRatio: 1}}><Loading color='var(--color--text)' /></div> : 
-                <>
+                <div className={styles.headerContent}>
                     <img src={COIN_ICON} />
                     <h1>{earnings === undefined ? '---' : (Number(earnings.last_earning) + (earningRate * time)).toFixed(2)}</h1>
-                </>
+                </div>
             }
+            <button className={styles.workerButton} onClick={showWorkers}>Edit Workers</button>
         </div>
     )
 }
@@ -142,14 +150,16 @@ function BusinessDetailsModule({ business, collectLoader, setCollectLoader, thro
 export default function OwnerView({ workers } : { workers: WorkerSlug[] }) {
     const [error, throwError] = useError()
     const [collectLoader, setCollectLoader] = useState<boolean>(false)
+    const [workerModalVisible, setWorkerModalVisible] = useState<boolean>(false)
 
     const [business, setBusiness] = useState<BusinessSlug>(workers[0].business)
     const [earningRate, setEarningRate] = useState<number>(calculateEarningRate(business, workers))
 
     return (
         <>
+            <WorkerModal businessId={business.business_id} workers={workers} visible={workerModalVisible} setVisible={setWorkerModalVisible} throwError={throwError} />
             <div className={styles.container}>
-                <BusinessHeader businessId={business.business_id} earningRate={earningRate} collectLoader={collectLoader} />
+                <BusinessHeader businessId={business.business_id} earningRate={earningRate} collectLoader={collectLoader} setWorkerModalVisible={setWorkerModalVisible} />
                 <BusinessDetailsModule business={business} collectLoader={collectLoader} setCollectLoader={setCollectLoader} throwError={throwError} />
             </div>
             <p className={styles.error}>{error}</p>
