@@ -719,3 +719,35 @@ export async function dbClockOut(time: Date, workerId: string): Promise<[QueryRe
         return error as QueryError
     }
 }
+
+// edit a worker's rank
+export async function dbEditWorkerRank(workerId: string, workerRank: number): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `UPDATE workers SET worker_rank = ? WHERE worker_id = ?`
+        const params: (string | number)[] = [workerRank, workerId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        return error as QueryError
+    }
+}
+
+// edit a worker's rank
+export async function dbFireWorker(workerId: string): Promise<[QueryResult, FieldPacket[]] | QueryError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `DELETE FROM workers WHERE worker_id = ?`
+        const params: (string | number)[] = [workerId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        return error as QueryError
+    }
+}

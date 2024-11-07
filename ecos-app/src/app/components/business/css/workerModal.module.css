@@ -1,0 +1,193 @@
+.container {
+    z-index: 10;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(88, 88, 88, 0.5);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.wrapper {
+    width: calc(600px - 5vw);
+    aspect-ratio: 13 / 16;
+    max-width: 90%;
+    max-height: 90%;
+    background-color: var(--color--accent);
+    border-radius: 1em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.titleWrapper {
+    width: 90%;
+    height: 10%;
+    border-bottom: solid 1px rgb(95, 95, 95);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.titleWrapper h2 {
+    color: var(--color--text);
+}
+
+.titleWrapper button {
+    height: 50%;
+    aspect-ratio: 1 / 1;
+    outline: none;
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.titleWrapper button svg {
+    width: 100%;
+    height: 100%;
+    color: var(--color--subtext);
+}
+
+.contentWrapper {
+    width: 90%;
+    height: 80%;
+}
+
+.workerList {
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: scroll;
+    list-style: none;
+}
+
+.workerItem {
+    width: 100%;
+    min-height: 150px;
+    padding-inline: 10px;
+    margin-bottom: 20px;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    background-color: var(--color--contrast);
+}
+
+.workerItem p {
+    color: var(--color--text);
+    font-size: large;
+}
+
+.workerItemRank {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.workerItemRank label {
+    color: var(--color--subtext);
+    margin-right: 3px;
+    font-size: small;
+}
+
+.workerItemRank input {
+    background-color: var(--color--accent);
+    font-family: var(--font-jb-sans);
+    color: var(--color--text);
+    border-radius: 5px;
+    padding-left: 2px;
+    border: none;
+    width: 75px;
+}
+
+.workerItemFire {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.workerItemFire button {
+    width: 20%;
+    font-family: var(--font-jb-sans);
+    outline: none;
+    border: none;
+    border-radius: 0.2rem;
+    background-color: crimson;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.questionWrapper {
+    width: 90%;
+    height: 7.5%;
+    border-top: solid 1px rgb(95, 95, 95);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.questionWrapper p {
+    color: var(--color--subtext);
+    font-size: 0.75rem;
+}
+
+.buttonWrapper {
+    height: 100%;
+    padding-left: 5%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.buttonWrapper button {
+    width: auto;
+    height: 60%;
+    padding-left: 5%;
+    padding-right: 5%;
+    border-radius: 0.4em;
+    font-family: var(--font-jb-sans);
+    margin-right: 5px;
+}
+
+.buttonWrapper button:hover {
+    cursor: pointer;
+}
+
+.buttonWrapper button:nth-child(1) {
+    border: none;
+    color: rgb(95, 95, 95);
+
+    &:hover {
+        color: var(--color--subtext);
+        background-color: var(--color--contrast);
+    }
+}
+
+.buttonWrapper button:nth-child(2) {
+    background-color: crimson;
+    border: none;
+    color: aliceblue;
+}
