@@ -1,0 +1,177 @@
+.error {
+    position: fixed;
+    width: 100vw;
+    height: 10vh;
+    top: 8.5vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    color: crimson;
+}
+
+.container {
+    width: 100%;
+    height: 90%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.congregationsContainer {
+    height: 95%;
+    width: 62.5%;
+    border-radius: 1rem;
+    background-color: var(--color--contrast);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.cLoader {
+    width: 40px;
+    aspect-ratio: 1 / 1.5;
+}
+
+.congregationsContainer h2 {
+    width: 100%;
+    height: 7.5%;
+    width: 100%;
+    color: var(--color--text);
+    border-bottom: solid 1px var(--color--subtext);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.congregationsContainer ul {
+    margin-top: 2.5%;
+    height: 80%;
+    width: 95%;
+    overflow-y: scroll;
+    list-style: none;
+    background-color: var(--color--accent);
+    padding: 10px;
+    border-radius: 0.5rem;
+}
+
+.cLoading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.cListItem {
+    width: 100%;
+    height: 100px;
+    background-color: var(--color--background);
+    margin-bottom: 10px;
+    border-radius: 0.25rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.cSelected {
+    background-color: var(--color--contrast);
+}
+
+.cListItem img {
+    width: 10%;
+    aspect-ratio: 1 / 1;
+}
+
+.cListItemContent {
+    width: 80%;
+    height: 75%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.cListItemContent h3 {
+    width: 100%;
+    height: 32%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    color: var(--color--text);
+}
+
+.cListItemContent p {
+    width: 100%;
+    height: 32%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+    color: var(--color--text);
+    font-size: small;
+
+    &::before {
+        color: var(--color--subtext);
+        font-size: x-small;
+        margin-right: 3px;
+    }
+}
+
+.cListItemContent p:nth-of-type(1) {
+    &::before {
+        content: 'State';
+    }
+}
+
+.cListItemContent p:nth-of-type(2) {
+    &::before {
+        content: 'State Owner';
+    }
+}
+
+.cFooter {
+    padding-inline: 20px;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.cFooter button {
+    width: 100px;
+    height: 75%;
+    font-family: var(--font-jb-sans);
+    outline: none;
+    border: none;
+    border-radius: 0.25rem;
+    background-color: rgb(55, 55, 55);
+    color: var(--color--subtext);
+}
+
+.cViewReady {
+    background-color: var(--color--accent) !important;
+    color: var(--color--text) !important;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.businessesContainer {
+    height: 95%;
+    width: 32.5%;
+    border-radius: 1rem;
+    background-color: var(--color--contrast);
+}

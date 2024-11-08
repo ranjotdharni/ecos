@@ -68,6 +68,10 @@ export interface Congregation extends RowDataPacket {
     labor_split: number
     congregation_status: number
     congregation_tax_rate: number
+    state_owner_first_name: string | null
+    state_owner_last_name: string | null
+    congregation_owner_first_name: string | null
+    congregation_owner_last_name: string | null
 }
 
 // state -> congregation -> business joined tables row data (+ owner names)
@@ -197,6 +201,7 @@ export interface EmpireData {
 export interface CongregationType {
     type: number
     title: string
+    icon: string
 }
 
 //***********************//

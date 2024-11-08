@@ -1,4 +1,4 @@
-import { Business, BusinessEarnings, Congregation, CongregationSlug, Session, User, Worker } from "@/customs/utils/types"
+import { Business, BusinessEarnings, Congregation, CongregationSlug, GenericError, Session, User, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
 import { dateToSQLDate } from "@/customs/utils/tools"
 import { db } from "./config"
@@ -144,13 +144,51 @@ export async function dbGetCongregationsByUserEmpire(username: string): Promise<
             s.empire = (SELECT empire FROM users WHERE username = ?)
         `
         const params: (string | number)[] = [username]
-        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Congregation[]>(query, params)
         conn.release()
 
         return response as [Congregation[], FieldPacket[]]
 
     } catch (error) {
         return error as QueryError
+    }
+}
+
+// get congregations by owner
+export async function dbGetCongregationsByOwner(username: string): Promise<[Congregation[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name
+        FROM 
+            states s
+        LEFT JOIN 
+            congregations c ON s.state_id = c.state_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        WHERE 
+            c.congregation_owner_id = (SELECT user_id FROM users WHERE username = ?)
+        `
+        const params: (string | number)[] = [username]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Congregation[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Error while fetching congregations by owner from database' } as GenericError
     }
 }
 
@@ -426,6 +464,62 @@ export async function dbGetBusinessById(businessId: string): Promise<[Business[]
 
     } catch (error) {
         return error as QueryError
+    }
+}
+
+// Get business of a given congregation
+export async function dbGetBusinessesByCongregation(congregationId: string): Promise<[Business[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            b.congregation_id AS business_congregation_id,
+            b.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ub.first_name AS business_owner_first_name,
+            ub.last_name AS business_owner_last_name,
+            COALESCE(w.worker_count, 0) AS worker_count
+        FROM 
+            states s
+        JOIN 
+            congregations c ON s.state_id = c.state_id
+        JOIN 
+            businesses b ON c.congregation_id = b.congregation_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        LEFT JOIN 
+            users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) w ON b.business_id = w.business_id
+        WHERE 
+            c.congregation_id = ?
+        `
+        const params: (string | number)[] = [congregationId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Business[]>(query, params)
+        conn.release()
+
+        return response as [Business[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to fetch businesses by congregation from database' }
     }
 }
 

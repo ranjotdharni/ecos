@@ -1,8 +1,8 @@
-import { Congregation, CongregationSlug } from "@/customs/utils/types"
-import { dbGetCongregationsByUserEmpire } from "@/app/db/query"
+import { Congregation, CongregationSlug, GenericError } from "@/customs/utils/types"
+import { dbGetCongregationsByOwner } from "@/app/db/query"
 import { NextRequest, NextResponse } from "next/server"
-import { FieldPacket, QueryError } from "mysql2"
 import { cookies } from "next/headers"
+import { FieldPacket } from "mysql2"
 
 export async function GET(request: NextRequest) {
     if (request.method !== 'GET')
@@ -13,14 +13,14 @@ export async function GET(request: NextRequest) {
     if (!cookieList.has('username'))
         return NextResponse.json({ error: 'BAD REQUEST' }, { status: 401 })
 
-    const result: [Congregation[], FieldPacket[]] | QueryError = await dbGetCongregationsByUserEmpire(cookieList.get('username')!.value)
+    const result: [Congregation[], FieldPacket[]] | GenericError = await dbGetCongregationsByOwner(cookieList.get('username')!.value)
 
-    if ((result! as QueryError).code !== undefined) {    // ISE when getting congregation info
-        console.log('Query Error in /api/congregation: ', result!)
-        return NextResponse.json({ error: 'INTERNAL SERVER ERROR' }, { status: 500 })
+    if ((result as GenericError).error) {    // ISE when getting congregation info
+        console.log('Query Error in /api/congregation/owner')
+        return NextResponse.json({ error: (result as GenericError).message }, { status: 500 })
     }
 
-    const rawCongregations: Congregation[] = (result! as [Congregation[], FieldPacket[]])[0]
+    const rawCongregations: Congregation[] = (result as [Congregation[], FieldPacket[]])[0]
     const congregations: CongregationSlug[] = rawCongregations.map(raw => {
         return {
             congregation_id: raw.congregation_id,
