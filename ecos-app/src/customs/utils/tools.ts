@@ -29,7 +29,7 @@ export async function fetchUser(): Promise<UserDetails> {
     const response = await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_USER_DETAILS_ROUTE}`)
     const result = await response.json()  // parse response
 
-    if (result.error)
+    if (result.error !== undefined)
         redirect(`${process.env.NEXT_PUBLIC_ORIGIN}${AUTH_ROUTE}`)
 
     return result as UserDetails

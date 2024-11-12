@@ -9,6 +9,10 @@
   --color--subtext--light: #cacaca80;
 }
 
+* {
+  scrollbar-width: thin;
+}
+
 html,
 body {
   overflow-x: hidden;

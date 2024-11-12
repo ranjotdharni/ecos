@@ -1,18 +1,76 @@
 'use client'
 
-import { CongregationSlug, CongregationType } from "@/customs/utils/types"
-import { API_CONGREGATION_OWNER_ROUTE } from "@/customs/utils/constants"
+import { API_BUSINESS_CONGREGATION_ROUTE, API_CONGREGATION_OWNER_ROUTE, BUSINESS_PAGE_ROUTE } from "@/customs/utils/constants"
+import { BusinessSlug, BusinessType, CongregationSlug, CongregationType } from "@/customs/utils/types"
 import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import styles from "./css/congregationContent.module.css"
 import { MouseEvent, useEffect, useState } from "react"
+import { BUSINESS_TYPES } from "@/app/server/business"
 import useError from "@/customs/hooks/useError"
 import Loading from "@/app/loading"
 
-function CongregationBusinessesList() {
+function CongregationBusinessesList({ congregation, throwError } : { congregation?: CongregationSlug, throwError: (error: string) => void }) {
+    const [businesses, setBusinesses] = useState<BusinessSlug[]>([])
+    const [loader, setLoader] = useState<boolean>(false)
+
+    function BusinessResult({ business } : { business: BusinessSlug }) {
+        const [businessType, setBusinessType] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(b => b.type === business.business_type))
+
+        return (
+            <li className={styles.businessListResult}>
+                <a href={`${process.env.NEXT_PUBLIC_ORIGIN}${BUSINESS_PAGE_ROUTE}/${business.business_id}`}>
+                    <div className={styles.businessListResultName}>
+                        <img src={businessType?.icon} alt={`${business.business_type}`} />
+                        <p>{business.business_name}</p>
+                    </div>
+                    <p className={styles.businessListResultState}>{business.congregation.state.state_name}</p>
+                    <p className={styles.businessListResultCongregation}>{business.congregation.congregation_name}</p>
+                </a>
+            </li>
+        )
+    }
+
+    async function getBusinesses() {
+        setLoader(true)
+
+        await fetch(
+            `${process.env.NEXT_PUBLIC_ORIGIN}${API_BUSINESS_CONGREGATION_ROUTE}`, 
+            { 
+                method: 'POST', 
+                body: JSON.stringify({ congregationId: congregation?.congregation_id }) 
+            }).then(async response => {
+
+            return await response.json()
+        }).then(result => {
+
+            if (result.error !== undefined)
+                throwError(result.error)
+            else
+                setBusinesses(result.businesses)
+        })
+
+        setLoader(false)
+    }
+
+    useEffect(() => {
+        if (congregation !== undefined)
+            getBusinesses()
+    }, [congregation])
 
     return (
         <div className={styles.businessesContainer}>
-            Here are the businesses that are part of a selected congregation.
+            <h4>{`${congregation ? `${congregation.congregation_name} Businesses` : `No Selection`}`}</h4>
+            <ul className={`${styles.businessList} ${loader ? styles.bLoading : ``}`}>
+                {
+                    loader ? 
+                    <div className={styles.bLoader}><Loading color="var(--color--text)" /></div> : 
+                    (
+                        congregation ? 
+                        businesses.map(business => <BusinessResult business={business} />) : 
+                        <p className={styles.bSelectText}>Select a Congregation</p>
+                    )
+                }
+            </ul>
         </div>
     )
 }
@@ -81,7 +139,7 @@ export default function CongregationContent() {
     return (
         <main className={styles.container}>
             <CongregationList congregations={congregations} selected={selected} select={select} />
-            <CongregationBusinessesList />
+            <CongregationBusinessesList congregation={selected ? selected : undefined} throwError={throwError} />
             <p className={styles.error}>{error}</p>
         </main>
     )
