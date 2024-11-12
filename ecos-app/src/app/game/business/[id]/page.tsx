@@ -115,7 +115,7 @@ export default async function Page({ params } : { params: Promise<{ id: string }
                 }
             })
 
-            return <OwnerView workers={workers} />
+            return <OwnerView business={business} workers={workers} />
         }
         else {  // otherwise return basic business view
             return <BasicView business={business} />

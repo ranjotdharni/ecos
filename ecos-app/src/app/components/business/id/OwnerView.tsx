@@ -147,12 +147,11 @@ function BusinessDetailsModule({ business, collectLoader, setCollectLoader, thro
     )
 }
 
-export default function OwnerView({ workers } : { workers: WorkerSlug[] }) {
+export default function OwnerView({ business, workers } : { business: BusinessSlug, workers: WorkerSlug[] }) {
     const [error, throwError] = useError()
     const [collectLoader, setCollectLoader] = useState<boolean>(false)
     const [workerModalVisible, setWorkerModalVisible] = useState<boolean>(false)
 
-    const [business, setBusiness] = useState<BusinessSlug>(workers[0].business)
     const [earningRate, setEarningRate] = useState<number>(calculateEarningRate(business, workers))
 
     return (

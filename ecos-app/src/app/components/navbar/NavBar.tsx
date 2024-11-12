@@ -74,7 +74,7 @@ export default function NavBar() {
 
             <div className={`${styles.content} ${isOpen ? styles.slide : ''}`}>
                 <div className={styles.header}>
-                    <p>{user && user.firstname.length + user.lastname.length > 32 ? user.firstname : `${user?.firstname} ${user?.lastname}`}</p>
+                    <p className={styles.headerName}>{user && user.firstname.length + user.lastname.length > 32 ? user.firstname : `${user?.firstname} ${user?.lastname}`}</p>
                     <div className={styles.gold}>
                         <img src={COIN_ICON} />
                         <p>{user?.gold}</p>
