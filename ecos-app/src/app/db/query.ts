@@ -1,4 +1,4 @@
-import { Business, BusinessEarnings, Congregation, CongregationSlug, GenericError, Session, User, Worker } from "@/customs/utils/types"
+import { Business, BusinessEarnings, Congregation, CongregationSlug, GenericError, Session, State, User, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
 import { dateToSQLDate } from "@/customs/utils/tools"
 import { db } from "./config"
@@ -843,5 +843,33 @@ export async function dbFireWorker(workerId: string): Promise<[QueryResult, Fiel
         return response as [QueryResult, FieldPacket[]]
     } catch (error) {
         return error as QueryError
+    }
+}
+
+// get states in empire
+export async function dbGetStatesByEmpire(empire: number): Promise<[State[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name
+        FROM 
+            states s
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        WHERE 
+            s.empire = ?
+        `
+        const params: (string | number)[] = [empire]
+        const response: [State[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [State[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch States By Empire From Database' } as GenericError
     }
 }

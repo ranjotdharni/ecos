@@ -1,4 +1,4 @@
-import { Business, BusinessSlug, UserDetails, Worker, WorkerSlug } from "./types"
+import { Business, BusinessSlug, State, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
 import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "./constants"
 import { redirect } from "next/navigation"
 
@@ -180,6 +180,19 @@ export function workersToSlugs(rawWorkers: Worker[]): WorkerSlug[] {
                 business_owner_firstname: raw.business_owner_first_name,
                 business_owner_lastname: raw.business_owner_last_name
             }
+        }
+    })
+}
+
+export function statesToSlugs(rawStates: State[]): StateSlug[] {
+    return rawStates.map(raw => {
+        return {
+            state_id: raw.state_id,
+            state_name: raw.state_name,
+            state_owner_firstname: raw.state_owner_first_name,
+            state_owner_lastname: raw.state_owner_last_name,
+            state_tax_rate: raw.state_tax_rate,
+            empire: raw.empire
         }
     })
 }
