@@ -1,7 +1,7 @@
 'use client'
 
 import { API_BUSINESS_EARNINGS_ROUTE, AUTH_ROUTE, BUSINESS_OWNER_ICON, COIN_ICON } from "@/customs/utils/constants"
-import { BusinessEarnings, BusinessSlug, BusinessType, GenericSuccess, WorkerSlug } from "@/customs/utils/types"
+import { BusinessEarningComponents, BusinessEarnings, BusinessSlug, BusinessType, GenericError, GenericSuccess, WorkerSlug } from "@/customs/utils/types"
 import { MouseEvent, useContext, useEffect, useRef, useState } from "react"
 import { calculateEarningRate, timeSince } from "@/customs/utils/tools"
 import { collectBusinessEarnings } from "@/customs/utils/actions"
@@ -13,11 +13,10 @@ import { useRouter } from "next/navigation"
 import WorkerModal from "./WorkerModal"
 import Loading from "@/app/loading"
 
-function BusinessHeader({ businessId, earningRate, collectLoader, setWorkerModalVisible } : { businessId: string, earningRate: number, collectLoader: boolean, setWorkerModalVisible: (visible: boolean) => void }) {
-    const router = useRouter()
+function BusinessHeader({ businessId, collectLoader, setWorkerModalVisible, throwError } : { businessId: string, collectLoader: boolean, setWorkerModalVisible: (visible: boolean) => void, throwError: (error: string) => void }) {
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-    const [earnings, setEarnings] = useState<BusinessEarnings>()
+    const [earningData, setEarningData] = useState<BusinessEarningComponents>()
     const [time, setTime] = useState<number>(0)
 
     function showWorkers(event: MouseEvent<HTMLButtonElement>) {
@@ -28,23 +27,22 @@ function BusinessHeader({ businessId, earningRate, collectLoader, setWorkerModal
 
     async function getEarnings() {
 
-        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_BUSINESS_EARNINGS_ROUTE}`).then(response => {
+        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_BUSINESS_EARNINGS_ROUTE}`, {
+            method: 'POST',
+            body: JSON.stringify({
+                businessId: businessId
+            })
+        }).then(response => {
             return response.json()
         }).then(result => {
-            if (result.earnings === undefined) {
-                router.push(AUTH_ROUTE)
+            if (result.error !== undefined) {
+                throwError((result as GenericError).message)
             }
             else {
-                const allEarnings: BusinessEarnings[] = result.earnings 
-                const earnings: BusinessEarnings | undefined = allEarnings.find(e => e.business_id === businessId)
+                const earnings: BusinessEarningComponents = result.earnings
 
-                if (earnings === undefined) {
-                    router.push(AUTH_ROUTE)
-                }
-                else {
-                    setEarnings(earnings)
-                    setTime(timeSince(new Date(earnings.last_update)))
-                }
+                setEarningData(earnings)
+                setTime(Number(earnings.timeSinceLastUpdate))
             }
         })
     }
@@ -68,7 +66,7 @@ function BusinessHeader({ businessId, earningRate, collectLoader, setWorkerModal
     
         // Cleanup intervals on component unmount or on effect re-run
         return () => clearExistingClockInterval()
-    }, [earningRate, earnings])
+    }, [earningData])
 
     useEffect(() => {
         getEarnings()
@@ -81,7 +79,7 @@ function BusinessHeader({ businessId, earningRate, collectLoader, setWorkerModal
                 <div style={{height: '50%', marginLeft: '10%', aspectRatio: 1}}><Loading color='var(--color--text)' /></div> : 
                 <div className={styles.headerContent}>
                     <img src={COIN_ICON} />
-                    <h1>{earnings === undefined ? '---' : (Number(earnings.last_earning) + (earningRate * time)).toFixed(2)}</h1>
+                    <h1>{earningData === undefined ? '---' : (Number(earningData.uncollectedEarnings) + (earningData.earningRate * time)).toFixed(2)}</h1>
                 </div>
             }
             <button className={styles.workerButton} onClick={showWorkers}>Edit Workers</button>
@@ -152,13 +150,11 @@ export default function OwnerView({ business, workers } : { business: BusinessSl
     const [collectLoader, setCollectLoader] = useState<boolean>(false)
     const [workerModalVisible, setWorkerModalVisible] = useState<boolean>(false)
 
-    const [earningRate, setEarningRate] = useState<number>(calculateEarningRate(business, workers))
-
     return (
         <>
             <WorkerModal businessId={business.business_id} workers={workers} visible={workerModalVisible} setVisible={setWorkerModalVisible} throwError={throwError} />
             <div className={styles.container}>
-                <BusinessHeader businessId={business.business_id} earningRate={earningRate} collectLoader={collectLoader} setWorkerModalVisible={setWorkerModalVisible} />
+                <BusinessHeader businessId={business.business_id} collectLoader={collectLoader} setWorkerModalVisible={setWorkerModalVisible} throwError={throwError} />
                 <BusinessDetailsModule business={business} collectLoader={collectLoader} setCollectLoader={setCollectLoader} throwError={throwError} />
             </div>
             <p className={styles.error}>{error}</p>
