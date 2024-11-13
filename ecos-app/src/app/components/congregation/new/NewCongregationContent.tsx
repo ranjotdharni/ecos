@@ -2,10 +2,10 @@
 
 import { BusinessType, EmpireData, StateSlug } from "@/customs/utils/types"
 import { FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi"
-import { BUSINESS_ICON, COIN_ICON, } from "@/customs/utils/constants"
+import { API_STATE_ROUTE, BUSINESS_ICON, COIN_ICON, } from "@/customs/utils/constants"
 import { NEW_CONGREGATION_COST } from "@/app/server/congregation"
 import styles from "./css/newCongregationContent.module.css"
-import { ChangeEvent, MouseEvent, useState } from "react"
+import { ChangeEvent, MouseEvent, useEffect, useState } from "react"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import { EMPIRE_DATA } from "@/app/server/empire"
 import useError from "@/customs/hooks/useError"
@@ -223,6 +223,22 @@ function StateListModule() {
     const [selected, setSelected] = useState<StateSlug>()
     const [states, setStates] = useState<StateSlug[]>([])
     const [search, setSearch] = useState<string>('')
+
+    async function getStates() {
+        setLoader(true)
+
+        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_STATE_ROUTE}`).then(result => {
+            return result.json()
+        }).then(result => {
+            setStates(result)
+        })
+
+        setLoader(false)
+    }
+
+    useEffect(() => {
+        getStates()
+    }, [])
 
     function StateResult({ state } : { state: StateSlug }) {
         const [empire, setEmpire] = useState<EmpireData | undefined>(EMPIRE_DATA.find(e => e.code === state.empire))
