@@ -1,6 +1,6 @@
 'use client'
 
-import { API_BUSINESS_CONGREGATION_ROUTE, API_CONGREGATION_OWNER_ROUTE, BUSINESS_PAGE_ROUTE } from "@/customs/utils/constants"
+import { API_BUSINESS_CONGREGATION_ROUTE, API_CONGREGATION_OWNER_ROUTE, BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_NEW_PAGE_ROUTE } from "@/customs/utils/constants"
 import { BusinessSlug, BusinessType, CongregationSlug, CongregationType } from "@/customs/utils/types"
 import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import styles from "./css/congregationContent.module.css"
@@ -99,7 +99,10 @@ function CongregationList({ congregations, selected, select } : { congregations:
     
     return (
         <div className={styles.congregationsContainer}>
-            <h2>Your Congregations</h2>
+            <div className={styles.cHeader}>
+                <img src={CONGREGATION_ICON} />
+                <h2>Your Congregations</h2>
+            </div>
             <ul className={`${congregations ? '' : styles.cLoading}`}>
                 {
                     congregations ? 
@@ -110,7 +113,8 @@ function CongregationList({ congregations, selected, select } : { congregations:
                 }
             </ul>
             <div className={styles.cFooter}>
-                <button className={`${selected ? styles.cViewReady : ''}`}>View</button>
+                <a className={styles.newPageLink} href={`${process.env.NEXT_PUBLIC_ORIGIN}${CONGREGATION_NEW_PAGE_ROUTE}`}>New Congregation</a>
+                <button className={`${selected ? styles.cViewReady : ''}`}>{selected ? `View ${selected.congregation_name}` : 'Select a Congregation'}</button>
             </div>
         </div>
     )
