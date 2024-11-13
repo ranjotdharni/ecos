@@ -266,3 +266,15 @@ export interface WorkerSlug {
     clocked_in: Date | null
     clocked_out: Date | null
 }
+
+//**********************************//
+//                                  //
+//    Server-side Utility Types     //
+//                                  //
+//**********************************//
+
+export interface BusinessEarningComponents {
+    earningRate: number,
+    uncollectedEarnings: number,
+    timeSinceLastUpdate: number
+}

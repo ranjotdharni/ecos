@@ -351,10 +351,10 @@ export async function collectBusinessEarnings(businessId: string): Promise<Gener
 
     const ownerCheck: Business[] = (ownerCheckResult as [Business[], FieldPacket[]])[0]
 
-    if (ownerCheck.length === 0 || ownerCheck.find(b => b.business_id === businessId) === undefined)
-        return { error: true, message: 'You do not own this business' }
+    const business: Business | undefined = ownerCheck.find(b => b.business_id === businessId)
 
-    const business: Business = ownerCheck.find(b => b.business_id === businessId)!
+    if (business === undefined)
+        return { error: true, message: 'You do not own this business' }
 
     const workersResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetWorkersByBusinessId(business.business_id)
 
