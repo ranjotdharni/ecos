@@ -1,15 +1,13 @@
 'use client'
 
-import { API_BUSINESS_EARNINGS_ROUTE, AUTH_ROUTE, BUSINESS_OWNER_ICON, COIN_ICON } from "@/customs/utils/constants"
-import { BusinessEarningComponents, BusinessEarnings, BusinessSlug, BusinessType, GenericError, GenericSuccess, WorkerSlug } from "@/customs/utils/types"
+import { BusinessEarningComponents, BusinessSlug, BusinessType, GenericError, GenericSuccess, WorkerSlug } from "@/customs/utils/types"
+import { API_BUSINESS_EARNINGS_ROUTE, BUSINESS_OWNER_ICON, COIN_ICON } from "@/customs/utils/constants"
 import { MouseEvent, useContext, useEffect, useRef, useState } from "react"
-import { calculateEarningRate, timeSince } from "@/customs/utils/tools"
 import { collectBusinessEarnings } from "@/customs/utils/actions"
 import { UserContext } from "../../context/UserProvider"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import styles from "../css/ownerView.module.css"
 import useError from "@/customs/hooks/useError"
-import { useRouter } from "next/navigation"
 import WorkerModal from "./WorkerModal"
 import Loading from "@/app/loading"
 
@@ -39,7 +37,7 @@ function BusinessHeader({ businessId, collectLoader, setWorkerModalVisible, thro
                 throwError((result as GenericError).message)
             }
             else {
-                const earnings: BusinessEarningComponents = result.earnings
+                const earnings: BusinessEarningComponents = result
 
                 setEarningData(earnings)
                 setTime(Number(earnings.timeSinceLastUpdate))
