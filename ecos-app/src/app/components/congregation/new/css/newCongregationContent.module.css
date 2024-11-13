@@ -1,0 +1,532 @@
+.error {
+    position: fixed;
+    width: 100vw;
+    height: 10vh;
+    top: 8.5vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    color: crimson;
+}
+
+.page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 1.25%;
+}
+
+.newBusinessModule {
+    width: 70%;
+    height: 100%;
+    background-color: var(--color--accent);
+    border-radius: 1rem;
+}
+
+.newHeaderContainer {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 1%;
+    padding-right: 2.5%;
+}
+
+.newHeaderContainer h2 {
+    color: var(--color--text);
+}
+
+.newHeaderContainer img {
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.newNameContainer {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    padding-left: 10px;
+}
+
+.newNameContainer div {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.newNameContainer label {
+    font-size: smaller;
+    color: var(--color--text);
+}
+
+.newNameContainer input {
+    height: 100%;
+    width: 55%;
+    outline: none;
+    border: none;
+    border-bottom: solid 1px var(--color--contrast);
+    background: none;
+    font-family: var(--font-jb-sans);
+    margin-left: 2.5%;
+    margin-right: 5%;
+}
+
+.newContentContainer {
+    width: 100%;
+    height: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.newContentContainer p {
+    color: var(--color--text);
+    text-align: center;
+    font-size: larger;
+    display: flex;
+    flex-direction: column;
+
+    &::before {
+        content: 'Instructions';
+        font-size: small;
+        margin-bottom: 5px;
+        color: var(--color--subtext);
+    }
+}
+
+.newFooterContainer {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 2.5%;
+    padding-right: 2.5%;
+}
+
+.dropListWrapper {
+    width: 40%;
+    height: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.submitButton {
+    width: 20%;
+    height: 75%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    outline: none;
+    border: none;
+    border-radius: 0.5rem;
+    font-family: var(--font-jb-sans);
+    background-color: var(--color--contrast);
+}
+
+.submitButton button {
+    width: 30%;
+    height: 75%;
+    outline: none;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--color--text);
+    background-color: var(--color--accent);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.submitButton p {
+    color: var(--color--text);
+}
+
+.chevron {
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.dropListItem {
+    width: 100%;
+    height: 100%;
+    list-style: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color--contrast);
+    border-radius: 0.5rem;
+}
+
+.dropListItem img {
+    height: 80%;
+    aspect-ratio: 1 / 1;
+    margin-right: 5px;
+}
+
+.dropListItemHover {
+    border-radius: 0;
+    &:hover {
+        cursor: pointer;
+        color: var(--color--accent);
+        background-color: var(--color--text);
+    }
+}
+
+.businessListModule {
+    width: 25%;
+    height: 100%;
+    background-color: var(--color--accent);
+    border-radius: 1rem;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.businessListModule h2 {
+    color: var(--color--text);
+    height: 7.5%;
+}
+
+.searchState {
+    width: 100%;
+    height: 5%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.searchState input {
+    width: 70%;
+    height: 100%;
+    outline: none;
+    border: none;
+    color: var(--color--text);
+    border-bottom: solid 1px var(--color--contrast);
+    background: none;
+    font-family: var(--font-jb-sans);
+}
+
+.searchState button {
+    width: 20%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    outline: none;
+    border-radius: 0.25rem;
+    background-color: var(--color--contrast);
+    color: var(--color--text);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.businessList {
+    width: 90%;
+    height: 67.5%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    list-style: none;
+    overflow-y: scroll;
+    padding: 5px;
+}
+
+.purchaseButton {
+    width: 100%;
+    height: 7.5%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    border: none;
+    border-radius: 0.5rem;
+    font-family: var(--font-jb-sans);
+    background-color: var(--color--contrast);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.purchaseButton img {
+    height: 70%;
+    aspect-ratio: 1 / 1;
+    margin-right: 5px;
+}
+
+.purchaseButton p {
+    color: var(--color--text);
+    font-size: large;
+}
+
+.listEmpty {
+    justify-content: center;
+    text-align: center;
+}
+
+.businessListLoader {
+    width: 40px;
+    aspect-ratio: 1 / 1;
+}
+
+.businessListResult {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 10px;
+}
+
+.businessListResult a {
+    padding-left: 10px;
+    padding-right: 10px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: flex-start;
+    background-color: var(--color--contrast);
+    border-radius: 1rem;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.businessListResultName {
+    width: 100%;
+    height: 30%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.businessListResultName img {
+    height: 70%;
+    aspect-ratio: 1 / 1;
+    margin-right: 5px;
+}
+
+.businessListResultName p {
+    color: var(--color--text);
+}
+
+.businessListResult a button {
+    width: 100%;
+    padding-block: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    border: none;
+    border-radius: 0.25rem;
+    font-family: var(--font-jb-sans);
+    background-color: var(--color--accent);
+    color: var(--color--text);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.selectedState {
+    background-color: green !important;
+}
+
+.businessListResultState {
+    color: var(--color--text);
+    font-size: small;
+
+    &::before {
+        content: "State Tax Rate:";
+        margin-right: 5px;
+        color: var(--color--subtext);
+        font-size: x-small;
+    }
+}
+
+.businessListResultCongregation {
+    color: var(--color--text);
+    font-size: small;
+
+    &::before {
+        content: "State Owner:";
+        margin-right: 5px;
+        color: var(--color--subtext);
+        font-size: x-small;
+    }
+}
+
+@media (max-width: 996px) {
+    .page {
+        width: 90%;
+        height: 205vh;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .newBusinessModule {
+        width: 100%;
+        height: 100vh;
+        background-color: var(--color--accent);
+        border-radius: 1rem;
+    }
+
+    .businessListModule {
+        margin-top: 5vh;
+        width: 100%;
+        height: 100vh;
+        background-color: var(--color--accent);
+        border-radius: 1rem;
+        padding: 10px;
+    }
+
+    .newNameContainer {
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: flex-start;
+    }
+    
+    .newNameContainer div {
+        height: 50%;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .newNameContainer input {
+        height: 50%;
+        width: 45%;
+    }
+    
+    .newContentSearch {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+        padding: 2.5%;
+    }
+    
+    .stateInput {
+        width: 100%;
+        height: 30%;
+    }
+    
+    .congregationInput {
+        width: 100%;
+        height: 30%;
+    }
+    
+    .searchButton {
+        width: 100%;
+        height: 30%;
+        border-radius: 0.25rem;
+    }
+    
+    .searchResult {
+        width: 100%;
+        height: 175px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+    
+    .searchResultItem {
+        width: 90%;
+        height: 22.5%;
+        justify-content: flex-start;
+    }
+    
+    .searchResultItem img {
+        height: 100%;
+    }
+    
+    .searchResultItem p {
+        margin-left: 2.5%;
+    }
+    
+    .searchResult button {
+        width: 90%;
+        height: 20%;
+    }
+
+    .newFooterContainer {
+        flex-direction: column;
+        justify-content: space-evenly;
+    }
+    
+    .dropListWrapper {
+        width: 90%;
+        height: 45%;
+    }
+    
+    .submitButton {
+        width: 90%;
+        height: 45%;
+        justify-content: center;
+        border-radius: 0.25rem;
+    }
+
+    .submitButton img {
+        margin-right: 5px;
+    }
+
+    .businessListResult a {
+        align-items: center;
+    }
+
+    .newNameContainer label {
+        font-size: x-small;
+    }
+
+    .newContentContainer p {
+        font-size: small;
+    }
+
+    .submitButton p {
+        width: 30%;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .submitButton button {
+        width: 15%;
+        border-radius: 0.2rem;
+    }
+}

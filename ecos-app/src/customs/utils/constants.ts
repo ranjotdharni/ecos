@@ -3,6 +3,7 @@ export const DEFAULT_SUCCESS_ROUTE: string = '/game/home'
 export const NEW_EMPIRE_ROUTE: string = '/pickempire'
 export const AUTH_ROUTE: string = '/welcome'
 
+export const CONGREGATION_NEW_PAGE_ROUTE: string = '/game/congregation/new'    // new congregation page
 export const CONGREGATION_PAGE_ROUTE: string = '/game/congregation'    // congregation page
 export const BUSINESS_PAGE_ROUTE: string = '/game/business'    // business page
 export const JOB_NEW_PAGE_ROUTE: string = '/game/job/new'   // new job page
