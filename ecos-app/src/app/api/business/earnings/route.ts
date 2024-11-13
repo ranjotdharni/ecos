@@ -1,9 +1,9 @@
-import { dbGetBusinessById, dbGetBusinessesEarnings, dbGetUser } from "@/app/db/query"
-import { Business, BusinessEarningComponents, BusinessEarnings, GenericError, User } from "@/customs/utils/types"
+import { getAllOwnersBusinessesEarningData, getBusinessEarningData } from "@/customs/utils/math/earnings"
+import { Business, BusinessEarningComponents, GenericError, User } from "@/customs/utils/types"
+import { dbGetBusinessById, dbGetUser } from "@/app/db/query"
 import { NextRequest, NextResponse } from "next/server"
 import { FieldPacket, QueryError } from "mysql2"
 import { cookies } from "next/headers"
-import { getBusinessEarningData } from "@/customs/utils/math/earnings"
 
 export async function GET(request: NextRequest) {
     if (request.method !== 'GET')
@@ -14,16 +14,9 @@ export async function GET(request: NextRequest) {
     if (!cookieList.has('username'))
         return NextResponse.json({ error: 'BAD REQUEST' }, { status: 401 })
 
-    const output: [BusinessEarnings[], FieldPacket[]] | QueryError = await dbGetBusinessesEarnings(cookieList.get('username')!.value)
+    const earnings: BusinessEarningComponents[] | GenericError = await getAllOwnersBusinessesEarningData(cookieList.get('username')!.value)
 
-    if ((output as QueryError).code !== undefined) {    // ISE when getting business earnings info
-        console.log('query error in /api/business/earnings', output)
-        return NextResponse.json({ error: 'INTERNAL SERVER ERROR' }, { status: 500 })
-    }
-
-    const earnings: BusinessEarnings[] = (output as [BusinessEarnings[], FieldPacket[]])[0]
-
-    return NextResponse.json({ earnings: earnings }, { status: 200 })
+    return NextResponse.json(earnings, { status: 200 })
 }
 
 export async function POST(request: NextRequest) {
@@ -64,5 +57,5 @@ export async function POST(request: NextRequest) {
 
     const earnings: BusinessEarningComponents | GenericError = await getBusinessEarningData(business)
 
-    return NextResponse.json({ earnings: earnings }, { status: 200 })
+    return NextResponse.json(earnings, { status: 200 })
 }
