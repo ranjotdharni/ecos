@@ -20,6 +20,19 @@ interface NewBusiness {
     businessType: number
 }
 
+function NewCongregationHeader() {
+
+    return (
+        <div className={styles.headerContent}>
+            <h1>New Congregation</h1>
+            <div className={styles.headerInputContent}>
+                <label>Set Congregation Tax Rate:</label>
+                <input placeholder='Enter Tax Rate' />
+            </div>
+        </div>
+    )
+}
+
 function NewBusinessesModule({ throwError } : { throwError: (error: string) => void }) {
     const [current, setCurrent] = useState<number>(0)
 
@@ -276,7 +289,7 @@ function StateListModule() {
                     loader ?
                     <div className={styles.businessListLoader}><Loading color='var(--color--subtext)' /></div> :
                     (
-                        states.map(state => {
+                        states.filter(s => s.state_name.toLowerCase().includes(search.toLowerCase())).map(state => {
                             return <StateResult key={state.state_id} state={state} />
                         })
                     )
@@ -294,10 +307,15 @@ export default function BusinessContent() {
     const [error, throwError] = useError()
 
     return (
-        <main className={styles.page}>
-            <p className={styles.error}>{error}</p>
-            <NewBusinessesModule throwError={throwError} />
-            <StateListModule />
-        </main>
+        <>
+            <header className={styles.header}>
+                <NewCongregationHeader />
+            </header>
+            <main className={styles.page}>
+                <p className={styles.error}>{error}</p>
+                <NewBusinessesModule throwError={throwError} />
+                <StateListModule />
+            </main>
+        </>
     )
 }

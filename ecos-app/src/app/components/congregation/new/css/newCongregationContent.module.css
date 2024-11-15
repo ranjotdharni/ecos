@@ -10,8 +10,55 @@
     color: crimson;
 }
 
+.header {
+    width: 90%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.headerContent {
+    width: 94%;
+    height: 100%;
+    background-color: var(--color--accent);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.headerContent h1 {
+    color: var(--color--text);
+}
+
+.headerInputContent {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.headerInputContent label {
+    color: var(--color--text);
+    margin-right: 15px;
+}
+
+.headerInputContent input {
+    width: 150px;
+    outline: none;
+    border: none;
+    border-bottom: solid 1px var(--color--contrast);
+    background: none;
+    font-family: var(--font-jb-sans);
+}
+
 .page {
-    width: 100%;
+    width: 90%;
     height: 100%;
     display: flex;
     flex-direction: row;
@@ -391,6 +438,30 @@
 }
 
 @media (max-width: 996px) {
+    .header {
+        height: 15vh;
+    }
+    
+    .headerContent {
+        width: 100%;
+        flex-direction: column;
+        justify-content: space-evenly;
+        align-items: flex-start;
+        padding: 10px;
+    }
+    
+    .headerInputContent {
+        justify-content: space-between;
+    }
+    
+    .headerInputContent label {
+        font-size: small;
+    }
+    
+    .headerInputContent input {
+        width: 30%;
+    }
+
     .page {
         width: 90%;
         height: 205vh;
