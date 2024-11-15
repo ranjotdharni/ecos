@@ -278,6 +278,13 @@ export interface WorkerSlug {
     clocked_out: Date | null
 }
 
+export interface NewBusiness {
+    index: number
+    name: string
+    rank: string
+    businessType: number
+}
+
 //**********************************//
 //                                  //
 //    Server-side Utility Types     //

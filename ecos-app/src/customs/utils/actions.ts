@@ -1,10 +1,11 @@
 'use server'
 
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker } from "../../app/db/query"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation } from "../../app/db/query"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State } from "@/customs/utils/types"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
-import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease } from "@/app/server/business"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings } from "@/customs/utils/types"
-import { businessesToSlugs, calculateEarningRate, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, workersToSlugs } from "@/customs/utils/tools"
+import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease, validateNewBusinessFields } from "@/app/server/business"
+import { businessesToSlugs, calculateEarningRate, calculateWage, dateToSQLDate, getRandomDecimalInclusive, statesToSlugs, timeSince, workersToSlugs } from "@/customs/utils/tools"
+import { NEW_CONGREGATION_COST, validateCongregationLaborSplit, validateCongregationName, validateCongregationTaxRate } from "@/app/server/congregation"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
 import { FiredItem, RankChangeItem } from "@/app/components/business/id/WorkerModal"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
@@ -448,4 +449,85 @@ export async function editWorkers(businessId: string, changedRanks: RankChangeIt
     }
 
     return { success: true, message: 'Updated Workers' }
+}
+
+export async function createNewCongregation(stateSlug: StateSlug, name: string, taxRate: string, split: string, newBusinesses: NewBusiness[]): Promise<GenericSuccess | GenericError> {
+    if (newBusinesses.length !== 3)
+        return { error: true, message: 'New congregations must have 3 businesses' }
+
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    if (Number(user.gold) < NEW_CONGREGATION_COST)
+        return { error: true, message: 'You cannot afford a congregation' }
+
+    const stateResult: [State[], FieldPacket[]] | GenericError = await dbGetStateById(stateSlug.state_id)
+
+    if ((stateResult as GenericError).error !== undefined) {
+        console.log((stateResult as GenericError).message)
+        return stateResult as GenericError
+    }
+
+    const state: State = (stateResult as [State[], FieldPacket[]])[0][0]
+
+    if (Number(user.empire) !== Number(state.empire))
+        return { error: true, message: "Your congregation's state must be in your empire" }
+
+    const validName: string | void = await validateCongregationName(name)
+    const validTaxRate: string | void = await validateCongregationTaxRate(taxRate)
+    const validSplit: string | void = await validateCongregationLaborSplit(split)
+
+    if (validName)
+        return { error: true, message: validName }
+    if (validTaxRate)
+        return { error: true, message: validTaxRate }
+    if (validSplit)
+        return { error: true, message: validSplit }
+
+    for (const slug of newBusinesses) {
+        const notValid: string | void = await validateNewBusinessFields(slug)
+        if (notValid)
+            return { error: true, message: notValid }
+    }
+
+    const purchaseResult: [QueryResult, FieldPacket[]] | QueryError = await dbAddGold(user.user_id, -NEW_CONGREGATION_COST)
+
+    if ((purchaseResult as QueryError).code !== undefined) {
+        console.log(purchaseResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Gold Update)' }
+    }
+
+    const congregationId: string = uuidv4()
+    const congregationResult: [QueryResult, FieldPacket[]] | GenericError = await dbCreateNewCongregation(congregationId, Number(user.empire), state.state_id, user.user_id, name, split, 0, Number(taxRate))
+
+    if ((congregationResult as GenericError).error !== undefined) {
+        console.log((congregationResult as GenericError).message)
+        return congregationResult as GenericError
+    }
+
+    const createdAt: Date = new Date()
+
+    for (const business of newBusinesses) {
+        const businessResult: [QueryResult, FieldPacket[]] | QueryError = await dbNewBusiness(uuidv4(), congregationId, user.user_id, business.name, business.businessType, getRandomDecimalInclusive(MIN_BASE_EARNING_RATE, MAX_BASE_EARNING_RATE), business.rank, 1, uuidv4(), createdAt)
+
+        if ((businessResult as QueryError).code !== undefined) {
+            console.log(businessResult)
+            return { error: true, message: '500 INTERNAL SERVER ERROR (Failed To Create Businesses)' }
+        }
+    }
+
+    return { success: true, message: 'New Congregation Purchased' }
 }

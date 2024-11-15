@@ -846,6 +846,34 @@ export async function dbFireWorker(workerId: string): Promise<[QueryResult, Fiel
     }
 }
 
+// get state by id
+export async function dbGetStateById(stateId: string): Promise<[State[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name
+        FROM 
+            states s
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        WHERE 
+            s.state_id = ?
+        `
+        const params: (string | number)[] = [stateId]
+        const response: [State[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [State[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch States By Empire From Database' } as GenericError
+    }
+}
+
 // get states in empire
 export async function dbGetStatesByEmpire(empire: number): Promise<[State[], FieldPacket[]] | GenericError> {
     try {
@@ -871,5 +899,28 @@ export async function dbGetStatesByEmpire(empire: number): Promise<[State[], Fie
     } catch (error) {
         console.log(error)
         return { error: true, message: 'Failed to Fetch States By Empire From Database' } as GenericError
+    }
+}
+
+// create new congregation w/ businesses
+export async function dbCreateNewCongregation(cid: string, empire: number, sid: string, coid: string, name: string, split: string, status: number, ctr: number): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        INSERT INTO 
+            congregations  
+            (congregation_id, empire, state_id, congregation_owner_id, congregation_name, labor_split, congregation_status, congregation_tax_rate) 
+        VALUES 
+            (?, ?, ?, ?, ?, ?, ?, ?)
+        `
+        const params: (string | number)[] = [cid, empire, sid, coid, name, split, status, ctr]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Create New Congregation in Database' } as GenericError
     }
 }
