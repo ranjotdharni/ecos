@@ -1,5 +1,5 @@
 import { FOOD_SERVICE_ICON, MEDICINE_ICON, MILITARY_ICON, CONSTRUCTION_ICON, RELIGIOUS_ICON, RESIDENTIAL_ICON } from "@/customs/utils/constants"
-import { BusinessType } from "@/customs/utils/types"
+import { BusinessType, NewBusiness } from "@/customs/utils/types"
 
 export const NEW_BUSINESS_COST: number = 200
 export const MIN_BASE_EARNING_RATE: number = 0.03
@@ -21,6 +21,20 @@ export async function validateBusinessRankIncrease(rank: string): Promise<string
 
     if (Number(rank) < 0)
         return 'Rank Increase cannot be negative'
+}
+
+export async function validateNewBusinessFields(slug: NewBusiness): Promise<string | void> {
+    const name: string | void = await validateBusinessName(slug.name)
+    const rank: string | void = await validateBusinessRankIncrease(slug.rank)
+
+    if (name)
+        return name
+
+    if (rank)
+        return rank
+
+    if (BUSINESS_TYPES.find(b => b.type === slug.businessType) === undefined)
+        return 'Invalid Business Type'
 }
 
 export const BUSINESS_TYPES: BusinessType[] = [

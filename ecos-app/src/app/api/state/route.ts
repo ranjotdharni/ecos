@@ -1,9 +1,9 @@
-import { dbGetStatesByEmpire, dbGetUser } from "@/app/db/query"
-import { statesToSlugs } from "@/customs/utils/tools"
 import { GenericError, State, StateSlug, User } from "@/customs/utils/types"
+import { dbGetStatesByEmpire, dbGetUser } from "@/app/db/query"
+import { NextRequest, NextResponse } from "next/server"
+import { statesToSlugs } from "@/customs/utils/tools"
 import { FieldPacket, QueryError } from "mysql2"
 import { cookies } from "next/headers"
-import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
     if (request.method !== 'GET')

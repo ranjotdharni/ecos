@@ -1,64 +1,53 @@
 'use client'
 
-import { BusinessType, EmpireData, StateSlug } from "@/customs/utils/types"
-import { FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi"
+import { BusinessType, EmpireData, GenericSuccess, NewBusiness, StateSlug } from "@/customs/utils/types"
 import { API_STATE_ROUTE, BUSINESS_ICON, COIN_ICON, } from "@/customs/utils/constants"
+import { ChangeEvent, MouseEvent, useContext, useEffect, useState } from "react"
+import { FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi"
 import { NEW_CONGREGATION_COST } from "@/app/server/congregation"
+import { createNewCongregation } from "@/customs/utils/actions"
 import styles from "./css/newCongregationContent.module.css"
-import { ChangeEvent, MouseEvent, useEffect, useState } from "react"
+import { UserContext } from "../../context/UserProvider"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import { EMPIRE_DATA } from "@/app/server/empire"
 import useError from "@/customs/hooks/useError"
 import DropList from "../../app/DropList"
 import Loading from "@/app/loading"
 
-interface NewBusiness {
-    index: number
-    name: string
-    rank: string
-    split: string
-    businessType: number
+interface NewBusinessesModuleProps {
+    current: number
+    setCurrent: (current: number) => void
+    newBusinessesOne: NewBusiness
+    setNewBusinessOne: (business: NewBusiness) => void
+    newBusinessesTwo: NewBusiness
+    setNewBusinessTwo: (business: NewBusiness) => void
+    newBusinessesThree: NewBusiness
+    setNewBusinessThree: (business: NewBusiness) => void
 }
 
-function NewCongregationHeader() {
+function NewCongregationHeader({ name, setName, taxRate, setTaxRate, split, setSplit } : { name: string, setName: (name: string) => void, taxRate: string, setTaxRate: (taxRate: string) => void, split: string, setSplit: (split: string) => void }) {
 
     return (
         <div className={styles.headerContent}>
-            <h1>New Congregation</h1>
+            <div className={styles.headerInputContent}>
+                <label>Create Congregation Name:</label>
+                <input placeholder='Enter Name' value={name} onChange={e => { setName(e.target.value) }} />
+            </div>
+            
             <div className={styles.headerInputContent}>
                 <label>Set Congregation Tax Rate:</label>
-                <input placeholder='Enter Tax Rate' />
+                <input placeholder='Enter Tax Rate' value={taxRate} onChange={e => { setTaxRate(e.target.value) }} />
+            </div>
+
+            <div className={styles.headerInputContent}>
+                <label>Set Labor Split:</label>
+                <input placeholder='Enter Labor Split' value={split} onChange={e => { setSplit(e.target.value) }} />
             </div>
         </div>
     )
 }
 
-function NewBusinessesModule({ throwError } : { throwError: (error: string) => void }) {
-    const [current, setCurrent] = useState<number>(0)
-
-    const [newBusinessesOne, setNewBusinessOne] = useState<NewBusiness>({
-        index: 0,
-        name: '',
-        rank: '',
-        split: '',
-        businessType: 0
-    })
-
-    const [newBusinessesTwo, setNewBusinessTwo] = useState<NewBusiness>({
-        index: 1,
-        name: '',
-        rank: '',
-        split: '',
-        businessType: 0
-    })
-
-    const [newBusinessesThree, setNewBusinessThree] = useState<NewBusiness>({
-        index: 2,
-        name: '',
-        rank: '',
-        split: '',
-        businessType: 0
-    })
+function NewBusinessesModule({ current, setCurrent, newBusinessesOne, setNewBusinessOne, newBusinessesTwo, setNewBusinessTwo, newBusinessesThree, setNewBusinessThree } : NewBusinessesModuleProps) {
 
     function getCurrentBusiness(): NewBusiness {
         if (current === 0)
@@ -113,28 +102,6 @@ function NewBusinessesModule({ throwError } : { throwError: (error: string) => v
         }
     }
 
-    function changeSplit(event: ChangeEvent<HTMLInputElement>) {
-        event.preventDefault()
-
-        let splitChange: NewBusiness
-
-        if (current === 0) {
-            splitChange = {...newBusinessesOne}
-            splitChange.split = event.target.value
-            setNewBusinessOne(splitChange)
-        }
-        else if (current === 1) {
-            splitChange = {...newBusinessesTwo}
-            splitChange.split = event.target.value
-            setNewBusinessTwo(splitChange)
-        }
-        else {
-            splitChange = {...newBusinessesThree}
-            splitChange.split = event.target.value
-            setNewBusinessThree(splitChange)
-        }
-    }
-
     function selectBusinessType(selected: number): (event: MouseEvent<HTMLLIElement>) => void {
         return (event: MouseEvent<HTMLLIElement>) => {
             event.preventDefault()
@@ -173,7 +140,7 @@ function NewBusinessesModule({ throwError } : { throwError: (error: string) => v
 
     function dropListRender(item: BusinessType, selected?: number): JSX.Element | JSX.Element[] {
         return (
-            <li key={`${item.title}_${Math.floor(Math.random() * 1000)}`} className={`${styles.dropListItem}${selected !== undefined ? ` ${styles.dropListItemHover}` : ``}`} onClick={selected !== undefined ? selectBusinessType(selected) : () => {}}>
+            <li key={`${item.title}_${Math.floor(Math.random() * 1000)}`} className={`${styles.dropListItem}${selected !== undefined ? ` ${styles.dropListItemHover}` : ``}`} onClick={selected !== undefined ? selectBusinessType(selected + 1) : () => {}}>
                 <img src={item.icon} />
                 {item.title}
             </li>
@@ -196,10 +163,6 @@ function NewBusinessesModule({ throwError } : { throwError: (error: string) => v
                     <label>Employee Rank Increase:</label>
                     <input value={getCurrentBusiness().rank} onChange={changeRank} placeholder='Enter Rank Increase' />
                 </div>
-                <div>
-                    <label>Labor Split:</label>
-                    <input value={getCurrentBusiness().split} onChange={changeSplit} placeholder='Enter Labor Split' />
-                </div>
             </div>
 
             <div className={styles.newContentContainer}>
@@ -218,7 +181,7 @@ function NewBusinessesModule({ throwError } : { throwError: (error: string) => v
 
             <div className={styles.newFooterContainer}>
                 <div className={styles.dropListWrapper}>
-                    <DropList<BusinessType> selected={getCurrentBusiness().businessType} data={BUSINESS_TYPES} render={dropListRender} topMargin='-625%' />
+                    <DropList<BusinessType> selected={getCurrentBusiness().businessType - 1} data={BUSINESS_TYPES} render={dropListRender} topMargin='-625%' />
                 </div>
                 <div className={styles.submitButton}>
                     <button onClick={decrementCurrent}><FiChevronLeft className={styles.chevron} /></button>
@@ -230,10 +193,9 @@ function NewBusinessesModule({ throwError } : { throwError: (error: string) => v
     )
 }
 
-function StateListModule() {
+function StateListModule({ selected, setSelected, submit } : { selected?: StateSlug, setSelected: (select: StateSlug) => void, submit: () => void }) {
     const [loader, setLoader] = useState<boolean>(false)
 
-    const [selected, setSelected] = useState<StateSlug>()
     const [states, setStates] = useState<StateSlug[]>([])
     const [search, setSearch] = useState<string>('')
 
@@ -295,7 +257,7 @@ function StateListModule() {
                     )
                 }
             </ul>
-            <button className={styles.purchaseButton}>
+            <button className={styles.purchaseButton} onClick={() => { submit() }}>
                 <img src={COIN_ICON} />
                 <p>{NEW_CONGREGATION_COST}</p>
             </button>
@@ -304,17 +266,65 @@ function StateListModule() {
 }
 
 export default function BusinessContent() {
+    const { getUser } = useContext(UserContext)
+
     const [error, throwError] = useError()
+
+    const [name, setName] = useState<string>('')
+
+    const [split, setSplit] = useState<string>('')
+
+    const [taxRate, setTaxRate] = useState<string>('')
+
+    const [selected, setSelected] = useState<StateSlug>()
+
+    const [current, setCurrent] = useState<number>(0)
+
+    const [newBusinessesOne, setNewBusinessOne] = useState<NewBusiness>({
+        index: 0,
+        name: '',
+        rank: '',
+        businessType: 1
+    })
+
+    const [newBusinessesTwo, setNewBusinessTwo] = useState<NewBusiness>({
+        index: 1,
+        name: '',
+        rank: '',
+        businessType: 1
+    })
+
+    const [newBusinessesThree, setNewBusinessThree] = useState<NewBusiness>({
+        index: 2,
+        name: '',
+        rank: '',
+        businessType: 1
+    })
+
+    async function submit() {
+        if (selected === undefined) {
+            throwError('Select a state first')
+            return
+        }
+
+        await createNewCongregation(selected, name, taxRate, split, [newBusinessesOne, newBusinessesTwo, newBusinessesThree]).then(result => {
+            throwError(result.message)
+
+            if ((result as GenericSuccess).success) {
+                getUser() // refetch updated gold value
+            }
+        })
+    }
 
     return (
         <>
             <header className={styles.header}>
-                <NewCongregationHeader />
+                <NewCongregationHeader name={name} setName={setName} taxRate={taxRate} setTaxRate={setTaxRate} split={split} setSplit={setSplit} />
             </header>
             <main className={styles.page}>
                 <p className={styles.error}>{error}</p>
-                <NewBusinessesModule throwError={throwError} />
-                <StateListModule />
+                <NewBusinessesModule current={current} setCurrent={setCurrent} newBusinessesOne={newBusinessesOne} newBusinessesTwo={newBusinessesTwo} newBusinessesThree={newBusinessesThree} setNewBusinessOne={setNewBusinessOne} setNewBusinessTwo={setNewBusinessTwo} setNewBusinessThree={setNewBusinessThree} />
+                <StateListModule selected={selected} setSelected={setSelected} submit={submit} />
             </main>
         </>
     )
