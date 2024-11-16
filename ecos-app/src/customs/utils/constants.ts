@@ -13,7 +13,6 @@ export const STATE_PAGE_ROUTE: string = '/game/state'   // state page
 export const JOB_PAGE_ROUTE: string = '/game/job'    // job page
 
 export const API_BUSINESS_CONGREGATION_ROUTE: string = '/api/business/congregation' // get businesses by congregation
-export const API_CONGREGATION_SEARCH_ROUTE: string = '/api/congregation/search' // search congregation data
 export const API_CONGREGATION_OWNER_ROUTE: string = '/api/congregation/owner' // congregation data by owner
 export const API_BUSINESS_EARNINGS_ROUTE: string = '/api/business/earnings' // get earnings of businesses
 export const API_CONGREGATION_ROUTE: string = '/api/congregation' // get congregation data

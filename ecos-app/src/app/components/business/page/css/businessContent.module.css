@@ -98,8 +98,8 @@
     height: 30%;
     display: grid;
     grid-template-areas: 
-    "s s s s b"
-    "c c c c b";
+    "b s s s s"
+    "b c c c c";
     gap: 2.5%;
     padding: 2.5%;
 }
@@ -131,10 +131,10 @@
     color: var(--color--text);
     font-family: var(--font-jb-sans);
     font-size: large;
-
-    &:hover {
-        cursor: pointer;
-    }
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .searchResults {

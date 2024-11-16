@@ -1,6 +1,6 @@
 'use client'
 
-import { API_BUSINESS_ROUTE, API_CONGREGATION_ROUTE, API_CONGREGATION_SEARCH_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, COIN_ICON, CONGREGATION_ICON, LABOR_SPLIT_ICON, STATE_ICON } from "@/customs/utils/constants"
+import { API_BUSINESS_ROUTE, API_CONGREGATION_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, COIN_ICON, CONGREGATION_ICON, LABOR_SPLIT_ICON, STATE_ICON } from "@/customs/utils/constants"
 import { BusinessSlug, BusinessType, CongregationSlug, GenericSuccess } from "@/customs/utils/types"
 import { ChangeEvent, MouseEvent, useContext, useEffect, useState } from "react"
 import { BUSINESS_TYPES, NEW_BUSINESS_COST } from "@/app/server/business"
@@ -38,24 +38,6 @@ function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { th
         setSearchLoader(false)
     }
 
-    async function searchCongregations() {
-        setSearchLoader(true)
-
-        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_CONGREGATION_SEARCH_ROUTE}`, {
-            method: 'POST',
-            body: JSON.stringify({
-                congregation: congregation.trim(),
-                state: state.trim()
-            })
-        }).then(async response => {
-            return await response.json()
-        }).then(response => {
-            setCongregations(response.congregations)
-        })
-
-        setSearchLoader(false)
-    }
-
     function changeName(event: ChangeEvent<HTMLInputElement>) {
         event.preventDefault()
         setName(event.target.value)
@@ -68,25 +50,14 @@ function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { th
 
     function changeState(event: ChangeEvent<HTMLInputElement>) {
         event.preventDefault()
+        setChosenCongregation(undefined)
         setState(event.target.value)
     }
 
     function changeCongregation(event: ChangeEvent<HTMLInputElement>) {
         event.preventDefault()
-        setCongregation(event.target.value)
-    }
-
-    async function search(event: MouseEvent<HTMLButtonElement>) {
-        event.preventDefault()
-
         setChosenCongregation(undefined)
-
-        if (congregation.trim() === '' && state.trim() === '') {
-            await getCongregations()
-        }
-        else {
-            await searchCongregations()
-        }
+        setCongregation(event.target.value)
     }
 
     function selectBusinessType(selected: number): (event: MouseEvent<HTMLLIElement>) => void {
@@ -173,9 +144,9 @@ function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { th
 
             <div className={styles.newContentContainer}>
                 <div className={styles.newContentSearch}>
-                    <input className={styles.stateInput} value={state} onChange={changeState} placeholder='Search by State' />
-                    <input className={styles.congregationInput} value={congregation} onChange={changeCongregation} placeholder='Search by Congregation' />
-                    <button className={styles.searchButton} onClick={search}>Search</button>
+                    <h2 className={styles.searchButton}>Select Congregation</h2>
+                    <input className={styles.stateInput} value={state} onChange={changeState} placeholder='Filter by State' />
+                    <input className={styles.congregationInput} value={congregation} onChange={changeCongregation} placeholder='Filter by Congregation' />
                 </div>
                 <ul className={`${styles.searchResults}${searchLoader || congregations.length === 0 ? ` ${styles.searchResultsEmpty}` : ''}`}>
                     {
@@ -184,7 +155,7 @@ function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { th
                         (
                             congregations.length === 0 ? 
                             <p style={{color: 'var(--color--subtext)', fontSize: 'smaller'}}>No Results</p> : 
-                            congregations.map(congregation => {
+                            congregations.filter(c => c.congregation_name.toLowerCase().includes(congregation.trim().toLowerCase()) && c.state.state_name.toLowerCase().includes(state.trim().toLowerCase())).map(congregation => {
                                 return <SearchResult 
                                     key={`${congregation.state.state_id}_${congregation.congregation_id}`} 
                                     congregation={congregation} 
