@@ -1,4 +1,4 @@
-import { Business, BusinessSlug, State, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
+import { Business, BusinessSlug, Congregation, CongregationSlug, State, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
 import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "./constants"
 import { redirect } from "next/navigation"
 
@@ -180,6 +180,29 @@ export function workersToSlugs(rawWorkers: Worker[]): WorkerSlug[] {
                 business_owner_firstname: raw.business_owner_first_name,
                 business_owner_lastname: raw.business_owner_last_name
             }
+        }
+    })
+}
+
+export function congregationsToSlugs(rawCongregations: Congregation[]): CongregationSlug[] {
+    return rawCongregations.map(raw => {
+        return {
+            congregation_id: raw.congregation_id,
+            empire: raw.empire,
+            state: {
+                state_id: raw.state_id,
+                state_name: raw.state_name,
+                state_owner_firstname: raw.state_owner_first_name,
+                state_owner_lastname: raw.state_owner_last_name,
+                state_tax_rate: raw.state_tax_rate,
+                empire: raw.empire
+            },
+            congregation_owner_firstname: raw.congregation_owner_first_name,
+            congregation_owner_lastname: raw.congregation_owner_last_name,
+            congregation_name: raw.congregation_name,
+            labor_split: Number(raw.labor_split),
+            congregation_status: Number(raw.congregation_status),
+            congregation_tax_rate: Number(raw.congregation_tax_rate)
         }
     })
 }

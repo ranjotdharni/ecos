@@ -174,7 +174,7 @@
     }
 }
 
-.cFooter button {
+.viewCongregationLink {
     padding-inline: 10px;
     height: 75%;
     font-family: var(--font-jb-sans);
@@ -183,6 +183,10 @@
     border-radius: 0.25rem;
     background-color: rgb(55, 55, 55);
     color: var(--color--subtext);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .cViewReady {

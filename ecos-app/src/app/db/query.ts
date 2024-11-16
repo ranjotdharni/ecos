@@ -192,6 +192,44 @@ export async function dbGetCongregationsByOwner(username: string): Promise<[Cong
     }
 }
 
+// get congregation by id
+export async function dbGetCongregationById(congregationId: string): Promise<[Congregation[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name
+        FROM 
+            states s
+        LEFT JOIN 
+            congregations c ON s.state_id = c.state_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        WHERE 
+            c.congregation_id = ?
+        `
+        const params: (string | number)[] = [congregationId]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute<Congregation[]>(query, params)
+        conn.release()
+
+        return response as [Congregation[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch Congregation from Database' } as GenericError
+    }
+}
+
 // search congregation by name or state name
 export async function dbSearchCongregationsByNames(congregation?: string, state?: string): Promise<[Congregation[], FieldPacket[]] | QueryError> {
     try {
