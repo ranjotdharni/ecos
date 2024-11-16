@@ -1,10 +1,10 @@
+import { Business, BusinessSlug, Congregation, CongregationSlug, GenericError, User } from "@/customs/utils/types"
+import { dbGetBusinessesByCongregation, dbGetCongregationById, dbGetUser } from "@/app/db/query"
 import CongregationOwnerView from "@/app/components/congregation/[id]/CongregationOwnerView"
 import CongregationBasicView from "@/app/components/congregation/[id]/CongregationBasicView"
-import { Congregation, CongregationSlug, GenericError, User } from "@/customs/utils/types"
+import { businessesToSlugs, congregationsToSlugs } from "@/customs/utils/tools"
 import { AUTH_ROUTE, NOT_FOUND_PAGE_ROUTE } from "@/customs/utils/constants"
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies"
-import { dbGetCongregationById, dbGetUser } from "@/app/db/query"
-import { congregationsToSlugs } from "@/customs/utils/tools"
 import { FieldPacket, QueryError } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
@@ -40,7 +40,16 @@ export default async function ViewCongregationPage({ params } : { params: Promis
             return <CongregationOwnerView congregation={congregation} />
         }
         else {  // otherwise return basic congregation view
-            return <CongregationBasicView congregation={congregation} />
+            const result: [Business[], FieldPacket[]] | GenericError = await dbGetBusinessesByCongregation(congregationId)
+
+            if ((result as GenericError).error !== undefined) {
+                console.log((result as GenericError).message)
+                redirect(`${process.env.NEXT_PUBLIC_ORIGIN}${NOT_FOUND_PAGE_ROUTE}`)
+            }
+
+            const businesses: BusinessSlug[] = businessesToSlugs((result as [Business[], FieldPacket[]])[0])
+
+            return <CongregationBasicView congregation={congregation} businesses={businesses} />
         }
     }
 
