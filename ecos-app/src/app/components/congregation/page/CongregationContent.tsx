@@ -113,8 +113,8 @@ function CongregationList({ congregations, selected, select } : { congregations:
                 }
             </ul>
             <div className={styles.cFooter}>
-                <a className={styles.newPageLink} href={`${process.env.NEXT_PUBLIC_ORIGIN}${CONGREGATION_NEW_PAGE_ROUTE}`}>New Congregation</a>
-                <button className={`${selected ? styles.cViewReady : ''}`}>{selected ? `View ${selected.congregation_name}` : 'Select a Congregation'}</button>
+                <a className={styles.newPageLink} href={`${CONGREGATION_NEW_PAGE_ROUTE}`}>New Congregation</a>
+                <a className={`${styles.viewCongregationLink} ${selected ? styles.cViewReady : ''}`} href={selected ? `/game/congregation/${selected.congregation_id}` : undefined}>{selected ? `View ${selected.congregation_name}` : 'Select a Congregation'}</a>
             </div>
         </div>
     )
