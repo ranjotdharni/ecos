@@ -6,3 +6,10 @@
     justify-content: center;
     align-items: center;
 }
+
+@media (max-width: 573px) {
+    .page {
+        justify-content: flex-start;
+        height: 150vh;
+    }
+}
