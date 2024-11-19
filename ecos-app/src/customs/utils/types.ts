@@ -85,6 +85,14 @@ export interface Congregation extends RowDataPacket {
     congregation_owner_last_name: string | null
 }
 
+// congregation_earnings table row data
+export interface CongregationEarnings extends RowDataPacket {
+    congregation_earnings_id: string
+    congregation_id: string
+    last_earning: number
+    last_update: Date
+}
+
 // state -> congregation -> business joined tables row data (+ owner names)
 export interface Business extends RowDataPacket {
     state_state_id: string

@@ -511,14 +511,13 @@ export async function createNewCongregation(stateSlug: StateSlug, name: string, 
     }
 
     const congregationId: string = uuidv4()
-    const congregationResult: [QueryResult, FieldPacket[]] | GenericError = await dbCreateNewCongregation(congregationId, Number(user.empire), state.state_id, user.user_id, name, split, 0, Number(taxRate))
+    const createdAt: Date = new Date()
+    const congregationResult: [QueryResult, FieldPacket[]] | GenericError = await dbCreateNewCongregation(congregationId, Number(user.empire), state.state_id, user.user_id, name, split, 0, Number(taxRate), uuidv4(), createdAt)
 
     if ((congregationResult as GenericError).error !== undefined) {
         console.log((congregationResult as GenericError).message)
         return congregationResult as GenericError
     }
-
-    const createdAt: Date = new Date()
 
     for (const business of newBusinesses) {
         const businessResult: [QueryResult, FieldPacket[]] | QueryError = await dbNewBusiness(uuidv4(), congregationId, user.user_id, business.name, business.businessType, getRandomDecimalInclusive(MIN_BASE_EARNING_RATE, MAX_BASE_EARNING_RATE), business.rank, 1, uuidv4(), createdAt)
