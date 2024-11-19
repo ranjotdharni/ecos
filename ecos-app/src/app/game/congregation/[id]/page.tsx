@@ -1,7 +1,8 @@
-import { Business, BusinessSlug, Congregation, CongregationSlug, GenericError, User } from "@/customs/utils/types"
+import { Business, BusinessEarningComponents, BusinessSlug, Congregation, CongregationSlug, GenericError, User } from "@/customs/utils/types"
 import { dbGetBusinessesByCongregation, dbGetCongregationById, dbGetUser } from "@/app/db/query"
 import CongregationOwnerView from "@/app/components/congregation/[id]/CongregationOwnerView"
 import CongregationBasicView from "@/app/components/congregation/[id]/CongregationBasicView"
+import { getAllCongregationsBusinessesEarningData } from "@/customs/utils/math/earnings"
 import { businessesToSlugs, congregationsToSlugs } from "@/customs/utils/tools"
 import { AUTH_ROUTE, NOT_FOUND_PAGE_ROUTE } from "@/customs/utils/constants"
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies"
@@ -36,19 +37,26 @@ export default async function ViewCongregationPage({ params } : { params: Promis
 
         const congregation: CongregationSlug = congregationsToSlugs([rawCongregationData])[0]
 
-        if (rawCongregationData.congregation_owner_id === user.user_id) {   // if user is congregation owner, return priveleged view
-            return <CongregationOwnerView congregation={congregation} />
-        }
-        else {  // otherwise return basic congregation view
-            const result: [Business[], FieldPacket[]] | GenericError = await dbGetBusinessesByCongregation(congregationId)
+        const result: [Business[], FieldPacket[]] | GenericError = await dbGetBusinessesByCongregation(congregationId)
 
-            if ((result as GenericError).error !== undefined) {
-                console.log((result as GenericError).message)
-                redirect(`${process.env.NEXT_PUBLIC_ORIGIN}${NOT_FOUND_PAGE_ROUTE}`)
+        if ((result as GenericError).error !== undefined) {
+            console.log((result as GenericError).message)
+            redirect(`${process.env.NEXT_PUBLIC_ORIGIN}${NOT_FOUND_PAGE_ROUTE}`)
+        }
+
+        const businesses: BusinessSlug[] = businessesToSlugs((result as [Business[], FieldPacket[]])[0])
+
+        if (rawCongregationData.congregation_owner_id === user.user_id) {   // if user is congregation owner, return priveleged view
+            const congregationBusinessesEarnings: BusinessEarningComponents[] | GenericError = await getAllCongregationsBusinessesEarningData(rawCongregationData.congregation_id)
+
+            if ((congregationBusinessesEarnings as GenericError).error !== undefined) {
+                console.log((congregationBusinessesEarnings as GenericError).message)
+                return <CongregationBasicView congregation={congregation} businesses={businesses} />
             }
 
-            const businesses: BusinessSlug[] = businessesToSlugs((result as [Business[], FieldPacket[]])[0])
-
+            return <CongregationOwnerView congregation={congregation} businesses={businesses} earnings={congregationBusinessesEarnings as BusinessEarningComponents[]} />
+        }
+        else {  // otherwise return basic congregation view
             return <CongregationBasicView congregation={congregation} businesses={businesses} />
         }
     }
