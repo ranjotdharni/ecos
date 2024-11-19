@@ -941,19 +941,28 @@ export async function dbGetStatesByEmpire(empire: number): Promise<[State[], Fie
 }
 
 // create new congregation w/ businesses
-export async function dbCreateNewCongregation(cid: string, empire: number, sid: string, coid: string, name: string, split: string, status: number, ctr: number): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+export async function dbCreateNewCongregation(cid: string, empire: number, sid: string, coid: string, name: string, split: string, status: number, ctr: number, ceid: string, createdAt: Date): Promise<[QueryResult, FieldPacket[]] | GenericError> {
     try {
         const conn = await db.getConnection()
 
-        const query: string = `
+        let query: string = `
         INSERT INTO 
             congregations  
             (congregation_id, empire, state_id, congregation_owner_id, congregation_name, labor_split, congregation_status, congregation_tax_rate) 
         VALUES 
             (?, ?, ?, ?, ?, ?, ?, ?)
         `
-        const params: (string | number)[] = [cid, empire, sid, coid, name, split, status, ctr]
-        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        let params: (string | number)[] = [cid, empire, sid, coid, name, split, status, ctr]
+        let response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+
+        query = `
+        INSERT INTO 
+            congregation_earnings (congregation_earnings_id, congregation_id, last_earning, last_update) 
+        VALUES 
+            (?, ?, 0, ?)
+        `
+        params = [ceid, cid, dateToSQLDate(createdAt)]
+
         conn.release()
 
         return response as [QueryResult, FieldPacket[]]
