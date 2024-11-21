@@ -18,6 +18,7 @@ export const API_CONGREGATION_EARNINGS_ROUTE: string = '/api/congregation/earnin
 export const API_COLLECTION_BUSINESS_ROUTE: string = '/api/collection/business' // get collections by business
 export const API_CONGREGATION_OWNER_ROUTE: string = '/api/congregation/owner' // congregation data by owner
 export const API_BUSINESS_EARNINGS_ROUTE: string = '/api/business/earnings' // get earnings of businesses
+export const API_BUSINESS_EMPIRE_ROUTE: string = '/api/business/empire' // get businesses by user empire
 export const API_CONGREGATION_ROUTE: string = '/api/congregation' // get congregation data
 export const API_BUSINESS_ROUTE: string = '/api/business' // get businesses by empire
 export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details

@@ -22,7 +22,7 @@
     color: var(--color--gold);
 
     &::after {
-        content: "Potential Earnings...";
+        content: "Potential Earnings";
         font-size: small;
         color: var(--color--subtext);
         margin-left: 5px;
