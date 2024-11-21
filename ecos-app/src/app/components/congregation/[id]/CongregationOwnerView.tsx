@@ -67,7 +67,7 @@ function CongregationDetailsModule({ congregation, businesses } : { congregation
                     <div className={styles.itemLeftContent}>
                         <p className={styles.itemRank}>{(congregation.congregation_tax_rate * 100).toFixed(4)}</p>
                         <p className={styles.itemSplit}>{(congregation.labor_split * 100).toFixed(4)}</p>
-                        <p className={styles.itemWorker}>Businesses</p>
+                        <p className={styles.itemWorker}>{`Businesses (${businesses.length})`}</p>
                         <ul className={styles.businessList}>
                             {
                                 businesses.map(business => {

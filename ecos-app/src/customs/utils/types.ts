@@ -345,6 +345,7 @@ export interface NewBusiness {
 //**********************************//
 
 export interface BusinessEarningComponents {
+    businessId: string,
     baseEarningRate: number,
     uncollectedEarnings: number,
     timeSinceLastUpdate: number

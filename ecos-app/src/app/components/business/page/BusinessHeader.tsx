@@ -1,12 +1,13 @@
 'use client'
 
-import { API_BUSINESS_EARNINGS_ROUTE, COIN_ICON } from "@/customs/utils/constants"
-import { BusinessEarningComponents, GenericError } from "@/customs/utils/types"
+import { API_BUSINESS_EARNINGS_ROUTE, API_BUSINESS_ROUTE, COIN_ICON } from "@/customs/utils/constants"
+import { BusinessEarningComponents, BusinessSlug, GenericError, WorkerSlug } from "@/customs/utils/types"
 import styles from "./css/businessHeader.module.css"
 import { useEffect, useRef, useState } from "react"
 import Loading from "@/app/loading"
+import { calculateTotalSplit } from "@/customs/utils/tools"
 
-export default function BusinessHeader() {
+export default function BusinessHeader({ props } : { props: { business: BusinessSlug, workers: WorkerSlug[] }[] }) {
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const [loader, setLoader] = useState<boolean>(false)
 
@@ -30,7 +31,14 @@ export default function BusinessHeader() {
             let currentEarnings: number = 0
 
             for (const item of earningData) {
-                currentEarnings = currentEarnings + ((item.timeSinceLastUpdate + time) * item.earningRate)
+                const businessProp: { business: BusinessSlug, workers: WorkerSlug[] } | undefined = props.find(p => p.business.business_id === item.businessId)
+
+                if (businessProp === undefined) {
+                    console.log('Fatal Earnings Calculation Error')
+                    return 0
+                }
+
+                currentEarnings = currentEarnings + (Number(item.uncollectedEarnings) + ((1 - businessProp.business.congregation.congregation_tax_rate - businessProp.business.congregation.state.state_tax_rate - calculateTotalSplit(businessProp.workers)) * item.baseEarningRate * (item.timeSinceLastUpdate + time)))
             }
 
             return totalUncollectedEarnings + currentEarnings
