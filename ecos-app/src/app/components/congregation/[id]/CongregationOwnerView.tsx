@@ -9,15 +9,13 @@ import { useEffect, useRef, useState } from "react"
 
 function CongregationHeader({ earnings, tax } : { earnings: BusinessEarningComponents[], tax: number }) {
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
-
-    const [earningData, setEarningData] = useState<BusinessEarningComponents>()
     const [time, setTime] = useState<number>(0)
 
     function calculateCongregationEarnings(): number {
         let total: number = 0
 
         for (const earning of earnings) {
-            total = total + (Number(earning.uncollectedEarnings) + (Number(earning.earningRate) * (Number(earning.timeSinceLastUpdate) + time)))
+            total = total + (Number(earning.uncollectedEarnings) + (Number(earning.baseEarningRate) * (Number(earning.timeSinceLastUpdate) + time)))
         }
 
         return total

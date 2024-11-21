@@ -1,14 +1,14 @@
 'use server'
 
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation } from "../../app/db/query"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State } from "@/customs/utils/types"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry } from "../../app/db/query"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug } from "@/customs/utils/types"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease, validateNewBusinessFields } from "@/app/server/business"
-import { businessesToSlugs, calculateEarningRate, calculateWage, dateToSQLDate, getRandomDecimalInclusive, statesToSlugs, timeSince, workersToSlugs } from "@/customs/utils/tools"
+import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, statesToSlugs, timeSince, workersToSlugs } from "@/customs/utils/tools"
 import { NEW_CONGREGATION_COST, validateCongregationLaborSplit, validateCongregationName, validateCongregationTaxRate } from "@/app/server/congregation"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
 import { FiredItem, RankChangeItem } from "@/app/components/business/id/WorkerModal"
-import { FieldPacket, QueryError, QueryResult } from "mysql2"
+import { Field, FieldPacket, QueryError, QueryResult } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
@@ -366,7 +366,29 @@ export async function collectBusinessEarnings(businessId: string): Promise<Gener
 
     const workers: Worker[] = (workersResult as [Worker[], FieldPacket[]])[0]
 
-    const businessEarningRate: number = calculateEarningRate(businessesToSlugs([business])[0], workersToSlugs(workers))
+    const congregationOwnerResult: [User[], FieldPacket[]] | GenericError = await dbGetUserById(business.congregation_owner_id as string)
+
+    if ((congregationOwnerResult as GenericError).error !== undefined || (congregationOwnerResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(congregationOwnerResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Find Congregation Owner)' }
+    }
+
+    const stateOwnerResult: [User[], FieldPacket[]] | GenericError = await dbGetUserById(business.state_owner_id as string)
+
+    if ((stateOwnerResult as GenericError).error !== undefined || (stateOwnerResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(stateOwnerResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Find State Owner)' }
+    }
+
+    const stateOwner: User = (stateOwnerResult as [User[], FieldPacket[]])[0][0]
+
+    const congregationOwner: User = (congregationOwnerResult as [User[], FieldPacket[]])[0][0]
+
+    const workerSlugs: WorkerSlug[] = workersToSlugs(workers)
+
+    const baseEarningRate: number = calculateBaseEarningRate(businessesToSlugs([business])[0], workerSlugs)
+
+    const businessEarningRate: number = calculateEarningRate(businessesToSlugs([business])[0], workerSlugs)
 
     const businessEarningsResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetBusinessEarningsByBusiness(business.business_id)
 
@@ -377,23 +399,47 @@ export async function collectBusinessEarnings(businessId: string): Promise<Gener
 
     const businessEarnings: BusinessEarnings = (businessEarningsResult as [BusinessEarnings[], FieldPacket[]])[0][0]
 
+    const date: Date = new Date()
     const time: number = timeSince(new Date(businessEarnings.last_update))
-    const uncollectedEarnings: number = businessEarnings.last_earning
+    const uncollectedEarnings: number = Number(businessEarnings.last_earning)
 
-    const earned: number = Number(uncollectedEarnings) + (businessEarningRate * time)
+    const earned: number = uncollectedEarnings + (businessEarningRate * time)
+    const congregationCut: number = (uncollectedEarnings + (baseEarningRate * time)) * Number(business.congregation_tax_rate)
+    const stateCut: number = (uncollectedEarnings + (baseEarningRate * time)) * Number(business.state_tax_rate)
 
-    const goldUpdate: [QueryResult, FieldPacket[]] | QueryError = await dbAddGold(user.user_id, earned)
+    let goldUpdate: [QueryResult, FieldPacket[]] | QueryError = await dbAddGold(user.user_id, earned)
 
     if ((goldUpdate as QueryError).code !== undefined) {
         console.log(goldUpdate)
-        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update Gold)' }
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update User Gold)' }
     }
 
-    const earningsUpdate: [QueryResult, FieldPacket[]] | QueryError = await dbUpdateBusinessEarnings(user.username, business.business_id, 0, new Date())
+    goldUpdate = await dbAddGold(stateOwner.user_id, stateCut)
+
+    if ((goldUpdate as QueryError).code !== undefined) {
+        console.log(goldUpdate)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update State Owner Gold)' }
+    }
+
+    goldUpdate = await dbAddGold(congregationOwner.user_id, congregationCut)
+
+    if ((goldUpdate as QueryError).code !== undefined) {
+        console.log(goldUpdate)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update Congregation Owner Gold)' }
+    }
+
+    const earningsUpdate: [QueryResult, FieldPacket[]] | QueryError = await dbUpdateBusinessEarnings(user.username, business.business_id, 0, date)
 
     if ((earningsUpdate as QueryError).code !== undefined) {
         console.log(earningsUpdate)
         return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update Earnings)' }
+    }
+
+    const collectionsUpdate: [QueryResult, FieldPacket[]] | GenericError = await dbAddCollectionEntry(uuidv4(), business.business_id, Number(business.state_tax_rate), Number(business.congregation_tax_rate), calculateTotalSplit(workerSlugs), date)
+
+    if ((collectionsUpdate as GenericError).error !== undefined) {
+        console.log(collectionsUpdate)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update Collections)' }
     }
 
     return { success: true, message: 'Collected Earnings' }

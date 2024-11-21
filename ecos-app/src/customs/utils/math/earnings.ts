@@ -1,6 +1,6 @@
 import { dbGetBusinessEarningsByBusiness, dbGetBusinessesByCongregation, dbGetBusinessesByOwner, dbGetCongregationsByOwner, dbGetWorkersByBusinessId } from "@/app/db/query"
 import { Business, BusinessEarningComponents, BusinessEarnings, Congregation, GenericError, Worker } from "../types"
-import { businessesToSlugs, calculateEarningRate, timeSince, workersToSlugs } from "../tools"
+import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, timeSince, workersToSlugs } from "../tools"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 
 // The below functions DO NOT PROVIDE THEIR OWN AUTH, they assume auth completion; these are server-side utilities only!!!!!!
@@ -16,7 +16,7 @@ export async function getBusinessEarningData(business: Business): Promise<Busine
 
     const workers: Worker[] = (workersResult as [Worker[], FieldPacket[]])[0]
 
-    const businessEarningRate: number = calculateEarningRate(businessesToSlugs([business])[0], workersToSlugs(workers))
+    const baseEarningRate: number = calculateBaseEarningRate(businessesToSlugs([business])[0], workersToSlugs(workers))
 
     const businessEarningsResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetBusinessEarningsByBusiness(business.business_id)
 
@@ -31,7 +31,7 @@ export async function getBusinessEarningData(business: Business): Promise<Busine
     const businessUncollectedEarnings: number = Number(businessEarnings.last_earning)
 
     return {
-        earningRate: businessEarningRate,
+        baseEarningRate: baseEarningRate,
         uncollectedEarnings: businessUncollectedEarnings,
         timeSinceLastUpdate: lastUpdateInSeconds
     }

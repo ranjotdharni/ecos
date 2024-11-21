@@ -173,6 +173,42 @@ export interface Worker extends RowDataPacket {
     business_owner_last_name: string | null
 }
 
+export interface Collection extends RowDataPacket {
+    collection_id: string,
+    str: number,
+    ctr: number,
+    total_split: number,
+    collected_at: Date,
+    state_state_id: string
+    state_id: string
+    state_owner_id: string | null
+    empire: number
+    state_name: string
+    state_tax_rate: number
+    congregation_congregation_id: string
+    congregation_id: string
+    congregation_owner_id: string | null
+    congregation_name: string
+    labor_split: number
+    congregation_status: number
+    congregation_tax_rate: number
+    business_congregation_id: string
+    business_id: string
+    business_owner_id: string | null
+    business_name: string
+    business_type: number
+    base_earning_rate: number
+    rank_earning_increase: number
+    hiring: number
+    worker_count: number
+    state_owner_first_name: string | null
+    state_owner_last_name: string | null
+    congregation_owner_first_name: string | null
+    congregation_owner_last_name: string | null
+    business_owner_first_name: string | null
+    business_owner_last_name: string | null
+}
+
 //***********************//
 //                       //
 //    User Data Types    //
@@ -286,6 +322,15 @@ export interface WorkerSlug {
     clocked_out: Date | null
 }
 
+export interface CollectionSlug {
+    collection_id: string,
+    str: number,
+    ctr: number,
+    total_split: number,
+    collected_at: Date,
+    business: BusinessSlug
+}
+
 export interface NewBusiness {
     index: number
     name: string
@@ -300,7 +345,7 @@ export interface NewBusiness {
 //**********************************//
 
 export interface BusinessEarningComponents {
-    earningRate: number,
+    baseEarningRate: number,
     uncollectedEarnings: number,
     timeSinceLastUpdate: number
 }

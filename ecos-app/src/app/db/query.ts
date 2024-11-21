@@ -1,4 +1,4 @@
-import { Business, BusinessEarnings, Congregation, CongregationSlug, GenericError, Session, State, User, Worker } from "@/customs/utils/types"
+import { Business, BusinessEarnings, Collection, Congregation, CongregationSlug, GenericError, Session, State, User, Worker } from "@/customs/utils/types"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
 import { dateToSQLDate } from "@/customs/utils/tools"
 import { db } from "./config"
@@ -80,6 +80,24 @@ export async function dbGetUser(username: string): Promise<[User[], FieldPacket[
 
     } catch (error) {
         return error as QueryError
+    }
+}
+
+// Get user credentials by user id
+export async function dbGetUserById(userId: string): Promise<[User[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = 'SELECT * FROM users WHERE user_id = ?'
+        const params: string[] = [userId]
+        const response: [User[], FieldPacket[]] = await conn.execute<User[]>(query, params)
+        conn.release()
+
+        return response as [User[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch User From Database' } as GenericError
     }
 }
 
@@ -969,5 +987,147 @@ export async function dbCreateNewCongregation(cid: string, empire: number, sid: 
     } catch (error) {
         console.log(error)
         return { error: true, message: 'Failed to Create New Congregation in Database' } as GenericError
+    }
+}
+
+// create new collection entry
+export async function dbAddCollectionEntry(collectionId: string, businessId: string, str: number, ctr: number, totalSplit: number, collectedAt: Date): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        INSERT INTO 
+            collections (collection_id, business_id, str, ctr, total_split, collected_at) 
+        VALUES 
+            (?, ?, ?, ?, ?, ?)
+        `
+        const params: (string | number)[] = [collectionId, businessId, str, ctr, totalSplit, dateToSQLDate(collectedAt)]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Create New Collection Entry in Database' } as GenericError
+    }
+}
+
+// get all collections by business
+export async function dbGetCollectionsByBusiness(businessId: string): Promise<[Collection[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            col.*,
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            b.congregation_id AS business_congregation_id,
+            b.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ub.first_name AS business_owner_first_name,
+            ub.last_name AS business_owner_last_name,
+            COALESCE(w.worker_count, 0) AS worker_count
+        FROM 
+            states s
+        JOIN 
+            congregations c ON s.state_id = c.state_id
+        JOIN 
+            businesses b ON c.congregation_id = b.congregation_id 
+        JOIN
+            collections col ON b.business_id = col.business_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        LEFT JOIN 
+            users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) w ON b.business_id = w.business_id
+        WHERE 
+            b.business_id = ? 
+        ORDER BY 
+            col.created_at DESC
+        `
+        const params: (string | number)[] = [businessId]
+        const response: [Collection[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [Collection[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch Collection Entries From Database' } as GenericError
+    }
+}
+
+// get all collections by business
+export async function dbGetCollectionsByCongregation(congregationId: string): Promise<[Collection[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            col.*,
+            s.state_id AS state_state_id,
+            s.*, 
+            c.congregation_id AS congregation_congregation_id,
+            c.*, 
+            b.congregation_id AS business_congregation_id,
+            b.*,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ub.first_name AS business_owner_first_name,
+            ub.last_name AS business_owner_last_name,
+            COALESCE(w.worker_count, 0) AS worker_count
+        FROM 
+            states s
+        JOIN 
+            congregations c ON s.state_id = c.state_id
+        JOIN 
+            businesses b ON c.congregation_id = b.congregation_id 
+        JOIN
+            collections col ON b.business_id = col.business_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id
+        LEFT JOIN 
+            users ub ON b.business_owner_id = ub.user_id
+        LEFT JOIN (
+            SELECT 
+                business_id,
+                COUNT(*) AS worker_count
+            FROM 
+                workers
+            GROUP BY 
+                business_id
+        ) w ON b.business_id = w.business_id
+        WHERE 
+            c.congregation_id = ? 
+        ORDER BY 
+            col.created_at DESC
+        `
+        const params: (string | number)[] = [congregationId]
+        const response: [Collection[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [Collection[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch Collection Entries From Database' } as GenericError
     }
 }
