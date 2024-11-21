@@ -348,6 +348,8 @@ export interface NewBusiness {
 
 export interface BusinessEarningComponents {
     businessId: string,
+    str: number,
+    ctr: number,
     baseEarningRate: number,
     uncollectedEarnings: number,
     timeSinceLastUpdate: number

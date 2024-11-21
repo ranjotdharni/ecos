@@ -32,6 +32,8 @@ export async function getBusinessEarningData(business: Business): Promise<Busine
 
     return {
         businessId: business.business_id,
+        str: Number(business.state_tax_rate),
+        ctr: Number(business.congregation_tax_rate),
         baseEarningRate: baseEarningRate,
         uncollectedEarnings: businessUncollectedEarnings,
         timeSinceLastUpdate: lastUpdateInSeconds

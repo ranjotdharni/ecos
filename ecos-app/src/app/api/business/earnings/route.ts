@@ -16,6 +16,9 @@ export async function GET(request: NextRequest) {
 
     const earnings: BusinessEarningComponents[] | GenericError = await getAllOwnersBusinessesEarningData(cookieList.get('username')!.value)
 
+    if ((earnings as GenericError).error !== undefined)
+        return NextResponse.json(earnings as GenericError, { status: 500 })
+
     return NextResponse.json(earnings, { status: 200 })
 }
 
