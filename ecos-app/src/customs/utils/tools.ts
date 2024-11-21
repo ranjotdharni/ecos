@@ -1,4 +1,4 @@
-import { Business, BusinessSlug, Congregation, CongregationSlug, State, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
+import { Business, BusinessSlug, Collection, CollectionSlug, Congregation, CongregationSlug, State, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
 import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "./constants"
 import { redirect } from "next/navigation"
 
@@ -106,6 +106,47 @@ export function timerString(seconds: number): string {
 
 export function getRandomDecimalInclusive(min: number, max: number): number {
     return Math.random() * (max - min) + min;
+}
+
+export function collectionsToSlugs(rawCollections: Collection[]): CollectionSlug[] {
+    return rawCollections.map(raw => {
+        return {
+            collection_id: raw.collection_id,
+            str: Number(raw.str),
+            ctr: Number(raw.ctr),
+            total_split: Number(raw.total_split),
+            collected_at: new Date(raw.collected_at),
+            business: {
+                business_id: raw.business_id,
+                congregation: {
+                    congregation_id: raw.congregation_id,
+                    state: {
+                        state_id: raw.state_id,
+                        empire: raw.empire,
+                        state_name: raw.state_name,
+                        state_tax_rate: raw.state_tax_rate,
+                        state_owner_firstname: raw.state_owner_first_name,
+                        state_owner_lastname: raw.state_owner_last_name
+                    },
+                    empire: raw.empire,
+                    congregation_name: raw.congregation_name,
+                    congregation_status: raw.congregation_status,
+                    congregation_tax_rate: raw.congregation_tax_rate,
+                    labor_split: raw.labor_split,
+                    congregation_owner_firstname: raw.congregation_owner_first_name,
+                    congregation_owner_lastname: raw.congregation_owner_last_name
+                },
+                business_name: raw.business_name,
+                business_type: raw.business_type,
+                base_earning_rate: raw.base_earning_rate,
+                rank_earning_increase: raw.rank_earning_increase,
+                worker_count: raw.worker_count,
+                hiring: raw.hiring !== 0,
+                business_owner_firstname: raw.business_owner_first_name,
+                business_owner_lastname: raw.business_owner_last_name
+            }
+        }
+    })
 }
 
 export function businessesToSlugs(rawBusinesses: Business[]): BusinessSlug[] {
@@ -229,6 +270,10 @@ export function calculateTotalSplit(workers: WorkerSlug[], startFrom: number = 0
     return (worker.business.congregation.labor_split * (1 + worker.worker_rank)) + calculateTotalSplit(workers, startFrom + 1)
 }
 
+export function calculateBaseEarningRate(business: BusinessSlug, workers: WorkerSlug[]) {
+    return business.base_earning_rate * (3 + workers.length)
+}
+
 export function calculateEarningRate(business: BusinessSlug, workers: WorkerSlug[]) {
-    return (1 - business.congregation.state.state_tax_rate - business.congregation.congregation_tax_rate - calculateTotalSplit(workers)) * (business.base_earning_rate * (3 + workers.length))
+    return (1 - business.congregation.state.state_tax_rate - business.congregation.congregation_tax_rate - calculateTotalSplit(workers)) * calculateBaseEarningRate(business, workers)
 }
