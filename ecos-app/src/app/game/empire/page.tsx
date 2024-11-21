@@ -1,10 +1,13 @@
+import EmpireContent from "@/app/components/empire/EmpireContent"
+import EmpireHeader from "@/app/components/empire/EmpireHeader"
+import styles from "./page.module.css"
 
-
-export default function Empire() {
+export default async function Empire() {
 
     return (
-        <section>
-            <h1>This is the Empire page.</h1>
+        <section className={styles.page}>
+            <EmpireHeader />
+            <EmpireContent />
         </section>
     )
 }

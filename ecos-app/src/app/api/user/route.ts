@@ -10,8 +10,9 @@ export async function GET(request: NextRequest) {
     
     const cookieList = await cookies()
 
-    if (!cookieList.has('username'))
+    if (!cookieList.has('username')) {
         return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 })
+    }
 
     const result: [User[], FieldPacket[]] | QueryError = await dbGetUser(cookieList.get('username')!.value)
 

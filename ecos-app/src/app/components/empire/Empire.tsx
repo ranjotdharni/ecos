@@ -4,7 +4,7 @@ import { selectEmpire } from "@/customs/utils/actions"
 import { EmpireData } from "@/customs/utils/types"
 import { EMPIRE_DATA } from "@/app/server/empire"
 import { MouseEvent, useState } from "react"
-import styles from "./empire.module.css"
+import styles from "./css/empire.module.css"
 
 interface EmpireCardProps { 
     empire: EmpireData 

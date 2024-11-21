@@ -37,7 +37,7 @@
     color: var(--color--gold);
     
     &::after {
-        content: "Current Revenue";
+        content: "Current Earnings";
         font-size: small;
         margin-left: 5px;
         color: var(--color--subtext);
