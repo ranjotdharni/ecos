@@ -1,7 +1,7 @@
 'use client'
 
 import { BusinessSlug, CongregationSlug, CongregationType } from "@/customs/utils/types"
-import { BUSINESS_OWNER_ICON } from "@/customs/utils/constants"
+import { CONGREGATION_OWNER_ICON } from "@/customs/utils/constants"
 import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import styles from "./css/congregationBasicView.module.css"
 import { BUSINESS_TYPES } from "@/app/server/business"
@@ -41,7 +41,7 @@ function CongregationDetailsModule({ congregation, businesses } : { congregation
                 <div className={styles.itemRight}>
                     <div className={styles.earnings}>
                         <div>
-                            <img src={BUSINESS_OWNER_ICON} />
+                            <img src={CONGREGATION_OWNER_ICON} />
                             <p>{`${congregation.congregation_owner_firstname} ${congregation.congregation_owner_lastname}`}</p>
                         </div>
                     </div>

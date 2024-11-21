@@ -1,14 +1,14 @@
-import BusinessContent from "@/app/components/business/page/BusinessContent"
-import BusinessHeader from "@/app/components/business/page/BusinessHeader"
-import styles from "./page.module.css"
-import { Business, Worker, BusinessSlug, User, WorkerSlug } from "@/customs/utils/types"
-import { cookies } from "next/headers"
-import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies"
-import { redirect } from "next/navigation"
-import { AUTH_ROUTE, NOT_FOUND_PAGE_ROUTE } from "@/customs/utils/constants"
-import { FieldPacket, QueryError } from "mysql2"
 import { dbGetBusinessesByOwner, dbGetUser, dbGetWorkersByBusinessId } from "@/app/db/query"
+import { Business, Worker, BusinessSlug, User, WorkerSlug } from "@/customs/utils/types"
+import BusinessContent from "@/app/components/business/page/BusinessContent"
+import { AUTH_ROUTE, NOT_FOUND_PAGE_ROUTE } from "@/customs/utils/constants"
+import BusinessHeader from "@/app/components/business/page/BusinessHeader"
 import { businessesToSlugs, workersToSlugs } from "@/customs/utils/tools"
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies"
+import { FieldPacket, QueryError } from "mysql2"
+import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
+import styles from "./page.module.css"
 
 export default async function BusinessPage() {
     async function getPageHeaderProps(): Promise<{ business: BusinessSlug, workers: WorkerSlug[] }[]> {

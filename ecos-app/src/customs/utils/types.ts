@@ -178,6 +178,7 @@ export interface Collection extends RowDataPacket {
     str: number,
     ctr: number,
     total_split: number,
+    revenue: number,
     collected_at: Date,
     state_state_id: string
     state_id: string
@@ -327,6 +328,7 @@ export interface CollectionSlug {
     str: number,
     ctr: number,
     total_split: number,
+    revenue: number,
     collected_at: Date,
     business: BusinessSlug
 }

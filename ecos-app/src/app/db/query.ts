@@ -991,17 +991,17 @@ export async function dbCreateNewCongregation(cid: string, empire: number, sid: 
 }
 
 // create new collection entry
-export async function dbAddCollectionEntry(collectionId: string, businessId: string, str: number, ctr: number, totalSplit: number, collectedAt: Date): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+export async function dbAddCollectionEntry(collectionId: string, businessId: string, str: number, ctr: number, totalSplit: number, collectedAt: Date, revenue: number): Promise<[QueryResult, FieldPacket[]] | GenericError> {
     try {
         const conn = await db.getConnection()
 
         const query: string = `
         INSERT INTO 
-            collections (collection_id, business_id, str, ctr, total_split, collected_at) 
+            collections (collection_id, business_id, str, ctr, total_split, collected_at, revenue) 
         VALUES 
-            (?, ?, ?, ?, ?, ?)
+            (?, ?, ?, ?, ?, ?, ?)
         `
-        const params: (string | number)[] = [collectionId, businessId, str, ctr, totalSplit, dateToSQLDate(collectedAt)]
+        const params: (string | number)[] = [collectionId, businessId, str, ctr, totalSplit, dateToSQLDate(collectedAt), revenue]
         const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
         conn.release()
 
@@ -1059,7 +1059,7 @@ export async function dbGetCollectionsByBusiness(businessId: string): Promise<[C
         WHERE 
             b.business_id = ? 
         ORDER BY 
-            col.created_at DESC
+            col.collected_at DESC
         `
         const params: (string | number)[] = [businessId]
         const response: [Collection[], FieldPacket[]] = await conn.execute(query, params)
@@ -1119,7 +1119,7 @@ export async function dbGetCollectionsByCongregation(congregationId: string): Pr
         WHERE 
             c.congregation_id = ? 
         ORDER BY 
-            col.created_at DESC
+            col.collected_at DESC
         `
         const params: (string | number)[] = [congregationId]
         const response: [Collection[], FieldPacket[]] = await conn.execute(query, params)

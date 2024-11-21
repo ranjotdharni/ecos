@@ -2,17 +2,18 @@
 
 import { BusinessEarningComponents, BusinessSlug, BusinessType, GenericError, GenericSuccess, WorkerSlug } from "@/customs/utils/types"
 import { API_BUSINESS_EARNINGS_ROUTE, BUSINESS_OWNER_ICON, COIN_ICON } from "@/customs/utils/constants"
-import { MouseEvent, useContext, useEffect, useRef, useState } from "react"
+import { MouseEvent, MouseEventHandler, useContext, useEffect, useRef, useState } from "react"
 import { collectBusinessEarnings } from "@/customs/utils/actions"
+import { calculateTotalSplit } from "@/customs/utils/tools"
 import { UserContext } from "../../context/UserProvider"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import styles from "../css/ownerView.module.css"
 import useError from "@/customs/hooks/useError"
+import CollectionModal from "./CollectionModal"
 import WorkerModal from "./WorkerModal"
 import Loading from "@/app/loading"
-import { calculateTotalSplit } from "@/customs/utils/tools"
 
-function BusinessHeader({ business, totalSplit, collectLoader, setWorkerModalVisible, throwError } : { business: BusinessSlug, totalSplit: number, collectLoader: boolean, setWorkerModalVisible: (visible: boolean) => void, throwError: (error: string) => void }) {
+function BusinessHeader({ business, totalSplit, collectLoader, setWorkerModalVisible, setCollectionModalVisible, throwError } : { business: BusinessSlug, totalSplit: number, collectLoader: boolean, setWorkerModalVisible: (visible: boolean) => void, setCollectionModalVisible: (visible: boolean) => void, throwError: (error: string) => void }) {
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     const [earningData, setEarningData] = useState<BusinessEarningComponents>()
@@ -22,6 +23,12 @@ function BusinessHeader({ business, totalSplit, collectLoader, setWorkerModalVis
         event.preventDefault()
 
         setWorkerModalVisible(true)
+    }
+
+    function showCollections(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+
+        setCollectionModalVisible(true)
     }
 
     async function getEarnings() {
@@ -81,7 +88,10 @@ function BusinessHeader({ business, totalSplit, collectLoader, setWorkerModalVis
                     <h1>{earningData === undefined ? '---' : (Number(earningData.uncollectedEarnings) + ((1 - business.congregation.congregation_tax_rate - business.congregation.state.state_tax_rate - totalSplit) * earningData.baseEarningRate * time)).toFixed(2)}</h1>
                 </div>
             }
-            <button className={styles.workerButton} onClick={showWorkers}>Edit Workers</button>
+            <div className={styles.headerButtons}>
+                <button className={styles.workerButton} onClick={showWorkers} >Edit Workers</button>
+                <button className={styles.workerButton} onClick={showCollections} >View Collections</button>
+            </div>
         </div>
     )
 }
@@ -148,12 +158,14 @@ export default function OwnerView({ business, workers } : { business: BusinessSl
     const [error, throwError] = useError()
     const [collectLoader, setCollectLoader] = useState<boolean>(false)
     const [workerModalVisible, setWorkerModalVisible] = useState<boolean>(false)
+    const [collectionModalVisible, setCollectionModalVisible] = useState<boolean>(false)
 
     return (
         <>
             <WorkerModal businessId={business.business_id} workers={workers} visible={workerModalVisible} setVisible={setWorkerModalVisible} throwError={throwError} />
+            <CollectionModal visible={collectionModalVisible} setVisible={setCollectionModalVisible} throwError={throwError} businessId={business.business_id} />
             <div className={styles.container}>
-                <BusinessHeader business={business} totalSplit={calculateTotalSplit(workers)} collectLoader={collectLoader} setWorkerModalVisible={setWorkerModalVisible} throwError={throwError} />
+                <BusinessHeader business={business} totalSplit={calculateTotalSplit(workers)} collectLoader={collectLoader} setWorkerModalVisible={setWorkerModalVisible} setCollectionModalVisible={setCollectionModalVisible} throwError={throwError} />
                 <BusinessDetailsModule business={business} collectLoader={collectLoader} setCollectLoader={setCollectLoader} throwError={throwError} />
             </div>
             <p className={styles.error}>{error}</p>
