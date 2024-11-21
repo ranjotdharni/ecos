@@ -248,7 +248,7 @@
 }
 
 .businessList li a img {
-    height: 100%;
+    height: 90%;
     aspect-ratio: 1 / 1;
     margin-right: 5px;
 }
@@ -280,8 +280,16 @@
         height: 100%;
     }
 
+    .itemHeader {
+        height: 25%;
+    }
+
     .itemHeader h2 {
         font-size: small;
+    }
+
+    .itemHeader img {
+        height: 50%;
     }
 
     .itemContent {
@@ -310,5 +318,9 @@
 
     .earnings p {
         font-size: medium;
+    }
+
+    .businessList {
+        flex-basis: 0;
     }
 }

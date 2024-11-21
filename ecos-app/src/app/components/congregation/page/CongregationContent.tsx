@@ -2,9 +2,9 @@
 
 import { API_BUSINESS_CONGREGATION_ROUTE, API_CONGREGATION_OWNER_ROUTE, BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_NEW_PAGE_ROUTE } from "@/customs/utils/constants"
 import { BusinessSlug, BusinessType, CongregationSlug, CongregationType } from "@/customs/utils/types"
+import { ChangeEvent, MouseEvent, useEffect, useState } from "react"
 import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import styles from "./css/congregationContent.module.css"
-import { MouseEvent, useEffect, useState } from "react"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import useError from "@/customs/hooks/useError"
 import Loading from "@/app/loading"
@@ -75,8 +75,22 @@ function CongregationBusinessesList({ congregation, throwError } : { congregatio
     )
 }
 
-function CongregationList({ congregations, selected, select } : { congregations: CongregationSlug[] | undefined, selected: CongregationSlug | undefined, select: (choice: CongregationSlug) => void }) {
-    
+function CongregationList({ congregations, selected, select } : { congregations: CongregationSlug[] | undefined, selected: CongregationSlug | undefined, select: (choice: CongregationSlug | undefined) => void }) {
+    const [stateFilter, setStateFilter] = useState<string>('')
+    const [congregationFilter, setCongregationFilter] = useState<string>('')
+
+    function filterState(event: ChangeEvent<HTMLInputElement>) {
+        event.preventDefault()
+        setStateFilter(event.target.value)
+        select(undefined)
+    }
+
+    function filterCongregation(event: ChangeEvent<HTMLInputElement>) {
+        event.preventDefault()
+        setCongregationFilter(event.target.value)
+        select(undefined)
+    }
+
     function CongregationListItem({ c } : { c: CongregationSlug }) {
         const [type, setType] = useState<CongregationType>(CONGREGATION_TYPES.find(t => t.type === Number(c.congregation_status))!)
 
@@ -103,10 +117,14 @@ function CongregationList({ congregations, selected, select } : { congregations:
                 <img src={CONGREGATION_ICON} />
                 <h2>Your Congregations</h2>
             </div>
+            <div className={styles.cFilter}>
+                <input onChange={filterState} placeholder='Filter By State' />
+                <input onChange={filterCongregation} placeholder='Filter By Congregation' />
+            </div>
             <ul className={`${congregations ? '' : styles.cLoading}`}>
                 {
                     congregations ? 
-                    congregations.map(congregation => {
+                    congregations.filter(c => c.state.state_name.toLowerCase().includes(stateFilter.toLowerCase().trim()) && c.congregation_name.toLowerCase().includes(congregationFilter.toLowerCase().trim())).map(congregation => {
                         return <CongregationListItem key={congregation.congregation_id} c={congregation} />
                     }) :
                     <div className={styles.cLoader}><Loading color='var(--color--text)' /></div>

@@ -2,13 +2,13 @@
 
 import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry } from "../../app/db/query"
 import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug } from "@/customs/utils/types"
+import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, workersToSlugs } from "@/customs/utils/tools"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease, validateNewBusinessFields } from "@/app/server/business"
-import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, statesToSlugs, timeSince, workersToSlugs } from "@/customs/utils/tools"
 import { NEW_CONGREGATION_COST, validateCongregationLaborSplit, validateCongregationName, validateCongregationTaxRate } from "@/app/server/congregation"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
 import { FiredItem, RankChangeItem } from "@/app/components/business/id/WorkerModal"
-import { Field, FieldPacket, QueryError, QueryResult } from "mysql2"
+import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
@@ -400,12 +400,13 @@ export async function collectBusinessEarnings(businessId: string): Promise<Gener
     const businessEarnings: BusinessEarnings = (businessEarningsResult as [BusinessEarnings[], FieldPacket[]])[0][0]
 
     const date: Date = new Date()
-    const time: number = timeSince(new Date(businessEarnings.last_update))
+    const time: number = timeSince(new Date(businessEarnings.last_update), date)
     const uncollectedEarnings: number = Number(businessEarnings.last_earning)
 
+    const revenue: number = uncollectedEarnings + (baseEarningRate * time)
     const earned: number = uncollectedEarnings + (businessEarningRate * time)
-    const congregationCut: number = (uncollectedEarnings + (baseEarningRate * time)) * Number(business.congregation_tax_rate)
-    const stateCut: number = (uncollectedEarnings + (baseEarningRate * time)) * Number(business.state_tax_rate)
+    const congregationCut: number = revenue * Number(business.congregation_tax_rate)
+    const stateCut: number = revenue * Number(business.state_tax_rate)
 
     let goldUpdate: [QueryResult, FieldPacket[]] | QueryError = await dbAddGold(user.user_id, earned)
 
@@ -435,7 +436,7 @@ export async function collectBusinessEarnings(businessId: string): Promise<Gener
         return { error: true, message: '500 INTERNAL SERVER ERROR (Could Not Update Earnings)' }
     }
 
-    const collectionsUpdate: [QueryResult, FieldPacket[]] | GenericError = await dbAddCollectionEntry(uuidv4(), business.business_id, Number(business.state_tax_rate), Number(business.congregation_tax_rate), calculateTotalSplit(workerSlugs), date)
+    const collectionsUpdate: [QueryResult, FieldPacket[]] | GenericError = await dbAddCollectionEntry(uuidv4(), business.business_id, Number(business.state_tax_rate), Number(business.congregation_tax_rate), calculateTotalSplit(workerSlugs), date, revenue)
 
     if ((collectionsUpdate as GenericError).error !== undefined) {
         console.log(collectionsUpdate)

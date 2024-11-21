@@ -1,6 +1,6 @@
 import { dbGetBusinessEarningsByBusiness, dbGetBusinessesByCongregation, dbGetBusinessesByOwner, dbGetCongregationsByOwner, dbGetWorkersByBusinessId } from "@/app/db/query"
 import { Business, BusinessEarningComponents, BusinessEarnings, Congregation, GenericError, Worker } from "../types"
-import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, timeSince, workersToSlugs } from "../tools"
+import { businessesToSlugs, calculateBaseEarningRate, timeSince, workersToSlugs } from "../tools"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 
 // The below functions DO NOT PROVIDE THEIR OWN AUTH, they assume auth completion; these are server-side utilities only!!!!!!

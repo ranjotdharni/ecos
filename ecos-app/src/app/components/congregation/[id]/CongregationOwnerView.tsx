@@ -1,11 +1,12 @@
 'use client'
 
 import { BusinessEarningComponents, BusinessSlug, CongregationSlug, CongregationType } from "@/customs/utils/types"
-import { BUSINESS_OWNER_ICON, COIN_ICON } from "@/customs/utils/constants"
+import { COIN_ICON, CONGREGATION_OWNER_ICON } from "@/customs/utils/constants"
+import { MouseEvent, useEffect, useRef, useState } from "react"
 import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import styles from "./css/congregationOwnerView.module.css"
 import { BUSINESS_TYPES } from "@/app/server/business"
-import { useEffect, useRef, useState } from "react"
+import CollectionModal from "./CollectionModal"
 
 function CongregationHeader({ earnings, tax } : { earnings: BusinessEarningComponents[], tax: number }) {
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -52,8 +53,13 @@ function CongregationHeader({ earnings, tax } : { earnings: BusinessEarningCompo
     )
 }
 
-function CongregationDetailsModule({ congregation, businesses } : { congregation: CongregationSlug, businesses: BusinessSlug[] }) {
+function CongregationDetailsModule({ congregation, businesses, setVisible } : { congregation: CongregationSlug, businesses: BusinessSlug[], setVisible: (visible: boolean) => void }) {
     const [congregationTypeData, setBusinessTypeData] = useState<CongregationType | undefined>(CONGREGATION_TYPES.find(c => c.type === congregation.congregation_status))
+
+    function showCollections(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+        setVisible(true)   
+    }
 
     return (
         <div className={styles.item}>
@@ -87,12 +93,12 @@ function CongregationDetailsModule({ congregation, businesses } : { congregation
                 <div className={styles.itemRight}>
                     <div className={styles.earnings}>
                         <div>
-                            <img src={BUSINESS_OWNER_ICON} />
+                            <img src={CONGREGATION_OWNER_ICON} />
                             <p>{`${congregation.congregation_owner_firstname} ${congregation.congregation_owner_lastname}`}</p>
                         </div>
                     </div>
                     <p className={styles.itemState}>{`${congregation.state.state_name} - ${(congregation.state.state_tax_rate * 100).toFixed(4)}`}</p>
-                    <button className={styles.collectButton}>View Collections</button>
+                    <button className={styles.collectButton} onClick={showCollections}>View Collections</button>
                 </div>
             </div>
         </div>
@@ -100,12 +106,14 @@ function CongregationDetailsModule({ congregation, businesses } : { congregation
 }
 
 export default function CongregationBasicView({ congregation, businesses, earnings } : { congregation: CongregationSlug, businesses: BusinessSlug[], earnings: BusinessEarningComponents[] }) {
+    const [modalVisible, setModalVisible] = useState<boolean>(false)
 
     return (
         <>
+            <CollectionModal visible={modalVisible} setVisible={setModalVisible} congregationId={congregation.congregation_id}  />
             <CongregationHeader earnings={earnings} tax={Number(congregation.congregation_tax_rate)} />
             <main className={styles.container}>
-                <CongregationDetailsModule congregation={congregation} businesses={businesses} />
+                <CongregationDetailsModule congregation={congregation} businesses={businesses} setVisible={setModalVisible} />
             </main>
         </>
     )

@@ -12,7 +12,9 @@ export const EMPIRE_PAGE_ROUTE: string = '/game/empire'    // empire page
 export const STATE_PAGE_ROUTE: string = '/game/state'   // state page
 export const JOB_PAGE_ROUTE: string = '/game/job'    // job page
 
+export const API_COLLECTION_CONGREGATION_ROUTE: string = '/api/collection/congregation' // get collections by congregation
 export const API_BUSINESS_CONGREGATION_ROUTE: string = '/api/business/congregation' // get businesses by congregation
+export const API_COLLECTION_BUSINESS_ROUTE: string = '/api/collection/business' // get collections by business
 export const API_CONGREGATION_OWNER_ROUTE: string = '/api/congregation/owner' // congregation data by owner
 export const API_BUSINESS_EARNINGS_ROUTE: string = '/api/business/earnings' // get earnings of businesses
 export const API_CONGREGATION_ROUTE: string = '/api/congregation' // get congregation data
@@ -41,6 +43,7 @@ export const AUTH_CODES = {
 }
 
 export const CONSTRUCTION_ICON: string = 'https://img.icons8.com/color/96/full-tool-storage-box-.png'
+export const CONGREGATION_OWNER_ICON: string = 'https://img.icons8.com/color/48/inauguration.png'
 export const FOOD_SERVICE_ICON: string = 'https://img.icons8.com/color/96/vegetarian-food.png'
 export const BUSINESS_OWNER_ICON: string = 'https://img.icons8.com/color/96/keys-holder.png'
 export const STATE_ICON: string = 'https://img.icons8.com/color/96/israeli-parliament.png'

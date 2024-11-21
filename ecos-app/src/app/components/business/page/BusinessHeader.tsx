@@ -1,11 +1,11 @@
 'use client'
 
-import { API_BUSINESS_EARNINGS_ROUTE, API_BUSINESS_ROUTE, COIN_ICON } from "@/customs/utils/constants"
 import { BusinessEarningComponents, BusinessSlug, GenericError, WorkerSlug } from "@/customs/utils/types"
+import { API_BUSINESS_EARNINGS_ROUTE, COIN_ICON } from "@/customs/utils/constants"
+import { calculateTotalSplit } from "@/customs/utils/tools"
 import styles from "./css/businessHeader.module.css"
 import { useEffect, useRef, useState } from "react"
 import Loading from "@/app/loading"
-import { calculateTotalSplit } from "@/customs/utils/tools"
 
 export default function BusinessHeader({ props } : { props: { business: BusinessSlug, workers: WorkerSlug[] }[] }) {
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)

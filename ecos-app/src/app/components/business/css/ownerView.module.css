@@ -44,6 +44,14 @@
     }
 }
 
+.headerButtons {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
 .workerButton {
     padding-inline: 15px;
     padding-block: 5px;
@@ -53,6 +61,7 @@
     outline: none;
     border: none;
     border-radius: 0.25rem;
+    margin-right: 5px;
 
     &:hover {
         cursor: pointer;
@@ -283,10 +292,16 @@
         height: 50%;
     }
 
+    .headerButtons {
+        height: 50%;
+    }
+
     .workerButton {
         padding-block: 0;
         padding-inline: 5px;
-        height: 50%;
+        height: 100%;
+        margin-right: 0;
+        margin-left: 5px;
     }
 
     .container {
