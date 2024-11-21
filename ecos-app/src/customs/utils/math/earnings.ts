@@ -31,6 +31,7 @@ export async function getBusinessEarningData(business: Business): Promise<Busine
     const businessUncollectedEarnings: number = Number(businessEarnings.last_earning)
 
     return {
+        businessId: business.business_id,
         baseEarningRate: baseEarningRate,
         uncollectedEarnings: businessUncollectedEarnings,
         timeSinceLastUpdate: lastUpdateInSeconds

@@ -10,8 +10,9 @@ import styles from "../css/ownerView.module.css"
 import useError from "@/customs/hooks/useError"
 import WorkerModal from "./WorkerModal"
 import Loading from "@/app/loading"
+import { calculateTotalSplit } from "@/customs/utils/tools"
 
-function BusinessHeader({ businessId, collectLoader, setWorkerModalVisible, throwError } : { businessId: string, collectLoader: boolean, setWorkerModalVisible: (visible: boolean) => void, throwError: (error: string) => void }) {
+function BusinessHeader({ business, totalSplit, collectLoader, setWorkerModalVisible, throwError } : { business: BusinessSlug, totalSplit: number, collectLoader: boolean, setWorkerModalVisible: (visible: boolean) => void, throwError: (error: string) => void }) {
     const clockIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
     const [earningData, setEarningData] = useState<BusinessEarningComponents>()
@@ -28,7 +29,7 @@ function BusinessHeader({ businessId, collectLoader, setWorkerModalVisible, thro
         await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_BUSINESS_EARNINGS_ROUTE}`, {
             method: 'POST',
             body: JSON.stringify({
-                businessId: businessId
+                businessId: business.business_id
             })
         }).then(response => {
             return response.json()
@@ -77,7 +78,7 @@ function BusinessHeader({ businessId, collectLoader, setWorkerModalVisible, thro
                 <div style={{height: '50%', marginLeft: '10%', aspectRatio: 1}}><Loading color='var(--color--text)' /></div> : 
                 <div className={styles.headerContent}>
                     <img src={COIN_ICON} />
-                    <h1>{earningData === undefined ? '---' : (Number(earningData.uncollectedEarnings) + (earningData.earningRate * time)).toFixed(2)}</h1>
+                    <h1>{earningData === undefined ? '---' : (Number(earningData.uncollectedEarnings) + ((1 - business.congregation.congregation_tax_rate - business.congregation.state.state_tax_rate - totalSplit) * earningData.baseEarningRate * time)).toFixed(2)}</h1>
                 </div>
             }
             <button className={styles.workerButton} onClick={showWorkers}>Edit Workers</button>
@@ -152,7 +153,7 @@ export default function OwnerView({ business, workers } : { business: BusinessSl
         <>
             <WorkerModal businessId={business.business_id} workers={workers} visible={workerModalVisible} setVisible={setWorkerModalVisible} throwError={throwError} />
             <div className={styles.container}>
-                <BusinessHeader businessId={business.business_id} collectLoader={collectLoader} setWorkerModalVisible={setWorkerModalVisible} throwError={throwError} />
+                <BusinessHeader business={business} totalSplit={calculateTotalSplit(workers)} collectLoader={collectLoader} setWorkerModalVisible={setWorkerModalVisible} throwError={throwError} />
                 <BusinessDetailsModule business={business} collectLoader={collectLoader} setCollectLoader={setCollectLoader} throwError={throwError} />
             </div>
             <p className={styles.error}>{error}</p>
