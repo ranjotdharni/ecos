@@ -287,4 +287,8 @@
     .earnings p {
         font-size: medium;
     }
+
+    .businessList {
+        flex-basis: 0;
+    }
 }

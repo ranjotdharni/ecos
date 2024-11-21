@@ -105,7 +105,7 @@ function CongregationDetailsModule({ congregation, businesses, setVisible } : { 
     )
 }
 
-export default function CongregationBasicView({ congregation, businesses, earnings } : { congregation: CongregationSlug, businesses: BusinessSlug[], earnings: BusinessEarningComponents[] }) {
+export default function CongregationOwnerView({ congregation, businesses, earnings } : { congregation: CongregationSlug, businesses: BusinessSlug[], earnings: BusinessEarningComponents[] }) {
     const [modalVisible, setModalVisible] = useState<boolean>(false)
 
     return (
