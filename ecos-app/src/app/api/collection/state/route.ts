@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
     }
 
     const rawCollections: Collection[] = (result! as [Collection[], FieldPacket[]])[0]
-    console.log(rawCollections)
     const collections: CollectionSlug[] = collectionsToSlugs(rawCollections)
 
     return NextResponse.json(collections, { status: 200 })

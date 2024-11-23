@@ -1,6 +1,6 @@
 'use client'
 
-import { API_CONGREGATION_EARNINGS_ROUTE, COIN_ICON } from "@/customs/utils/constants"
+import { API_STATE_EARNINGS_ROUTE, COIN_ICON } from "@/customs/utils/constants"
 import { BusinessEarningComponents } from "@/customs/utils/types"
 import { useEffect, useRef, useState } from "react"
 import styles from "./css/stateHeader.module.css"
@@ -13,11 +13,11 @@ export default function StateHeader() {
 
     const [earnings, setEarnings] = useState<BusinessEarningComponents[]>([])
 
-    function calculateCongregationEarnings(): number {
+    function calculateStateEarnings(): number {
         let total: number = 0
 
         for (const earning of earnings) {
-            total = total + ((Number(earning.uncollectedEarnings) + (Number(earning.baseEarningRate) * (Number(earning.timeSinceLastUpdate) + time))) * Number(earning.ctr))
+            total = total + ((Number(earning.uncollectedEarnings) + (Number(earning.baseEarningRate) * (Number(earning.timeSinceLastUpdate) + time))) * Number(earning.str))
         }
 
         return total
@@ -26,7 +26,7 @@ export default function StateHeader() {
     async function getEarnings() {
         setLoader(true)
 
-        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_CONGREGATION_EARNINGS_ROUTE}`).then(result => {
+        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_STATE_EARNINGS_ROUTE}`).then(result => {
             return result.json()
         }).then(result => {
             if (result.error !== undefined) {
@@ -71,7 +71,7 @@ export default function StateHeader() {
             {
                 loader ? 
                 <div className={styles.loaderWrapper}><div className={styles.loader}><Loading color='var(--color--text)' /></div></div> : 
-                <h1>{calculateCongregationEarnings().toFixed(2)}</h1>
+                <h1>{calculateStateEarnings().toFixed(2)}</h1>
             }
         </header>
     )
