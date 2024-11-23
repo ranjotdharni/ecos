@@ -1,5 +1,5 @@
-import { Collection, CollectionSlug, Congregation, GenericError, User } from "@/customs/utils/types"
-import { dbGetCollectionsByCongregation, dbGetCongregationById, dbGetUser } from "@/app/db/query"
+import { Collection, CollectionSlug, Congregation, GenericError, State, User } from "@/customs/utils/types"
+import { dbGetCollectionsByState, dbGetStateById, dbGetUser } from "@/app/db/query"
 import { collectionsToSlugs } from "@/customs/utils/tools"
 import { NextRequest, NextResponse } from "next/server"
 import { FieldPacket, QueryError } from "mysql2"
@@ -25,27 +25,28 @@ export async function POST(request: NextRequest) {
     
     const data = await request.json()
 
-    if (data.congregationId === undefined)
+    if (data.stateId === undefined)
         return NextResponse.json({ error: 'BAD REQUEST' }, { status: 401 })
     
-    const congregationCheck: [Congregation[], FieldPacket[]] | GenericError = await dbGetCongregationById(data.congregationId)
+    const stateCheck: [State[], FieldPacket[]] | GenericError = await dbGetStateById(data.stateId)
 
-    if ((congregationCheck as GenericError).error !== undefined || (congregationCheck as [Congregation[], FieldPacket[]])[0].length === 0)
-        return NextResponse.json({ error: true, message: 'Failed to find Congregation in database' } as GenericError, { status: 401 })
+    if ((stateCheck as GenericError).error !== undefined || (stateCheck as [Congregation[], FieldPacket[]])[0].length === 0)
+        return NextResponse.json({ error: true, message: 'Failed to find State in database' } as GenericError, { status: 401 })
 
-    const congregation: Congregation = (congregationCheck as [Congregation[], FieldPacket[]])[0][0]
+    const state: State = (stateCheck as [State[], FieldPacket[]])[0][0]
 
-    if (user.user_id !== congregation.congregation_owner_id)
-        return NextResponse.json({ error: true, message: 'You do not own this Congregation' }, { status: 401 })
+    if (user.user_id !== state.state_owner_id)
+        return NextResponse.json({ error: true, message: 'You do not own this State' }, { status: 401 })
 
-    const result: [Collection[], FieldPacket[]] | GenericError = await dbGetCollectionsByCongregation(data.congregationId)
+    const result: [Collection[], FieldPacket[]] | GenericError = await dbGetCollectionsByState(data.stateId)
 
     if ((result as GenericError).error !== undefined) {    // ISE when getting collection info
-        console.log('Query Error in /api/collection/congregation: ', result)
+        console.log('Query Error in /api/collection/state: ', result)
         return NextResponse.json(result as GenericError, { status: 500 })
     }
 
     const rawCollections: Collection[] = (result! as [Collection[], FieldPacket[]])[0]
+    console.log(rawCollections)
     const collections: CollectionSlug[] = collectionsToSlugs(rawCollections)
 
     return NextResponse.json(collections, { status: 200 })

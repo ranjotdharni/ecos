@@ -19,6 +19,7 @@ export const API_COLLECTION_BUSINESS_ROUTE: string = '/api/collection/business' 
 export const API_CONGREGATION_STATE_ROUTE: string = '/api/congregation/state' // get congregations by state
 export const API_CONGREGATION_OWNER_ROUTE: string = '/api/congregation/owner' // congregation data by owner
 export const API_BUSINESS_EARNINGS_ROUTE: string = '/api/business/earnings' // get earnings of businesses
+export const API_COLLECTION_STATE_ROUTE: string = '/api/collection/state' // get collections by state
 export const API_BUSINESS_EMPIRE_ROUTE: string = '/api/business/empire' // get businesses by user empire
 export const API_CONGREGATION_ROUTE: string = '/api/congregation' // get congregation data
 export const API_STATE_OWNER_ROUTE: string = '/api/state/owner' // get states by owner
@@ -47,6 +48,7 @@ export const AUTH_CODES = {
 }
 
 export const CONSTRUCTION_ICON: string = 'https://img.icons8.com/color/96/full-tool-storage-box-.png'
+export const STATE_OWNER_ICON: string = 'https://img.icons8.com/color/48/politician-skin-type-4.png'
 export const CONGREGATION_OWNER_ICON: string = 'https://img.icons8.com/color/48/inauguration.png'
 export const FOOD_SERVICE_ICON: string = 'https://img.icons8.com/color/96/vegetarian-food.png'
 export const BUSINESS_OWNER_ICON: string = 'https://img.icons8.com/color/96/keys-holder.png'
