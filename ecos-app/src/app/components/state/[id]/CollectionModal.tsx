@@ -30,6 +30,9 @@ function CollectionItem({ collection } : { collection: CollectionSlug }) {
                     <img src={COIN_ICON} />
                     <p>{(collection.revenue * collection.str).toFixed(2)}</p>
                 </div>
+                <div className={styles.itemCongregation}>
+                    <p>{collection.business.congregation.congregation_name}</p>
+                </div>
                 <div className={styles.itemDate}>
                     <p>{`${dateToFormat('MMM DD, YYYY', new Date(collection.collected_at))} ${new Date(collection.collected_at).toLocaleTimeString('en-US', { hour12: true })}`}</p>
                 </div>
