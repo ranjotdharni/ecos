@@ -1,5 +1,5 @@
-import { dbGetBusinessEarningsByBusiness, dbGetBusinessesByCongregation, dbGetBusinessesByOwner, dbGetCongregationsByOwner, dbGetWorkersByBusinessId } from "@/app/db/query"
-import { Business, BusinessEarningComponents, BusinessEarnings, Congregation, GenericError, Worker } from "../types"
+import { dbGetBusinessEarningsByBusiness, dbGetBusinessesByCongregation, dbGetBusinessesByOwner, dbGetBusinessesByState, dbGetCongregationsByOwner, dbGetStatesByOwner, dbGetWorkersByBusinessId } from "@/app/db/query"
+import { Business, BusinessEarningComponents, BusinessEarnings, Congregation, GenericError, State, Worker } from "../types"
 import { businessesToSlugs, calculateBaseEarningRate, timeSince, workersToSlugs } from "../tools"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 
@@ -102,6 +102,54 @@ export async function getAllCongregationOwnersBusinessesEarningData(username: st
 
     for (const congregation of congregations) {
         const result: BusinessEarningComponents[] | GenericError = await getAllCongregationsBusinessesEarningData(congregation.congregation_id)
+
+        if ((result as GenericError).error)
+            return result as GenericError
+
+        results.push(...result as BusinessEarningComponents[])
+    }
+
+    return results
+}
+
+// business earning components for all businesses of a state
+export async function getAllStatesBusinessesEarningData(stateId: string): Promise<BusinessEarningComponents[] | GenericError> {
+    const businessCheckResult: [QueryResult, FieldPacket[]] | GenericError = await dbGetBusinessesByState(stateId)
+
+    if ((businessCheckResult as GenericError).error !== undefined) {
+        console.log(businessCheckResult)
+        return businessCheckResult as GenericError
+    }
+
+    const businesses: Business[] = (businessCheckResult as [Business[], FieldPacket[]])[0]
+    const results: BusinessEarningComponents[] = []
+
+    for (const business of businesses) {
+        const result: BusinessEarningComponents | GenericError = await getBusinessEarningData(business)
+
+        if ((result as GenericError).error)
+            return result as GenericError
+
+        results.push(result as BusinessEarningComponents)
+    }
+
+    return results
+}
+
+// business earning components for all businesses of all of an owner's (user's) states
+export async function getAllStateOwnersBusinessesEarningData(username: string): Promise<BusinessEarningComponents[] | GenericError> {
+    const stateCheckResult: [QueryResult, FieldPacket[]] | GenericError = await dbGetStatesByOwner(username)
+
+    if ((stateCheckResult as GenericError).error !== undefined) {
+        console.log(stateCheckResult)
+        return stateCheckResult as GenericError
+    }
+
+    const states: State[] = (stateCheckResult as [State[], FieldPacket[]])[0]
+    const results: BusinessEarningComponents[] = []
+
+    for (const state of states) {
+        const result: BusinessEarningComponents[] | GenericError = await getAllStatesBusinessesEarningData(state.state_id)
 
         if ((result as GenericError).error)
             return result as GenericError

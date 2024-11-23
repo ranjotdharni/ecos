@@ -1,9 +1,10 @@
 'use client'
 
-import { API_COLLECTION_BUSINESS_ROUTE, BUSINESS_ICON, COIN_ICON } from "@/customs/utils/constants"
+import { API_COLLECTION_STATE_ROUTE, BUSINESS_PAGE_ROUTE, COIN_ICON } from "@/customs/utils/constants"
+import { BusinessType, CollectionSlug } from "@/customs/utils/types"
 import { MouseEvent, useEffect, useState } from "react"
-import { CollectionSlug } from "@/customs/utils/types"
-import styles from "../css/collectionModal.module.css"
+import { BUSINESS_TYPES } from "@/app/server/business"
+import styles from "./css/collectionModal.module.css"
 import { dateToFormat } from "@/customs/utils/tools"
 import { useRouter } from "next/navigation"
 import { FiX } from "react-icons/fi"
@@ -12,21 +13,22 @@ import Loading from "@/app/loading"
 interface CollectionModalProps { 
     visible: boolean
     setVisible: (visible: boolean) => void
-    throwError: (error: string) => void
-    businessId: string
+    stateId: string
 }
 
 function CollectionItem({ collection } : { collection: CollectionSlug }) {
+    const [businessType, setBusinessType] = useState<BusinessType | undefined>(BUSINESS_TYPES.find(t => t.type === collection.business.business_type))
+
     return (
         <li className={styles.collectionItem}>
-            <a>
+            <a href={`${BUSINESS_PAGE_ROUTE}/${collection.business.business_id}`}>
                 <div className={styles.itemHeader}>
-                    <img src={BUSINESS_ICON} />
-                    <p>{`By ${collection.business.business_owner_firstname} ${collection.business.business_owner_lastname}`}</p>
+                    <img src={businessType?.icon} />
+                    <p>{collection.business.business_name}</p>
                 </div>
                 <div className={styles.itemAmount}>
                     <img src={COIN_ICON} />
-                    <p>{((1 - collection.ctr - collection.str - collection.total_split) * collection.revenue).toFixed(2)}</p>
+                    <p>{(collection.revenue * collection.str).toFixed(2)}</p>
                 </div>
                 <div className={styles.itemDate}>
                     <p>{`${dateToFormat('MMM DD, YYYY', new Date(collection.collected_at))} ${new Date(collection.collected_at).toLocaleTimeString('en-US', { hour12: true })}`}</p>
@@ -36,7 +38,7 @@ function CollectionItem({ collection } : { collection: CollectionSlug }) {
     )
 }
 
-export default function CollectionModal({ visible, setVisible, throwError, businessId } : CollectionModalProps) {
+export default function CollectionModal({ visible, setVisible, stateId } : CollectionModalProps) {
     const router = useRouter()
 
     const [loader, setLoader] = useState<boolean>(false)
@@ -53,19 +55,19 @@ export default function CollectionModal({ visible, setVisible, throwError, busin
 
         setLoader(true)
 
-        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_COLLECTION_BUSINESS_ROUTE}`, {
+        await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_COLLECTION_STATE_ROUTE}`, {
             method: 'POST',
             body: JSON.stringify({
-                businessId: businessId
+                stateId: stateId
             })
         }).then(result => {
             return result.json()
         }).then(result => {
             if (result.error !== undefined) {
-                throwError(result.message)
-                setVisible(false)
+                console.log(result.message)
             }
 
+            console.log(result)
             setCollections(result as CollectionSlug[])
         })
 
@@ -99,7 +101,7 @@ export default function CollectionModal({ visible, setVisible, throwError, busin
                     </ul>
                 </div>
                 <div className={styles.questionWrapper}>
-                    <p>Your most recent collections will show first.</p>
+                    <p>Click a collection to view the business.</p>
                 </div>
             </div>
         </div>
