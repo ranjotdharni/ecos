@@ -22,6 +22,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    color: crimson;
 }
 
 .nsHeaderContainer {
@@ -36,7 +37,7 @@
 }
 
 .nameInputWrapper {
-    width: 50%;
+    width: 40%;
     height: 100%;
     display: flex;
     flex-direction: row;
@@ -59,7 +60,7 @@
 }
 
 .taxInputWrapper {
-    width: 50%;
+    width: 40%;
     height: 100%;
     display: flex;
     flex-direction: row;
@@ -77,6 +78,28 @@
     background: none;
     border-bottom: solid 1px var(--color--subtext);
     font-family: var(--font-jb-sans);
+    outline: none;
+}
+
+.countWrapper {
+    width: 10%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.countWrapper p {
+    color: var(--color--text);
+
+    &::after {
+        content: 'Selected Congregations';
+        color: var(--color--subtext);
+        font-size: x-small;
+        margin-right: 5px;
+        display: flex;
+    }
 }
 
 .nsContentContainer {
@@ -231,6 +254,10 @@
     }
 }
 
+.csItemButtonReady {
+    background-color: green !important;
+}
+
 .csItemBodyTwo {
     width: 95%;
     height: 40%;
@@ -251,9 +278,72 @@
     }
 }
 
+.isItemBodyTwo {
+    width: 95%;
+    height: 40%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.isItemBodyTwo p {
+    color: var(--color--text);
+
+    &::before {
+        content: 'Congregation Owner:';
+        font-size: x-small;
+        margin-right: 5px;
+        color: var(--color--subtext);
+    }
+}
+
+.isItemBodyTwo button {
+    width: 150px;
+    height: 60%;
+    outline: none;
+    border: none;
+    background-color: var(--color--contrast);
+    border-radius: 0.5rem;
+    font-family: var(--font-jb-sans);
+    color: var(--color--text);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
 .isList {
     width: 52.5%;
     height: 95%;
     border-radius: 0.5rem;
     background-color: var(--color--accent);
+}
+
+.purchaseButton {
+    width: 90%;
+    height: 50%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    border: none;
+    background-color: var(--color--contrast);
+    border-radius: 0.5rem;
+    font-family: var(--font-jb-sans);
+    color: var(--color--text);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.purchaseButton img {
+    height: 50%;
+    aspect-ratio: 1 / 1;
 }

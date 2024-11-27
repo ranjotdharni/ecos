@@ -1,6 +1,6 @@
-import { Business, BusinessEarnings, Collection, Congregation, CongregationSlug, GenericError, Session, State, User, Worker } from "@/customs/utils/types"
+import { Business, BusinessEarnings, Collection, Congregation, CongregationSlug, GenericError, Invite, Session, State, StateInvite, StateInviteMutable, User, Worker } from "@/customs/utils/types"
+import { dateToSQLDate, stateInviteMutablesToSlugs } from "@/customs/utils/tools"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
-import { dateToSQLDate } from "@/customs/utils/tools"
 import { db } from "./config"
 
 // Add a new user to the database
@@ -996,6 +996,29 @@ export async function dbFireWorker(workerId: string): Promise<[QueryResult, Fiel
     }
 }
 
+//state_id, state_owner_id, empire, state_name, state_tax_rate
+// create a new state
+export async function dbCreateState(id: string, ownerId: string, empire: number, name: string, tax: string): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        INSERT INTO 
+            states (state_id, state_owner_id, empire, state_name, state_tax_rate) 
+        VALUES 
+            (?, ?, ?, ?, ?)
+        `
+        const params: (string | number)[] = [id, ownerId, empire, name, tax]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Create State In Database' } as GenericError
+    }
+}
+
 // get state by id
 export async function dbGetStateById(stateId: string): Promise<[State[], FieldPacket[]] | GenericError> {
     try {
@@ -1116,6 +1139,30 @@ export async function dbCreateNewCongregation(cid: string, empire: number, sid: 
     } catch (error) {
         console.log(error)
         return { error: true, message: 'Failed to Create New Congregation in Database' } as GenericError
+    }
+}
+
+// update the state ids of a set of congregations (using an array of their congregation ids)
+export async function dbUpdateCongregationsState(s_id: string, c_ids: string[]): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        UPDATE 
+            congregations  
+        SET
+            state_id = ? 
+        WHERE
+            congregation_id IN (${Array(c_ids.length).fill("?").join(', ')})
+        `
+        const params: (string | number)[] = [s_id, ...c_ids]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Add Congregations to State in Database' } as GenericError
     }
 }
 
@@ -1318,5 +1365,249 @@ export async function dbGetCollectionsByState(stateId: string): Promise<[Collect
     } catch (error) {
         console.log(error)
         return { error: true, message: 'Failed to Fetch Collection Entries From Database' } as GenericError
+    }
+}
+
+// send an invite
+export async function dbSendInvite(u_from: string, u_to: string, to: string, type: number, at: Date, from?: string): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        INSERT INTO 
+            invites (user_from, user_to, invite_from, invite_to, invite_type, accepted, invited_at)
+        VALUES
+            (?, ?, ?, ?, ?, ?, ?)
+        `
+        const params: (string | number | null)[] = [u_from, u_to, from ? from : null, to, type, 0, dateToSQLDate(at)]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Send Invite in Database' } as GenericError
+    }
+}
+
+// get invites from a specified user
+export async function dbGetInvitesFrom(from: string, type: number): Promise<[Invite[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            *
+        FROM 
+            invites 
+        WHERE
+            user_from = ?
+        AND 
+            invite_type = ?
+        `
+        const params: (string | number)[] = [from, type]
+        const response: [Invite[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [Invite[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch Invites From Database' } as GenericError
+    }
+}
+
+// get invites using invite details
+export async function dbGetInvitesByDetails(u_from: string, u_to: string, invite_to: string, type: number): Promise<[Invite[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            *
+        FROM 
+            invites 
+        WHERE
+            user_from = ?
+        AND
+            user_to = ?
+        AND
+            invite_to = ?
+        AND 
+            invite_type = ?
+        `
+        const params: (string | number)[] = [u_from, u_to, invite_to, type]
+        const response: [Invite[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [Invite[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch Invites From Database' } as GenericError
+    }
+}
+
+// get all invites to a specified user by username
+export async function dbGetInvitesTo(to_username: string): Promise<[Invite[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            *
+        FROM 
+            invites 
+        WHERE
+            user_to = (
+                SELECT 
+                    user_id
+                FROM
+                    users
+                WHERE 
+                    username = ?
+            )
+        `
+        const params: (string | number)[] = [to_username]
+        const response: [Invite[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [Invite[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch Invites From Database' } as GenericError
+    }
+}
+
+// accept an invite
+export async function dbAcceptInvite(u_from: string, u_to: string, invite_to: string, type: number): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        UPDATE 
+            invites
+        SET 
+            accepted = 1 
+        WHERE
+            user_from = ?
+        AND
+            user_to = ?
+        AND
+            invite_to = ?
+        AND 
+            invite_type = ?
+        `
+        const params: (string | number)[] = [u_from, u_to, invite_to, type]
+        const response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Accept Invite In Database' } as GenericError
+    }
+}
+
+// convert invites to their respective slug based on type
+export async function dbInvitesToStateSlugs(invites: Invite[], type: number): Promise<StateInvite[] | GenericError> {
+    if (invites.length === 0)
+        return []
+
+    // if (type === STATE_INVITE_CODE)
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            i.*,
+            s.*, 
+            c.*,
+            cs.state_id AS congregation_state_id,
+            cs.state_owner_id AS congregation_state_owner,
+            cs.empire AS congregation_state_empire,
+            cs.state_name AS congregation_state_name,
+            cs.state_tax_rate AS congregation_state_tax_rate,
+            us.first_name AS state_owner_first_name,
+            us.last_name AS state_owner_last_name,
+            uc.first_name AS congregation_owner_first_name,
+            uc.last_name AS congregation_owner_last_name,
+            ucs.first_name AS congregation_state_owner_first_name,
+            ucs.last_name AS congregation_state_owner_last_name,
+            uf.user_id AS user_from_user_id,
+            uf.username AS user_from_username,
+            uf.first_name AS user_from_first_name,
+            uf.last_name AS user_from_last_name,
+            ut.user_id AS user_to_user_id,
+            ut.username AS user_to_username,
+            ut.first_name AS user_to_first_name,
+            ut.last_name AS user_to_last_name
+        FROM 
+            invites i 
+        JOIN 
+            congregations c ON i.invite_to = c.congregation_id
+        JOIN 
+            states cs ON c.state_id = cs.state_id
+        LEFT JOIN
+            states s ON i.invite_from = s.state_id
+        LEFT JOIN 
+            users us ON s.state_owner_id = us.user_id
+        LEFT JOIN 
+            users uc ON c.congregation_owner_id = uc.user_id 
+        LEFT JOIN 
+            users ucs ON cs.state_owner_id = ucs.user_id
+        LEFT JOIN 
+            users uf ON i.user_from = uf.user_id
+        LEFT JOIN 
+            users ut ON i.user_to = ut.user_id
+        WHERE 
+            i.user_from IN (${Array(invites.length).fill("?").join(', ')})
+        AND 
+            i.user_to IN (${Array(invites.length).fill("?").join(', ')})
+        AND 
+            i.invite_to IN (${Array(invites.length).fill("?").join(', ')})
+        AND
+            i.invite_type = ?
+        `
+        const params: (string | number | string[] | number[])[] = [
+            ...invites.map(i => i.user_from),
+            ...invites.map(i => i.user_to),
+            ...invites.map(i => i.invite_to),
+            type
+        ]
+
+        const response: [StateInviteMutable[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return stateInviteMutablesToSlugs((response as [StateInviteMutable[], FieldPacket[]])[0])
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Fetch Mutable Invite Data From Database' } as GenericError
+    }
+}
+
+// delete (or decline) an invite using ids
+export async function dbDeleteInvite(u_from: string, u_to: string, invite_to: string, type: number): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        DELETE FROM 
+            invites 
+        WHERE
+            user_from = ? 
+        AND 
+            user_to = ? 
+        AND 
+            invite_to = ?
+        AND 
+            invite_type = ?
+        `
+        const params: (string | number)[] = [u_from, u_to, invite_to, type]
+        const response: [Invite[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [Invite[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Delete Invite From Database' } as GenericError
     }
 }

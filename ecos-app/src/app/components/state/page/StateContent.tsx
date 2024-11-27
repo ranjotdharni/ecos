@@ -1,6 +1,6 @@
 'use client'
 
-import { API_CONGREGATION_STATE_ROUTE, API_STATE_OWNER_ROUTE, CONGREGATION_NEW_PAGE_ROUTE, CONGREGATION_PAGE_ROUTE, STATE_ICON } from "@/customs/utils/constants"
+import { API_CONGREGATION_STATE_ROUTE, API_STATE_OWNER_ROUTE, CONGREGATION_PAGE_ROUTE, STATE_ICON, STATE_NEW_PAGE_ROUTE } from "@/customs/utils/constants"
 import { CongregationSlug, CongregationType, StateSlug } from "@/customs/utils/types"
 import { ChangeEvent, MouseEvent, useEffect, useState } from "react"
 import { CONGREGATION_TYPES } from "@/app/server/congregation"
@@ -121,7 +121,7 @@ function StateList({ states, selected, select } : { states: StateSlug[] | undefi
                 }
             </ul>
             <div className={styles.cFooter}>
-                <a className={styles.newPageLink} href={`${CONGREGATION_NEW_PAGE_ROUTE}`}>New State</a>
+                <a className={styles.newPageLink} href={`${STATE_NEW_PAGE_ROUTE}`}>New State</a>
                 <a className={`${styles.viewCongregationLink} ${selected ? styles.cViewReady : ''}`} href={selected ? `/game/state/${selected.state_id}` : undefined}>{selected ? `View ${selected.state_name}` : 'Select a State'}</a>
             </div>
         </div>

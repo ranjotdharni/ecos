@@ -5,6 +5,7 @@ export const AUTH_ROUTE: string = '/welcome'
 
 export const CONGREGATION_NEW_PAGE_ROUTE: string = '/game/congregation/new'    // new congregation page
 export const CONGREGATION_PAGE_ROUTE: string = '/game/congregation'    // congregation page
+export const STATE_NEW_PAGE_ROUTE: string = '/game/state/new'   // new state page
 export const BUSINESS_PAGE_ROUTE: string = '/game/business'    // business page
 export const JOB_NEW_PAGE_ROUTE: string = '/game/job/new'   // new job page
 export const NOT_FOUND_PAGE_ROUTE: string = '/not-found' // not found page
@@ -27,6 +28,7 @@ export const API_STATE_OWNER_ROUTE: string = '/api/state/owner' // get states by
 export const API_BUSINESS_ROUTE: string = '/api/business' // get businesses by empire
 export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details
 export const API_SESSION_ROUTE: string = '/api/session' // check session
+export const API_INVITE_ROUTE: string = '/api/invite' // get invites using from and type
 export const API_WORKER_ROUTE: string = '/api/worker' // get user's job
 export const API_STATE_ROUTE: string = '/api/state' // get states
 
@@ -66,5 +68,6 @@ export const RESIDENTIAL_ICON: string = 'https://img.icons8.com/color/96/bed.png
 export const CROWN_ICON: string = 'https://img.icons8.com/color/96/fairytale.png'
 export const MEDICINE_ICON: string = 'https://img.icons8.com/color/96/pills.png'
 export const CITY_ICON: string = 'https://img.icons8.com/color/96/city-hall.png'
+export const INVITE_ICON: string = 'https://img.icons8.com/color/48/invite.png'
 export const COIN_ICON: string = 'https://img.icons8.com/color/96/average.png'
 export const GAME_ICON: string = 'https://img.icons8.com/color/96/coins.png'

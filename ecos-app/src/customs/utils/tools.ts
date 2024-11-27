@@ -1,4 +1,4 @@
-import { Business, BusinessSlug, Collection, CollectionSlug, Congregation, CongregationSlug, State, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
+import { Business, BusinessSlug, Collection, CollectionSlug, Congregation, CongregationSlug, State, StateInvite, StateInviteMutable, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
 import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "./constants"
 import { redirect } from "next/navigation"
 
@@ -19,6 +19,7 @@ import { redirect } from "next/navigation"
 export async function fetchUser(): Promise<UserDetails> {
     if (process.env.NEXT_PUBLIC_ENV === 'dev')
         return {
+            user_id: '0000000',
             username: 'user1',
             firstname: 'Jane',
             lastname: 'Doe',
@@ -275,6 +276,54 @@ export function statesToSlugs(rawStates: State[]): StateSlug[] {
             state_owner_lastname: raw.state_owner_last_name,
             state_tax_rate: raw.state_tax_rate,
             empire: raw.empire
+        }
+    })
+}
+
+export function stateInviteMutablesToSlugs(rawInviteMutables: StateInviteMutable[]): StateInvite[] {
+    return rawInviteMutables.map(raw => {
+        return {
+            user_from: {
+                id: raw.user_from_user_id,
+                username: raw.user_from_username,
+                first: raw.user_from_first_name,
+                last: raw.user_from_last_name
+            },
+            user_to: {
+                id: raw.user_to_user_id,
+                username: raw.user_to_username,
+                first: raw.user_to_first_name,
+                last: raw.user_to_last_name
+            },
+            from: raw.invite_from ? {
+                state_id: raw.state_id!,
+                state_name: raw.state_name!,
+                state_owner_firstname: raw.state_owner_first_name!,
+                state_owner_lastname: raw.state_owner_last_name!,
+                state_tax_rate: Number(raw.state_tax_rate!),
+                empire: Number(raw.empire)
+            } : undefined,
+            to: {
+                congregation_id: raw.congregation_id,
+                empire: Number(raw.empire),
+                state: {
+                    state_id: raw.congregation_state_id,
+                    state_name: raw.congregation_state_name,
+                    state_owner_firstname: raw.congregation_state_owner_first_name,
+                    state_owner_lastname: raw.congregation_state_owner_last_name,
+                    state_tax_rate: Number(raw.congregation_state_tax_rate),
+                    empire: Number(raw.congregation_state_empire)
+                },
+                congregation_owner_firstname: raw.congregation_owner_first_name,
+                congregation_owner_lastname: raw.congregation_owner_last_name,
+                congregation_name: raw.congregation_name,
+                labor_split: Number(raw.labor_split),
+                congregation_status: Number(raw.congregation_status),
+                congregation_tax_rate: Number(raw.congregation_tax_rate)
+            },
+            type: Number(raw.invite_type),
+            accepted: Number(raw.accepted),
+            at: new Date(raw.invited_at)
         }
     })
 }
