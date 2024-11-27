@@ -210,6 +210,56 @@ export interface Collection extends RowDataPacket {
     business_owner_last_name: string | null
 }
 
+export interface Invite extends RowDataPacket {
+    user_from: string
+    user_to: string
+    invite_from: string | undefined
+    invite_to: string 
+    invite_type: number
+    accepted: number
+    invited_at: Date
+}
+
+export interface StateInviteMutable extends RowDataPacket {
+    user_from: string
+    user_to: string
+    invite_from: string | null
+    invite_to: string 
+    invite_type: number
+    accepted: number
+    invited_at: Date
+    state_id: string | undefined
+    state_owner_id: string | undefined
+    empire: number
+    state_name: string | undefined
+    state_tax_rate: number | undefined
+    congregation_id: string
+    congregation_owner_id: string | null
+    congregation_name: string
+    labor_split: number
+    congregation_status: number
+    congregation_tax_rate: number
+    user_from_user_id: string,
+    user_from_username: string,
+    user_from_first_name: string,
+    user_from_last_name: string,
+    user_to_user_id: string,
+    user_to_username: string,
+    user_to_first_name: string,
+    user_to_last_name: string,
+    state_owner_first_name: string | null
+    state_owner_last_name: string | null
+    congregation_owner_first_name: string | null
+    congregation_owner_last_name: string | null
+    congregation_state_id: string,
+    congregation_state_owner: string,
+    congregation_state_empire: number,
+    congregation_state_name: string,
+    congregation_state_tax_rate: number,
+    congregation_state_owner_first_name: string,
+    congregation_state_owner_last_name: string
+}
+
 //***********************//
 //                       //
 //    User Data Types    //
@@ -220,6 +270,7 @@ export interface Collection extends RowDataPacket {
  * Non-sensitive user details for client-side use.
  *
  * @interface UserDetails
+ * @property {string} user_id - The unique id of the user.
  * @property {string} username - The unique username of the user.
  * @property {string} firstname - The user's first name.
  * @property {string} lastname - The user's last name.
@@ -227,6 +278,7 @@ export interface Collection extends RowDataPacket {
  * @property {number} gold - The user's gold amount.
  */
 export interface UserDetails {
+    user_id: string
     username: string
     firstname: string
     lastname: string
@@ -338,6 +390,26 @@ export interface NewBusiness {
     name: string
     rank: string
     businessType: number
+}
+
+export interface StateInvite {
+    user_from: {
+        id: string,
+        username: string,
+        first: string,
+        last: string
+    },
+    user_to: {
+        id: string,
+        username: string,
+        first: string,
+        last: string
+    },
+    from: StateSlug | undefined,
+    to: CongregationSlug,
+    type: number,
+    accepted: number,
+    at: Date
 }
 
 //**********************************//

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
 
     if ((result! as QueryError).code !== undefined) {    // ISE when getting congregation info
         console.log('Query Error in /api/congregation: ', result!)
-        return NextResponse.json({ error: 'INTERNAL SERVER ERROR' }, { status: 500 })
+        return NextResponse.json({ error: true, message: 'Failed to get congregation data from database' }, { status: 500 })
     }
 
     const rawCongregations: Congregation[] = (result! as [Congregation[], FieldPacket[]])[0]

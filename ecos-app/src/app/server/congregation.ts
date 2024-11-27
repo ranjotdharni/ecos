@@ -3,6 +3,9 @@ import { CongregationType } from "@/customs/utils/types"
 
 export const NEW_CONGREGATION_COST: number = 10000000
 
+export const SETTLEMENT_CODE: number = 0
+export const CITY_CODE: number = 1
+
 // MAY NOT RETURN EMPTY STRING!!!!
 export async function validateCongregationName(name: string): Promise<string | void> {
     if (name.length < 2) 
@@ -32,12 +35,12 @@ export async function validateCongregationTaxRate(tax: string): Promise<string |
 
 export const CONGREGATION_TYPES: CongregationType[] = [
     {
-        type: 0,
+        type: SETTLEMENT_CODE,
         title: 'Settlement',
         icon: SETTLEMENT_ICON
     },
     {
-        type: 1,
+        type: CITY_CODE,
         title: 'City',
         icon: CITY_ICON
     }

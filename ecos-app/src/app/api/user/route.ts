@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const user: User[] = (result as [User[], FieldPacket[]])[0]
 
     const userDetails: UserDetails = {
+        user_id: user[0].user_id,
         username: user[0].username,
         firstname: user[0].first_name,
         lastname: user[0].last_name,

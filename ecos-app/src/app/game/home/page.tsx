@@ -3,9 +3,10 @@
 import { BUSINESS_ICON, BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_PAGE_ROUTE, EMPIRE_PAGE_ROUTE, JOB_ICON, JOB_PAGE_ROUTE, STATE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
 import { UserContext } from "@/app/components/context/UserProvider"
 import { MouseEvent, useContext, useEffect, useState } from "react"
+import InviteList from "@/app/components/home/InviteList"
 import { UserDetails } from "@/customs/utils/types"
 import { fetchUser } from "@/customs/utils/tools"
-import { EMPIRE_DATA } from "@/app/server/empire"
+import useError from "@/customs/hooks/useError"
 import { useRouter } from "next/navigation"
 import styles from "./page.module.css"
 
@@ -25,6 +26,7 @@ const LINKS: string[] = [
 
 export default function Home() {
     const { userTrigger } = useContext(UserContext)
+    const [error, throwError] = useError()
     const router = useRouter()
 
     const [selectView, setView] = useState<number | undefined>()
@@ -59,34 +61,37 @@ export default function Home() {
 
     return (
         <section className={styles.page}>
-            <div className={`${styles.empire} ${selectView === EMPIRE_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(EMPIRE_INDEX)}>
-                <img src={EMPIRE_DATA.find(empire => empire.code === user?.empire)?.sigil.src} alt='Sigil' />
-                <h2>Your Empire</h2>
-                <button onClick={confirmOrView(EMPIRE_INDEX)} className={selectView === EMPIRE_INDEX ? styles.visible : ''}>View</button>
+            <p className={styles.error}>{error}</p>
+            <div className={`${styles.middleContainer} ${styles.exemptContentItem} ${styles.empire} ${selectView === EMPIRE_INDEX ? styles.highlightCard : ''}`}>
+                <InviteList throwError={throwError} />
             </div>
 
-            <div className={`${styles.job} ${selectView === JOB_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(JOB_INDEX)}>
-                <img src={JOB_ICON} />
-                <h2>Your Job</h2>
-                <button onClick={confirmOrView(JOB_INDEX)} className={selectView === JOB_INDEX ? styles.visible : ''}>View</button>
+            <div className={styles.middleContainer}>
+                <div className={`${styles.contentItem} ${styles.job} ${selectView === JOB_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(JOB_INDEX)}>
+                    <img src={JOB_ICON} />
+                    <h2>Your Job</h2>
+                    <button onClick={confirmOrView(JOB_INDEX)} className={selectView === JOB_INDEX ? `${styles.visible} ${styles.viewButton}` : styles.viewButton}>View</button>
+                </div>
+
+                <div className={`${styles.contentItem} ${styles.businesses} ${selectView === BUSINESS_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(BUSINESS_INDEX)}>
+                    <img src={BUSINESS_ICON} />
+                    <h2>Your Businesses</h2>
+                    <button onClick={confirmOrView(BUSINESS_INDEX)} className={selectView === BUSINESS_INDEX ? `${styles.visible} ${styles.viewButton}` : styles.viewButton}>View</button>
+                </div>
             </div>
 
-            <div className={`${styles.businesses} ${selectView === BUSINESS_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(BUSINESS_INDEX)}>
-                <img src={BUSINESS_ICON} />
-                <h2>Your Businesses</h2>
-                <button onClick={confirmOrView(BUSINESS_INDEX)} className={selectView === BUSINESS_INDEX ? styles.visible : ''}>View</button>
-            </div>
+            <div className={styles.middleContainer}>
+                <div className={`${styles.contentItem} ${styles.congregations} ${selectView === CONGREGATION_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(CONGREGATION_INDEX)}>
+                    <img src={CONGREGATION_ICON} />
+                    <h2>Your Congregations</h2>
+                    <button onClick={confirmOrView(CONGREGATION_INDEX)} className={selectView === CONGREGATION_INDEX ? `${styles.visible} ${styles.viewButton}` : styles.viewButton}>View</button>
+                </div>
 
-            <div className={`${styles.congregations} ${selectView === CONGREGATION_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(CONGREGATION_INDEX)}>
-                <img src={CONGREGATION_ICON} />
-                <h2>Your Congregations</h2>
-                <button onClick={confirmOrView(CONGREGATION_INDEX)} className={selectView === CONGREGATION_INDEX ? styles.visible : ''}>View</button>
-            </div>
-
-            <div className={`${styles.states} ${selectView === STATE_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(STATE_INDEX)}>
-                <img src={STATE_ICON} />
-                <h2>Your States</h2>
-                <button onClick={confirmOrView(STATE_INDEX)} className={selectView === STATE_INDEX ? styles.visible : ''}>View</button>
+                <div className={`${styles.contentItem} ${styles.states} ${selectView === STATE_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(STATE_INDEX)}>
+                    <img src={STATE_ICON} />
+                    <h2>Your States</h2>
+                    <button onClick={confirmOrView(STATE_INDEX)} className={selectView === STATE_INDEX ? `${styles.visible} ${styles.viewButton}` : styles.viewButton}>View</button>
+                </div>
             </div>
         </section>
     )

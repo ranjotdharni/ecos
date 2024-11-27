@@ -1,14 +1,16 @@
 'use server'
 
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry } from "../../app/db/query"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug } from "@/customs/utils/types"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry, dbGetCongregationById, dbSendInvite, dbInvitesToStateSlugs, dbDeleteInvite, dbGetInvitesByDetails, dbAcceptInvite, dbCreateState, dbUpdateCongregationsState } from "../../app/db/query"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug, Congregation, Invite, StateInvite } from "@/customs/utils/types"
 import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, workersToSlugs } from "@/customs/utils/tools"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease, validateNewBusinessFields } from "@/app/server/business"
-import { NEW_CONGREGATION_COST, validateCongregationLaborSplit, validateCongregationName, validateCongregationTaxRate } from "@/app/server/congregation"
+import { CITY_CODE, NEW_CONGREGATION_COST, validateCongregationLaborSplit, validateCongregationName, validateCongregationTaxRate } from "@/app/server/congregation"
 import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
+import { MINIMUM_CONGREGATIONS_PER_STATE, NEW_STATE_COST, validateStateName, validateStateTax } from "@/app/server/state"
 import { FiredItem, RankChangeItem } from "@/app/components/business/id/WorkerModal"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
+import { STATE_INVITE_CODE } from "@/app/server/invite"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
@@ -576,4 +578,246 @@ export async function createNewCongregation(stateSlug: StateSlug, name: string, 
     }
 
     return { success: true, message: 'New Congregation Purchased' }
+}
+
+export async function sendStateInvite(i_to: string, i_from?: string): Promise<GenericSuccess | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    const congregationResult: GenericError | [Congregation[], FieldPacket[]] = await dbGetCongregationById(i_to)
+
+    if ((congregationResult as GenericError).error !== undefined)
+        return congregationResult as GenericError
+
+    const congregation: Congregation = (congregationResult as [Congregation[], FieldPacket[]])[0][0]
+
+    const toUserResult: [QueryResult, FieldPacket[]] | GenericError = await dbGetUserById(congregation.congregation_owner_id!)
+
+    if ((toUserResult as GenericError).error !== undefined || (toUserResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(toUserResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find To User)' }
+    }
+
+    const toUser: User = (toUserResult as [User[], FieldPacket[]])[0][0]
+
+    if (user.user_id === toUser.user_id)
+        return { error: true, message: "You may not send an invite to yourself" }
+
+    if (congregation.congregation_owner_id !== toUser.user_id)
+        return { error: true, message: "The receipient of the invite doesn't own the Congregation" }
+
+    if (i_from !== undefined) {
+        const stateResult: [State[], FieldPacket[]] | GenericError = await dbGetStateById(i_from)
+
+        if ((stateResult as GenericError).error !== undefined)
+            return stateResult as GenericError
+
+        const state: State = (stateResult as [State[], FieldPacket[]])[0][0]
+
+        if (state.state_owner_id !== user.user_id)
+            return { error: true, message: 'You do not own this State.' }
+    }
+
+    const invite: [QueryResult, FieldPacket[]] | GenericError = await dbSendInvite(user.user_id, toUser.user_id, congregation.congregation_id, STATE_INVITE_CODE, new Date(), i_from)
+
+    if ((invite as GenericError).error !== undefined)
+        return invite as GenericError
+
+    return { success: true, message: `Invite sent to User ${toUser.username}` }
+}
+
+export async function invitesToSlugs(invites: Invite[]): Promise<(StateInvite)[] | GenericError> {
+    const allInvites: (StateInvite)[] = []
+    const stateInvites: Invite[] = []
+
+    for (const invite of invites) {
+        if (Number(invite.invite_type) === STATE_INVITE_CODE) {
+            stateInvites.push(invite)
+        }
+    }
+
+    const stateInviteSlugs: StateInvite[] | GenericError = await dbInvitesToStateSlugs(stateInvites, STATE_INVITE_CODE)
+
+    if ((stateInviteSlugs as GenericError).error !== undefined)
+        return stateInviteSlugs as GenericError
+
+    allInvites.push.apply(allInvites, stateInviteSlugs as StateInvite[])
+
+    return allInvites
+}
+
+export async function deleteInvite(invite: StateInvite): Promise<GenericSuccess | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    if (user.user_id !== invite.user_from.id && user.user_id !== invite.user_to.id)
+        return { error: true, message: 'You do not have permission to decline this invite' }
+
+    let result: [QueryResult, FieldPacket[]] | GenericError
+
+    if (Number(invite.type) === STATE_INVITE_CODE) {
+        const inviteCheck = await dbGetInvitesByDetails(invite.user_from.id, invite.user_to.id, invite.to.congregation_id, STATE_INVITE_CODE)
+
+        if 
+        (
+            (inviteCheck as GenericError).error !== undefined || 
+            (inviteCheck as [Invite[], FieldPacket[]])[0].length === 0
+        )
+            return { error: true, message: 'Could not find invite' } as GenericError
+
+        result = await dbDeleteInvite(invite.user_from.id, invite.user_to.id, invite.to.congregation_id, STATE_INVITE_CODE)
+    }
+    else {
+        // MODIFY THIS AS THIS FUNCTION GROWS!!!!!!!!!!!!!!!!!!!
+        result = await dbDeleteInvite(invite.user_from.id, invite.user_to.id, invite.to.congregation_id, STATE_INVITE_CODE)
+    }
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    return { success: true, message: 'Invite Declined' }
+}
+
+export async function acceptInvite(invite: StateInvite): Promise<GenericSuccess | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    if (user.user_id !== invite.user_to.id)
+        return { error: true, message: 'You do not have permission to accept this invite' }
+
+    let result: [QueryResult, FieldPacket[]] | GenericError
+
+    if (Number(invite.type) === STATE_INVITE_CODE) {
+        const inviteCheck = await dbGetInvitesByDetails(invite.user_from.id, invite.user_to.id, invite.to.congregation_id, STATE_INVITE_CODE)
+
+        if 
+        (
+            (inviteCheck as GenericError).error !== undefined || 
+            (inviteCheck as [Invite[], FieldPacket[]])[0].length === 0
+        )
+            return { error: true, message: 'Could not find invite' } as GenericError
+
+        result = await dbAcceptInvite(invite.user_from.id, invite.user_to.id, invite.to.congregation_id, STATE_INVITE_CODE)
+    }
+    else {
+        // MODIFY THIS AS THIS FUNCTION GROWS!!!!!!!!!!!!!!!!!!!
+        result = await dbAcceptInvite(invite.user_from.id, invite.user_to.id, invite.to.congregation_id, STATE_INVITE_CODE)
+    }
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    return { success: true, message: 'Invite Accepted' }
+}
+
+export async function makeNewState(name: string, taxRate: string, congregationList: CongregationSlug[], inviteList: StateInvite[]): Promise<GenericSuccess | GenericError> {
+    if (congregationList.length + inviteList.length < MINIMUM_CONGREGATIONS_PER_STATE || congregationList.filter(c => Number(c.congregation_status) === CITY_CODE).length + inviteList.filter(i => Number(i.to.congregation_status) === CITY_CODE).length < MINIMUM_CONGREGATIONS_PER_STATE)
+        return { error: true, message: 'Each state must have at least 10 Cities' }
+
+    const validName: string | void = await validateStateName(name)
+    const validTaxRate: string | void = await validateStateTax(taxRate)
+
+    if (validName)
+        return { error: true, message: validName }
+    if (validTaxRate)
+        return { error: true, message: validTaxRate }
+
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    for (const congregation of congregationList) {
+        const checkResult: GenericError | [Congregation[], FieldPacket[]] = await dbGetCongregationById(congregation.congregation_id)
+
+        if ((checkResult as GenericError).error !== undefined || (checkResult as [Congregation[], FieldPacket[]])[0].length === 0 || (checkResult as [Congregation[], FieldPacket[]])[0][0].congregation_owner_id !== user.user_id)
+            return { error: true, message: 'You do not own 1 or more of the selected Congregations' }
+    }
+
+    for (const invite of inviteList) {
+        const checkResult: [Invite[], FieldPacket[]] | GenericError = await dbGetInvitesByDetails(user.user_id, invite.user_to.id, invite.to.congregation_id, STATE_INVITE_CODE)
+
+        if ((checkResult as GenericError).error !== undefined || (checkResult as [Invite[], FieldPacket[]])[0].length === 0)
+            return { error: true, message: '1 or more of the selected Invites are invalid' }
+    }
+
+    if (Number(user.gold) < NEW_STATE_COST)
+        return { error: true, message: 'You cannot afford a new State' }
+
+    const purchaseResult: [QueryResult, FieldPacket[]] | QueryError = await dbAddGold(user.user_id, -NEW_STATE_COST)
+
+    if ((purchaseResult as QueryError).code !== undefined)
+        return { error: true, message: 'Failed to make purchase in Database' }
+
+    const newStateId: string = uuidv4()
+    const newStateResult: [QueryResult, FieldPacket[]] | GenericError = await dbCreateState(newStateId, user.user_id, Number(user.empire), name, taxRate)
+
+    if ((newStateResult as GenericError).error !== undefined)
+        return newStateResult as GenericError
+
+    const congregationIds: string[] = [...congregationList.map(c => c.congregation_id), ...inviteList.map(i => i.to.congregation_id)]
+
+    const congregationUpdateResult: [QueryResult, FieldPacket[]] | GenericError = await dbUpdateCongregationsState(newStateId, congregationIds)
+
+    if ((congregationUpdateResult as GenericError).error !== undefined)
+        return congregationUpdateResult as GenericError
+
+    for (const deleteInvite of inviteList) {
+        const checkResult: [QueryResult, FieldPacket[]] | GenericError = await dbDeleteInvite(deleteInvite.user_from.id, deleteInvite.user_to.id, deleteInvite.to.congregation_id, Number(deleteInvite.type))
+        
+        if ((checkResult as GenericError).error !== undefined)
+            return checkResult as GenericError
+    }
+
+    return { success: true, message: 'State Purchased' }
 }
