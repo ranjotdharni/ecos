@@ -24,7 +24,9 @@ export async function fetchUser(): Promise<UserDetails> {
             firstname: 'Jane',
             lastname: 'Doe',
             empire: 1,
-            gold: 0.00
+            gold: 0.00,
+            pfp: 0,
+            bio: ''
         }
 
     const response = await fetch(`${process.env.NEXT_PUBLIC_ORIGIN}${API_USER_DETAILS_ROUTE}`)

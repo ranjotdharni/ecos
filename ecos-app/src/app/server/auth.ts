@@ -30,6 +30,12 @@ export async function validateName(firstname: string, lastname: string): Promise
         return 'Last name may be at most 32 characters'
 }
 
+// ensure bio text passes rules, return error string or void
+export async function validateBio(bio: string): Promise<string | void> {
+    if (bio.length > 128)
+        return 'Bio may be at most 128 characters'
+}
+
 // ensure username passes rules, return error string or void
 export async function validateUsername(username: string): Promise<string | void> {
     if (username.indexOf(' ') >= 0) // whitespace

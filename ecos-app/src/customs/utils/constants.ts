@@ -7,6 +7,7 @@ export const CONGREGATION_NEW_PAGE_ROUTE: string = '/game/congregation/new'    /
 export const CONGREGATION_PAGE_ROUTE: string = '/game/congregation'    // congregation page
 export const STATE_NEW_PAGE_ROUTE: string = '/game/state/new'   // new state page
 export const BUSINESS_PAGE_ROUTE: string = '/game/business'    // business page
+export const PROFILE_PAGE_ROUTE: string = '/game/profile'   // profile page
 export const JOB_NEW_PAGE_ROUTE: string = '/game/job/new'   // new job page
 export const NOT_FOUND_PAGE_ROUTE: string = '/not-found' // not found page
 export const EMPIRE_PAGE_ROUTE: string = '/game/empire'    // empire page
