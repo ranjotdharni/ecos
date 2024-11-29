@@ -29,7 +29,9 @@ export async function GET(request: NextRequest) {
         firstname: user[0].first_name,
         lastname: user[0].last_name,
         empire: user[0].empire!,
-        gold: user[0].gold
+        gold: user[0].gold,
+        pfp: Number(user[0].pfp),
+        bio: user[0].bio
     }
 
     return NextResponse.json(userDetails, { status: 200 })

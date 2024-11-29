@@ -44,6 +44,8 @@ export interface User extends RowDataPacket {
     first_name: string
     last_name: string
     gold: number
+    pfp: number
+    bio: string
 }
 
 // auth table row data
@@ -276,6 +278,8 @@ export interface StateInviteMutable extends RowDataPacket {
  * @property {string} lastname - The user's last name.
  * @property {number} empire - The user's empire (numeric, corresponds to empire).
  * @property {number} gold - The user's gold amount.
+ * @property {number} pfp - The user's profile icon code.
+ * @property {string} bio - The user's bio.
  */
 export interface UserDetails {
     user_id: string
@@ -284,6 +288,14 @@ export interface UserDetails {
     lastname: string
     empire: number
     gold: number
+    pfp: number
+    bio: string
+}
+
+export interface ProfileType {
+    title: string
+    code: number
+    icon: string
 }
 
 //*********************//

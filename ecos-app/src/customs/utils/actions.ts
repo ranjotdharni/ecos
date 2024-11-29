@@ -1,12 +1,12 @@
 'use server'
 
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry, dbGetCongregationById, dbSendInvite, dbInvitesToStateSlugs, dbDeleteInvite, dbGetInvitesByDetails, dbAcceptInvite, dbCreateState, dbUpdateCongregationsState } from "../../app/db/query"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug, Congregation, Invite, StateInvite } from "@/customs/utils/types"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry, dbGetCongregationById, dbSendInvite, dbInvitesToStateSlugs, dbDeleteInvite, dbGetInvitesByDetails, dbAcceptInvite, dbCreateState, dbUpdateCongregationsState, dbEditUserDetailsByUsername } from "../../app/db/query"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug, Congregation, Invite, StateInvite, ProfileType } from "@/customs/utils/types"
 import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, workersToSlugs } from "@/customs/utils/tools"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease, validateNewBusinessFields } from "@/app/server/business"
 import { CITY_CODE, NEW_CONGREGATION_COST, validateCongregationLaborSplit, validateCongregationName, validateCongregationTaxRate } from "@/app/server/congregation"
-import { generateAuthCookieOptions, generateSessionExpirationDate, validateName, validatePassword, validateUsername } from "@/app/server/auth"
+import { generateAuthCookieOptions, generateSessionExpirationDate, validateBio, validateName, validatePassword, validateUsername } from "@/app/server/auth"
 import { MINIMUM_CONGREGATIONS_PER_STATE, NEW_STATE_COST, validateStateName, validateStateTax } from "@/app/server/state"
 import { FiredItem, RankChangeItem } from "@/app/components/business/id/WorkerModal"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
@@ -15,6 +15,7 @@ import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
 import { v4 as uuidv4 } from "uuid"
+import { PROFILE_DATA } from "@/app/server/profile"
 
 // NOTE
 // I used one of these functions in a client component so NextJS would not
@@ -820,4 +821,41 @@ export async function makeNewState(name: string, taxRate: string, congregationLi
     }
 
     return { success: true, message: 'State Purchased' }
+}
+
+// edit a user's details using their username
+export async function editUser(first: string, last: string, pfp: number, bio: string): Promise<GenericSuccess | GenericError> {
+    const validName: string | void = await validateName(first, last)
+    const validBio: string | void = await validateBio(bio)
+
+    if (validName)
+        return { error: true, message: validName }
+    if (validBio)
+        return { error: true, message: validBio }
+
+    const pfpData: ProfileType | undefined = PROFILE_DATA.find(p => p.code === pfp)
+
+    if (pfpData === undefined)
+        return { error: true, message: 'Invalid Profile Picture' }
+
+    const cookieList = cookies()
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const user: User = (userResult as [User[], FieldPacket[]])[0][0]
+
+    const editResult: [QueryResult, FieldPacket[]] | GenericError = await dbEditUserDetailsByUsername(user.username, pfpData.code, first, last, bio)
+
+    if ((editResult as GenericError).error !== undefined)
+        return editResult as GenericError
+
+    return { success: true, message: 'Changes Saved' }
 }

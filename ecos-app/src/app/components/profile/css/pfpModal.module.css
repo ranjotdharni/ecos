@@ -1,0 +1,131 @@
+.container {
+    z-index: 10;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(88, 88, 88, 0.5);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.loader {
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.wrapper {
+    width: calc(600px - 5vw);
+    aspect-ratio: 13 / 16;
+    max-width: 90%;
+    max-height: 90%;
+    background-color: var(--color--accent);
+    border-radius: 1em;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.titleWrapper {
+    width: 90%;
+    height: 10%;
+    border-bottom: solid 1px rgb(95, 95, 95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.titleWrapper h2 {
+    color: crimson;
+}
+
+.messageWrapper {
+    width: 90%;
+    height: 80%;
+    display: grid;
+    gap: 0.25em;
+    grid-template-columns: repeat(auto-fit, minmax(17.5%, 1fr));
+    overflow-y: scroll;
+}
+
+.pfpIcon {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.chosen {
+    border: solid 1px var(--color--subtext);
+    border-radius: 5px;
+}
+
+.pfpIcon img {
+    height: 50%;
+    aspect-ratio: 1 / 1;
+}
+
+.pfpIcon p {
+    color: var(--color--text);
+    font-size: x-small;
+}
+
+.questionWrapper {
+    width: 90%;
+    height: 7.5%;
+    border-top: solid 1px rgb(95, 95, 95);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.questionWrapper p {
+    color: var(--color--subtext);
+    font-size: 0.75rem;
+}
+
+.buttonWrapper {
+    height: 100%;
+    padding-left: 5%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.buttonWrapper button {
+    width: 75px;
+    height: 60%;
+    padding-left: 5%;
+    padding-right: 5%;
+    border-radius: 0.4em;
+    font-family: var(--font-jb-sans);
+    margin-right: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.buttonWrapper button:hover {
+    cursor: pointer;
+}
+
+.buttonWrapper button:nth-child(1) {
+    border: none;
+    color: rgb(95, 95, 95);
+}
+
+.buttonWrapper button:nth-child(2) {
+    background-color: crimson;
+    border: none;
+    color: aliceblue;
+}

@@ -20,7 +20,7 @@ export default async function RootLayout({
       <body className={`${JB_Mono.className}`}>
         {children}
         {/* Always leave 5vh at bottom of each page for footer */}
-        <footer>
+        <footer style={{zIndex: 10}}>
           <p style={{fontSize: 12, color: '#818181a0'}}>Icons by <a style={{textDecoration: 'underline'}} target='_blank' href='https://icons8.com'>Icons8</a></p>
         </footer>
       </body>

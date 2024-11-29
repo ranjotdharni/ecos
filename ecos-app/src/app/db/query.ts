@@ -101,6 +101,34 @@ export async function dbGetUserById(userId: string): Promise<[User[], FieldPacke
     }
 }
 
+// Edit user details by username
+export async function dbEditUserDetailsByUsername(username: string, pfp: number, first: string, last: string, bio: string): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        UPDATE
+            users
+        SET
+            first_name = ?,
+            last_name = ?,
+            bio = ?,
+            pfp = ?
+        WHERE 
+            username = ?
+        `
+        const params: (string | number)[] = [first, last, bio, pfp, username]
+        const response: [QueryResult, FieldPacket[]] | QueryError = await conn.execute<QueryResult>(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Edit User Details in Database' } as GenericError
+    }
+}
+
 // Set empire
 export async function dbSetEmpire(username: string, empire: number): Promise<[QueryResult, FieldPacket[]] | QueryError> {
     try {
