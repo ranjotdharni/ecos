@@ -1,0 +1,227 @@
+.container {
+    width: 45%;
+    height: 95%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    background-color: var(--color--accent);
+    border-radius: 1rem;
+    padding: 10px;
+}
+
+.error {
+    position: absolute;
+    width: 100vw;
+    height: 20vh;
+    top: 80vh;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: crimson;
+}
+
+.loader {
+    height: 50px;
+    aspect-ratio: 1 / 1;
+}
+
+.headerContainer {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: solid 1px var(--color--contrast);
+}
+
+.headerContainer img {
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.headerContainer h2 {
+    color: var(--color--text);
+}
+
+.searchContainer {
+    width: 100%;
+    height: 15%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.searchContainer input {
+    width: 100%;
+    height: 50%;
+    outline: none;
+    border: none;
+    border-bottom: solid 1px var(--color--subtext);
+    font-family: var(--font-jb-sans);
+    background: none;
+}
+
+.searchContainer button {
+    width: 25%;
+    height: 75%;
+    outline: none;
+    background-color: var(--color--contrast);
+    border: none;
+    border-radius: 0.5rem;
+    font-family: var(--font-jb-sans);
+    color: var(--color--text);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.resultsContainer {
+    width: 100%;
+    height: 70%;
+    background-color: var(--color--contrast);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 10px;
+    overflow-y: scroll;
+}
+
+.listCenter {
+    justify-content: center !important;
+}
+
+.inviteItem {
+    height: 200px;
+    width: 100%;
+    background-color: var(--color--accent);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    margin-bottom: 10px;
+    border-radius: 1rem;
+    padding: 10px;
+}
+
+.inviteItemHeader {
+    width: 95%;
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inviteItemHeader img {
+    height: 90%;
+    aspect-ratio: 1 / 1;
+}
+
+.inviteItemBodyOne {
+    height: 25%;
+    width: 95%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inviteItemBodyOne p:nth-of-type(1) {
+    color: var(--color--text);
+
+    &::before {
+        content: "Username: ";
+        font-size: x-small;
+        color: var(--color--subtext);
+    }
+}
+
+.inviteItemBodyOne a {
+    color: var(--color--subtext);
+
+    &:hover {
+        color: var(--color--text);
+    }
+}
+
+.inviteItemBodyTwo {
+    height: 25%;
+    width: 95%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inviteItemBodyTwo p:nth-of-type(1) {
+    color: var(--color--text);
+
+    &::before {
+        content: "Empire: ";
+        font-size: x-small;
+        color: var(--color--subtext);
+    }
+}
+
+.inviteItemBodyTwo p:nth-of-type(2) {
+    color: var(--color--subtext);
+    font-size: smaller;
+}
+
+.inviteItemBodyTwo img {
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.inviteItemFooter {
+    height: 20%;
+    width: 95%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inviteItemFooter p {
+    color: var(--color--subtext);
+
+    &::before {
+        content: 'Since: ';
+        font-size: x-small;
+    }
+}
+
+.inviteItemFooter button {
+    width: 40%;
+    height: 90%;
+    outline: none;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--color--text);
+    font-family: var(--font-jb-sans);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.inviteItemFooter button:nth-of-type(1) {
+    background-color: var(--color--background);
+}
+
+.buttonLoader {
+    height: 50%;
+    aspect-ratio: 1 / 1;
+}

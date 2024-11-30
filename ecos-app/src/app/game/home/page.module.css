@@ -1,7 +1,8 @@
 .error {
     position: absolute;
     width: 100vw;
-    height: 10vh;
+    height: 20vh;
+    top: 80vh;
     display: flex;
     flex-direction: row;
     justify-content: center;

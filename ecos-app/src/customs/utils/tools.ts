@@ -1,4 +1,4 @@
-import { Business, BusinessSlug, Collection, CollectionSlug, Congregation, CongregationSlug, State, StateInvite, StateInviteMutable, StateSlug, UserDetails, Worker, WorkerSlug } from "./types"
+import { Business, BusinessSlug, Collection, CollectionSlug, Congregation, CongregationSlug, Friend, FriendSlug, Request, RequestSlug, State, StateInvite, StateInviteMutable, StateSlug, User, UserDetails, Worker, WorkerSlug } from "./types"
 import { API_USER_DETAILS_ROUTE, AUTH_ROUTE } from "./constants"
 import { redirect } from "next/navigation"
 
@@ -126,6 +126,77 @@ export function dateToFormat(arg1: string, arg2: Date): string
 
 export function getRandomDecimalInclusive(min: number, max: number): number {
     return Math.random() * (max - min) + min;
+}
+
+export function usersToSlugs(rawUsers: User[]): UserDetails[] {
+    return rawUsers.map(raw => {
+        return {
+            user_id: raw.user_id,
+            username: raw.username,
+            pfp: Number(raw.pfp),
+            empire: Number(raw.empire),
+            firstname: raw.first_name,
+            lastname: raw.last_name,
+            bio: raw.bio,
+            gold: Number(raw.gold)
+        }
+    })
+}
+
+export function requestsToSlugs(rawRequests: Request[]): RequestSlug[] {
+    return rawRequests.map(raw => {
+        return {
+            from: {
+                user_id: raw.from_user_id,
+                username: raw.from_username,
+                pfp: Number(raw.from_pfp),
+                empire: Number(raw.from_empire),
+                firstname: raw.from_first_name,
+                lastname: raw.from_last_name,
+                bio: raw.from_bio,
+                gold: Number(raw.from_gold)
+            },
+            to: {
+                user_id: raw.to_user_id,
+                username: raw.to_username,
+                pfp: Number(raw.to_pfp),
+                empire: Number(raw.to_empire),
+                firstname: raw.to_first_name,
+                lastname: raw.to_last_name,
+                bio: raw.to_bio,
+                gold: Number(raw.to_gold)
+            },
+            at: new Date(raw.requested_at)
+        }
+    })
+}
+
+export function friendsToSlugs(rawFriends: Friend[]): FriendSlug[] {
+    return rawFriends.map(raw => {
+        return {
+            friend1: {
+                user_id: raw.friend1_user_id,
+                username: raw.friend1_username,
+                pfp: Number(raw.friend1_pfp),
+                empire: Number(raw.friend1_empire),
+                firstname: raw.friend1_first_name,
+                lastname: raw.friend1_last_name,
+                bio: raw.friend1_bio,
+                gold: Number(raw.friend1_gold)
+            },
+            friend2: {
+                user_id: raw.friend2_user_id,
+                username: raw.friend2_username,
+                pfp: Number(raw.friend2_pfp),
+                empire: Number(raw.friend2_empire),
+                firstname: raw.friend2_first_name,
+                lastname: raw.friend2_last_name,
+                bio: raw.friend2_bio,
+                gold: Number(raw.friend2_gold)
+            },
+            since: new Date(raw.friends_since)
+        }
+    })
 }
 
 export function collectionsToSlugs(rawCollections: Collection[]): CollectionSlug[] {
