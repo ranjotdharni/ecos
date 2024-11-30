@@ -1,8 +1,8 @@
 'use server'
 
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry, dbGetCongregationById, dbSendInvite, dbInvitesToStateSlugs, dbDeleteInvite, dbGetInvitesByDetails, dbAcceptInvite, dbCreateState, dbUpdateCongregationsState, dbEditUserDetailsByUsername } from "../../app/db/query"
-import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug, Congregation, Invite, StateInvite, ProfileType } from "@/customs/utils/types"
-import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, workersToSlugs } from "@/customs/utils/tools"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry, dbGetCongregationById, dbSendInvite, dbInvitesToStateSlugs, dbDeleteInvite, dbGetInvitesByDetails, dbAcceptInvite, dbCreateState, dbUpdateCongregationsState, dbEditUserDetailsByUsername, dbSearchUsersByUsername, dbSendFriendRequest, dbDeleteRequest, dbMakeFriends, dbGetFriendsByDetails, dbDeleteFriends } from "../../app/db/query"
+import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug, Congregation, Invite, StateInvite, ProfileType, UserDetails, RequestSlug, Friend } from "@/customs/utils/types"
+import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, usersToSlugs, workersToSlugs } from "@/customs/utils/tools"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
 import { BUSINESS_TYPES, MAX_BASE_EARNING_RATE, MIN_BASE_EARNING_RATE, NEW_BUSINESS_COST, validateBusinessName, validateBusinessRankIncrease, validateNewBusinessFields } from "@/app/server/business"
 import { CITY_CODE, NEW_CONGREGATION_COST, validateCongregationLaborSplit, validateCongregationName, validateCongregationTaxRate } from "@/app/server/congregation"
@@ -11,11 +11,11 @@ import { MINIMUM_CONGREGATIONS_PER_STATE, NEW_STATE_COST, validateStateName, val
 import { FiredItem, RankChangeItem } from "@/app/components/business/id/WorkerModal"
 import { FieldPacket, QueryError, QueryResult } from "mysql2"
 import { STATE_INVITE_CODE } from "@/app/server/invite"
+import { PROFILE_DATA } from "@/app/server/profile"
 import { redirect } from "next/navigation"
 import { cookies } from "next/headers"
 import { hash, compare } from "bcrypt"
 import { v4 as uuidv4 } from "uuid"
-import { PROFILE_DATA } from "@/app/server/profile"
 
 // NOTE
 // I used one of these functions in a client component so NextJS would not
@@ -858,4 +858,152 @@ export async function editUser(first: string, last: string, pfp: number, bio: st
         return editResult as GenericError
 
     return { success: true, message: 'Changes Saved' }
+}
+
+// search for a user by username
+export async function usernameSearch(username: string): Promise<UserDetails[] | GenericError> {
+    if (username.trim() === '')
+        return []
+
+    const result: [User[], FieldPacket[]] | GenericError = await dbSearchUsersByUsername(username)
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    return usersToSlugs((result as [User[], FieldPacket[]])[0])
+}
+
+// send a friend request by username
+export async function sendFriendRequest(sendTo: string): Promise<RequestSlug | GenericError> {
+    const at: Date = new Date()
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const from: UserDetails = usersToSlugs((userResult as [User[], FieldPacket[]])[0])[0]
+
+    const toResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(sendTo)
+
+    if ((toResult as QueryError).code !== undefined || (toResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(toResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find Send To User)' }
+    }
+
+    const to: UserDetails = usersToSlugs((toResult as [User[], FieldPacket[]])[0])[0]
+
+    const result: [QueryResult, FieldPacket[]] | GenericError = await dbSendFriendRequest(from.user_id, to.user_id, at)
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    return {
+        from: from,
+        to: to,
+        at: at
+    }
+}
+
+export async function declineFriendRequest(from: string): Promise<GenericSuccess | GenericError> {
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const to: UserDetails = usersToSlugs((userResult as [User[], FieldPacket[]])[0])[0]
+
+    const result: [QueryResult, FieldPacket[]] | GenericError = await dbDeleteRequest(from, to.user_id)
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    return { success: true, message: 'Request Declined' }
+}
+
+export async function acceptFriendRequest(from: string): Promise<GenericSuccess | GenericError> {
+    const since: Date = new Date()
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const to: UserDetails = usersToSlugs((userResult as [User[], FieldPacket[]])[0])[0]
+
+    const result: [QueryResult, FieldPacket[]] | GenericError = await dbDeleteRequest(from, to.user_id)
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    const check: [Friend[], FieldPacket[]] | GenericError = await dbGetFriendsByDetails(from, to.user_id)
+
+    if ((check as GenericError).error !== undefined)
+        return check as GenericError
+
+    if ((check as [Friend[], FieldPacket[]])[0].length !== 0)
+        return { error: true, message: 'You are already friends with this user' }
+
+    const response: [QueryResult, FieldPacket[]] | GenericError = await dbMakeFriends(from, to.user_id, since)
+
+    if ((response as GenericError).error !== undefined)
+        return response as GenericError
+
+    return { success: true, message: 'Request Accepted' }
+}
+
+export async function undoFriends(from: string): Promise<GenericSuccess | GenericError> {
+    const since: Date = new Date()
+    const cookieList = cookies()
+
+    if (!cookieList.has('username'))
+        redirect(AUTH_ROUTE)
+
+    const username: string = cookieList.get('username')!.value
+
+    const userResult: [QueryResult, FieldPacket[]] | QueryError = await dbGetUser(username)
+
+    if ((userResult as QueryError).code !== undefined || (userResult as [User[], FieldPacket[]])[0].length === 0) {
+        console.log(userResult)
+        return { error: true, message: '500 INTERNAL SERVER ERROR (Did Not Find User)' }
+    }
+
+    const to: UserDetails = usersToSlugs((userResult as [User[], FieldPacket[]])[0])[0]
+
+    const result: [QueryResult, FieldPacket[]] | GenericError = await dbDeleteRequest(from, to.user_id)
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    const check: [QueryResult, FieldPacket[]] | GenericError = await dbDeleteFriends(from, to.user_id)
+
+    if ((check as GenericError).error !== undefined)
+        return check as GenericError
+
+    return { success: true, message: 'Unfriended' }
 }

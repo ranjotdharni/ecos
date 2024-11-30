@@ -1,8 +1,9 @@
 'use client'
 
-import { BUSINESS_ICON, BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_PAGE_ROUTE, EMPIRE_PAGE_ROUTE, JOB_ICON, JOB_PAGE_ROUTE, STATE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
+import { BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_PAGE_ROUTE, EMPIRE_PAGE_ROUTE, JOB_PAGE_ROUTE, STATE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
 import { UserContext } from "@/app/components/context/UserProvider"
 import { MouseEvent, useContext, useEffect, useState } from "react"
+import RequestList from "@/app/components/home/RequestList"
 import InviteList from "@/app/components/home/InviteList"
 import { UserDetails } from "@/customs/utils/types"
 import { fetchUser } from "@/customs/utils/tools"
@@ -66,18 +67,8 @@ export default function Home() {
                 <InviteList throwError={throwError} />
             </div>
 
-            <div className={styles.middleContainer}>
-                <div className={`${styles.contentItem} ${styles.job} ${selectView === JOB_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(JOB_INDEX)}>
-                    <img src={JOB_ICON} />
-                    <h2>Your Job</h2>
-                    <button onClick={confirmOrView(JOB_INDEX)} className={selectView === JOB_INDEX ? `${styles.visible} ${styles.viewButton}` : styles.viewButton}>View</button>
-                </div>
-
-                <div className={`${styles.contentItem} ${styles.businesses} ${selectView === BUSINESS_INDEX ? styles.highlightCard : ''}`} onClick={confirmView(BUSINESS_INDEX)}>
-                    <img src={BUSINESS_ICON} />
-                    <h2>Your Businesses</h2>
-                    <button onClick={confirmOrView(BUSINESS_INDEX)} className={selectView === BUSINESS_INDEX ? `${styles.visible} ${styles.viewButton}` : styles.viewButton}>View</button>
-                </div>
+            <div className={`${styles.middleContainer} ${styles.exemptContentItem} ${styles.empire} ${selectView === EMPIRE_INDEX ? styles.highlightCard : ''}`}>
+                <RequestList throwError={throwError} />
             </div>
 
             <div className={styles.middleContainer}>

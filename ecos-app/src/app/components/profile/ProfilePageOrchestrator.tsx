@@ -4,8 +4,10 @@ import { API_USER_DETAILS_ROUTE } from "@/customs/utils/constants"
 import { UserDetails } from "@/customs/utils/types"
 import ProfileContent from "./ProfileContent"
 import ProfileHeader from "./ProfileHeader"
+import { useEffect, useState } from "react"
+import FriendsList from "./FriendsList"
+import UserSearch from "./UserSearch"
 import Loading from "@/app/loading"
-import { useState } from "react"
 
 
 export default function ProfilePageOrchestrator() {
@@ -24,6 +26,10 @@ export default function ProfilePageOrchestrator() {
         setLoader(false)
     }
 
+    useEffect(() => {
+        getUser()
+    }, [])
+
     return (
         <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center'}}>
             {
@@ -32,6 +38,10 @@ export default function ProfilePageOrchestrator() {
                 <>
                     <ProfileHeader user={user} />
                     <ProfileContent user={user} />
+                    <div style={{width: '100%', height: '60%', display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center'}}>
+                        <UserSearch client={user} />
+                        <FriendsList client={user} />
+                    </div>
                 </>
             }
         </div>

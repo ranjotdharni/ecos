@@ -48,6 +48,56 @@ export interface User extends RowDataPacket {
     bio: string
 }
 
+// requests table row data
+export interface Request extends RowDataPacket {
+    from: string
+    to: string
+    requested_at: Date
+    from_user_id: string
+    from_username: string
+    from_password: string
+    from_empire: number | null
+    from_first_name: string
+    from_last_name: string
+    from_gold: number
+    from_pfp: number
+    from_bio: string
+    to_user_id: string
+    to_username: string
+    to_password: string
+    to_empire: number | null
+    to_first_name: string
+    to_last_name: string
+    to_gold: number
+    to_pfp: number
+    to_bio: string
+}
+
+// friends table row data
+export interface Friend extends RowDataPacket {
+    friend1: string
+    friend2: string
+    friends_since: Date
+    friend1_user_id: string
+    friend1_username: string
+    friend1_password: string
+    friend1_empire: number | null
+    friend1_first_name: string
+    friend1_last_name: string
+    friend1_gold: number
+    friend1_pfp: number
+    friend1_bio: string
+    friend2_user_id: string
+    friend2_username: string
+    friend2_password: string
+    friend2_empire: number | null
+    friend2_first_name: string
+    friend2_last_name: string
+    friend2_gold: number
+    friend2_pfp: number
+    friend2_bio: string
+}
+
 // auth table row data
 export interface Session extends RowDataPacket {
     user_id: string
@@ -395,6 +445,18 @@ export interface CollectionSlug {
     revenue: number,
     collected_at: Date,
     business: BusinessSlug
+}
+
+export interface RequestSlug {
+    from: UserDetails
+    to: UserDetails
+    at: Date
+}
+
+export interface FriendSlug {
+    friend1: UserDetails
+    friend2: UserDetails
+    since: Date
 }
 
 export interface NewBusiness {

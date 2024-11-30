@@ -1,4 +1,4 @@
-import { Business, BusinessEarnings, Collection, Congregation, CongregationSlug, GenericError, Invite, Session, State, StateInvite, StateInviteMutable, User, Worker } from "@/customs/utils/types"
+import { Business, BusinessEarnings, Collection, Congregation, CongregationSlug, Friend, GenericError, Invite, Request, Session, State, StateInvite, StateInviteMutable, User, Worker } from "@/customs/utils/types"
 import { dateToSQLDate, stateInviteMutablesToSlugs } from "@/customs/utils/tools"
 import { FieldPacket, QueryResult, QueryError } from "mysql2"
 import { db } from "./config"
@@ -101,6 +101,31 @@ export async function dbGetUserById(userId: string): Promise<[User[], FieldPacke
     }
 }
 
+// find users by searching for username
+export async function dbSearchUsersByUsername(username: string): Promise<[User[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT
+            *
+        FROM
+            users
+        WHERE 
+            username LIKE ?
+        `
+        const params: (string | number)[] = [`%${username}%`]
+        const response: [User[], FieldPacket[]] | QueryError = await conn.execute<User[]>(query, params)
+        conn.release()
+
+        return response as [User[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Search for Users in Database' } as GenericError
+    }
+}
+
 // Edit user details by username
 export async function dbEditUserDetailsByUsername(username: string, pfp: number, first: string, last: string, bio: string): Promise<[QueryResult, FieldPacket[]] | GenericError> {
     try {
@@ -126,6 +151,239 @@ export async function dbEditUserDetailsByUsername(username: string, pfp: number,
     } catch (error) {
         console.log(error)
         return { error: true, message: 'Failed to Edit User Details in Database' } as GenericError
+    }
+}
+
+// make a friend request to another user
+export async function dbSendFriendRequest(from: string, to: string, at: Date): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        INSERT INTO
+            requests (user_from, user_to, requested_at)
+        VALUES
+            (?, ?, ?)
+        `
+        const params: (string | number)[] = [from, to, dateToSQLDate(at)]
+        const response: [QueryResult, FieldPacket[]] | QueryError = await conn.execute<QueryResult>(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Add Friend Request in Database' } as GenericError
+    }
+}
+
+// get all requests of a user (from or to) by id
+export async function dbGetRequests(userId: string): Promise<[Request[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT
+            r.*,
+            f.user_id as from_user_id,
+            f.username as from_username,
+            f.empire as from_empire,
+            f.first_name as from_first_name,
+            f.last_name as from_last_name,
+            f.gold as from_gold,
+            f.pfp as from_pfp,
+            f.bio as from_bio,
+            t.user_id as to_user_id,
+            t.username as to_username,
+            t.empire as to_empire,
+            t.first_name as to_first_name,
+            t.last_name as to_last_name,
+            t.gold as to_gold,
+            t.pfp as to_pfp,
+            t.bio as to_bio
+        FROM
+            requests r
+        JOIN
+            users f ON r.user_from = f.user_id
+        JOIN 
+            users t ON r.user_to = t.user_id
+        WHERE 
+            r.user_from = ? OR r.user_to = ?
+        `
+        const params: (string | number)[] = [userId, userId]
+        const response: [Request[], FieldPacket[]] | QueryError = await conn.execute<Request[]>(query, params)
+        conn.release()
+
+        return response as [Request[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Find Requests in Database' } as GenericError
+    }
+}
+
+// clear a request between any two parties either way
+export async function dbDeleteRequest(user1: string, user2: string): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        DELETE FROM
+            requests
+        WHERE
+                (user_from = ? AND user_to = ?)
+            OR
+                (user_from = ? AND user_to = ?)
+        `
+        const params: (string | number)[] = [user1, user2, user2, user1]
+        const response: [QueryResult, FieldPacket[]] | QueryError = await conn.execute<QueryResult>(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Delete Friend Request From Database' } as GenericError
+    }
+}
+
+// create a pair of friends !!!MAKE SURE TO CLEAR ANY REQUESTS BEFORE  INVOKING THIS!!!!
+export async function dbMakeFriends(user1: string, user2: string, since: Date): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        INSERT INTO
+            friends (friend1, friend2, friends_since)
+        VALUES
+            (?, ?, ?)
+        `
+        const params: (string | number)[] = [user1, user2, dateToSQLDate(since)]
+        const response: [QueryResult, FieldPacket[]] | QueryError = await conn.execute<QueryResult>(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Make Friends In Database' } as GenericError
+    }
+}
+
+// delete a pair of friends
+export async function dbDeleteFriends(user1: string, user2: string): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        DELETE FROM
+            friends
+        WHERE
+                (friend1 = ? AND friend2 = ?)
+            OR
+                (friend1 = ? AND friend2 = ?)
+        `
+        const params: (string | number)[] = [user1, user2, user2, user1]
+        const response: [QueryResult, FieldPacket[]] | QueryError = await conn.execute<QueryResult>(query, params)
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Delete Friends In Database' } as GenericError
+    }
+}
+
+// get all friends of a user by id
+export async function dbGetFriends(userId: string): Promise<[Friend[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT
+            f.*,
+            f1.user_id as friend1_user_id,
+            f1.username as friend1_username,
+            f1.empire as friend1_empire,
+            f1.first_name as friend1_first_name,
+            f1.last_name as friend1_last_name,
+            f1.gold as friend1_gold,
+            f1.pfp as friend1_pfp,
+            f1.bio as friend1_bio,
+            f2.user_id as friend2_user_id,
+            f2.username as friend2_username,
+            f2.empire as friend2_empire,
+            f2.first_name as friend2_first_name,
+            f2.last_name as friend2_last_name,
+            f2.gold as friend2_gold,
+            f2.pfp as friend2_pfp,
+            f2.bio as friend2_bio
+        FROM
+            friends f
+        JOIN
+            users f1 ON f.friend1 = f1.user_id
+        JOIN 
+            users f2 ON f.friend2 = f2.user_id
+        WHERE 
+            f.friend1 = ? OR f.friend2 = ?
+        `
+        const params: (string | number)[] = [userId, userId]
+        const response: [Friend[], FieldPacket[]] | QueryError = await conn.execute<Friend[]>(query, params)
+        conn.release()
+
+        return response as [Friend[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Find Friends in Database' } as GenericError
+    }
+}
+
+// get all friends of a user by id
+export async function dbGetFriendsByDetails(user1: string, user2: string): Promise<[Friend[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT
+            f.*,
+            f1.user_id as friend1_user_id,
+            f1.username as friend1_username,
+            f1.empire as friend1_empire,
+            f1.first_name as friend1_first_name,
+            f1.last_name as friend1_last_name,
+            f1.gold as friend1_gold,
+            f1.pfp as friend1_pfp,
+            f1.bio as friend1_bio,
+            f2.user_id as friend2_user_id,
+            f2.username as friend2_username,
+            f2.empire as friend2_empire,
+            f2.first_name as friend2_first_name,
+            f2.last_name as friend2_last_name,
+            f2.gold as friend2_gold,
+            f2.pfp as friend2_pfp,
+            f2.bio as friend2_bio
+        FROM
+            friends f
+        JOIN
+            users f1 ON f.friend1 = f1.user_id
+        JOIN 
+            users f2 ON f.friend2 = f2.user_id
+        WHERE 
+                (f.friend1 = ? AND f.friend2 = ?)
+            OR
+                (f.friend1 = ? AND f.friend2 = ?)
+        `
+        const params: (string | number)[] = [user1, user2, user2, user1]
+        const response: [Friend[], FieldPacket[]] | QueryError = await conn.execute<Friend[]>(query, params)
+        conn.release()
+
+        return response as [Friend[], FieldPacket[]]
+
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Find Friends in Database' } as GenericError
     }
 }
 

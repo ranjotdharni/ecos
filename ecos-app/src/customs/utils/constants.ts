@@ -29,6 +29,8 @@ export const API_STATE_OWNER_ROUTE: string = '/api/state/owner' // get states by
 export const API_BUSINESS_ROUTE: string = '/api/business' // get businesses by empire
 export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details
 export const API_SESSION_ROUTE: string = '/api/session' // check session
+export const API_REQUEST_ROUTE: string = '/api/request' // get user's requests
+export const API_FRIEND_ROUTE: string = '/api/friend' // get user's friends
 export const API_INVITE_ROUTE: string = '/api/invite' // get invites using from and type
 export const API_WORKER_ROUTE: string = '/api/worker' // get user's job
 export const API_STATE_ROUTE: string = '/api/state' // get states
@@ -51,6 +53,9 @@ export const AUTH_CODES = {
     EXEMPT: -1,     // Auth exempt
 }
 
+export const FRIENDS_ICON: string = 'https://img.icons8.com/?size=100&id=fyO7d7zXZciO&format=png&color=000000'
+export const REQUEST_ICON: string = 'https://img.icons8.com/?size=100&id=23338&format=png&color=000000'
+export const SEARCH_ICON: string = 'https://img.icons8.com/?size=100&id=12773&format=png&color=000000'
 export const CONSTRUCTION_ICON: string = 'https://img.icons8.com/color/96/full-tool-storage-box-.png'
 export const STATE_OWNER_ICON: string = 'https://img.icons8.com/color/48/politician-skin-type-4.png'
 export const CONGREGATION_OWNER_ICON: string = 'https://img.icons8.com/color/48/inauguration.png'
