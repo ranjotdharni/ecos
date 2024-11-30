@@ -26,6 +26,7 @@ export const API_BUSINESS_EMPIRE_ROUTE: string = '/api/business/empire' // get b
 export const API_STATE_EARNINGS_ROUTE: string = '/api/state/earnings' // get earnings of state
 export const API_CONGREGATION_ROUTE: string = '/api/congregation' // get congregation data
 export const API_STATE_OWNER_ROUTE: string = '/api/state/owner' // get states by owner
+export const API_USER_ASSETS_ROUTE: string = '/api/user/assets' // get all user's assets by username
 export const API_BUSINESS_ROUTE: string = '/api/business' // get businesses by empire
 export const API_USER_DETAILS_ROUTE: string = '/api/user' // get user details
 export const API_SESSION_ROUTE: string = '/api/session' // check session

@@ -1,0 +1,196 @@
+.main {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column; 
+    justify-content: flex-start; 
+    align-items: center;
+}
+
+.loader {
+    height: 50px;
+    aspect-ratio: 1 / 1;
+}
+
+.listsContainer {
+    width: 100%; 
+    height: 60%;
+    display: flex;
+    flex-direction: row; 
+    justify-content: space-evenly; 
+    align-items: center;
+}
+
+.contentModule {
+    width: 30%;
+    height: 95%;
+    background-color: var(--color--accent);
+    border-radius: 1rem;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.contentHeader {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: solid 1px var(--color--subtext);
+}
+
+.contentHeader img {
+    height: 75%;
+    aspect-ratio: 1 / 1;
+}
+
+.contentHeader h2 {
+    color: var(--color--text);
+}
+
+.contentInputs {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.contentInputs input {
+    width: 100%;
+    height: 30%;
+    color: var(--color--subtext);
+    background: none;
+    border: none;
+    outline: none;
+    border-bottom: solid 1px var(--color--subtext);
+    font-family: var(--font-jb-sans);
+}
+
+.contentList {
+    width: 100%;
+    height: 60%;
+    background-color: var(--color--contrast);
+    border-radius: 0.5rem;
+    padding: 10px;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-y: scroll;
+}
+
+.contentList li {
+    width: 100%;
+    height: 100px;
+    background-color: var(--color--accent);
+    border-radius: 0.2rem;
+    margin-bottom: 10px;
+}
+
+.contentList li a {
+    width: 100%;
+    height: 100%;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 10px;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.stateItem h3 {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    color: var(--color--text);
+}
+
+.stateItem p {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    color: var(--color--subtext);
+}
+
+.congregationItem div {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.congregationItem div img {
+    height: 50%;
+    aspect-ratio: 1 / 1;
+    margin-right: 5px;
+}
+
+.congregationItem div h3 {
+    color: var(--color--text);
+}
+
+.congregationItem p {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    color: var(--color--subtext);
+}
+
+.businessItem div {
+    width: 100%;
+    height: 70%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.businessItem div img {
+    height: 50%;
+    aspect-ratio: 1 / 1;
+    margin-right: 5px;
+}
+
+.businessItem div h3 {
+    color: var(--color--text);
+}
+
+.businessItem p {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    color: var(--color--subtext);
+}
+
+@media (max-width: 573px) {
+    .contentModule {
+        width: 90%;
+        height: 90vh;
+        margin-top: 15px;
+    }
+}
