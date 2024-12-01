@@ -1,6 +1,7 @@
 'use client'
 
 import { API_USER_DETAILS_ROUTE } from "@/customs/utils/constants"
+import styles from "./css/profilePageOrchestrator.module.css"
 import { UserDetails } from "@/customs/utils/types"
 import ProfileContent from "./ProfileContent"
 import ProfileHeader from "./ProfileHeader"
@@ -31,14 +32,14 @@ export default function ProfilePageOrchestrator() {
     }, [])
 
     return (
-        <div style={{width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center'}}>
+        <div className={styles.main}>
             {
                 loader || user === undefined ?
-                <div style={{width: 50, aspectRatio: 1}}><Loading color='var(--color--text)' /></div> :
+                <div className={styles.loader}><Loading color='var(--color--text)' /></div> :
                 <>
                     <ProfileHeader user={user} />
                     <ProfileContent user={user} />
-                    <div style={{width: '100%', height: '60%', display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center'}}>
+                    <div className={styles.listsContainer}>
                         <UserSearch client={user} />
                         <FriendsList client={user} />
                     </div>

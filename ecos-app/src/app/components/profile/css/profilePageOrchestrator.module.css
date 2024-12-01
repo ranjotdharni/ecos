@@ -1,0 +1,35 @@
+.main {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column; 
+    justify-content: flex-start; 
+    align-items: center;
+}
+
+.loader {
+    height: 50px;
+    aspect-ratio: 1 / 1;
+}
+
+.listsContainer {
+    width: 100%; 
+    height: 60%;
+    display: flex;
+    flex-direction: row; 
+    justify-content: space-evenly; 
+    align-items: center;
+}
+
+@media (max-width: 996px) {
+    .main {
+        height: auto;
+    }
+
+    .listsContainer {
+        height: auto;
+        flex-direction: column; 
+        justify-content: flex-start; 
+        align-items: center;
+    }
+}

@@ -1,6 +1,6 @@
 
 export const NEW_STATE_COST: number = 1000000000
-export const MINIMUM_CONGREGATIONS_PER_STATE: number = 10
+export const MINIMUM_CONGREGATIONS_PER_STATE: number = 10 // (cities)
 
 // MAY NOT RETURN EMPTY STRING!!!!
 export async function validateStateName(name: string): Promise<string | void> {

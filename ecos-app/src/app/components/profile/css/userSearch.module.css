@@ -216,3 +216,11 @@
     height: 50%;
     aspect-ratio: 1 / 1;
 }
+
+@media (max-width: 996px) {
+    .container {
+        width: 95%;
+        height: 85vh;
+        margin-bottom: 10vh;
+    }
+}

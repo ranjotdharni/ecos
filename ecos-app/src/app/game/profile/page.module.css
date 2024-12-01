@@ -6,3 +6,9 @@
     justify-content: flex-start;
     align-self: center;
 }
+
+@media (max-width: 996px) {
+    .page {
+        height: auto;
+    }
+}

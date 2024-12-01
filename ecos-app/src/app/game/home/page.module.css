@@ -104,7 +104,7 @@
     height: 47.5%;
 }
 
-@media (max-width: 808px) {
+@media (max-width: 996px) {
     .page {
         height: auto;
         padding: 20px;
@@ -113,20 +113,6 @@
         justify-content: flex-start;
         align-items: center;
     }
-    
-    /*.contentItem {
-        width: 85%;
-        height: 70vh;
-    
-        &:hover {
-            cursor: pointer;
-        }
-    }
-
-    .exemptContentItem {
-        width: 85%;
-        height: 70vh;
-    }*/
 
     .middleContainer {
         width: 95%;
