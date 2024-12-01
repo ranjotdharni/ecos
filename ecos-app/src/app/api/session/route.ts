@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
     const result = await dbGetUser(data.username)   // grab user info
 
     if ((result as QueryError).code !== undefined) {    // ISE when getting user info, authenticate again
-        console.log(result)
         return NextResponse.json({ session: AUTH_CODES.NOT_AUTHENTICATED }, { status: 200 })
     }
 
