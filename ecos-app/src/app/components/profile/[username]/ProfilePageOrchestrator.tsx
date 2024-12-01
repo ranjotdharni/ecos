@@ -1,7 +1,7 @@
 'use client'
 
 import { API_USER_ASSETS_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, CONGREGATION_ICON, CONGREGATION_PAGE_ROUTE, STATE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
-import { BusinessSlug, CongregationSlug, StateSlug, UserDetails } from "@/customs/utils/types"
+import { BusinessSlug, CongregationSlug, FriendSlug, RequestSlug, StateSlug, UserDetails } from "@/customs/utils/types"
 import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import styles from "./css/profilePageOrchestrator.module.css"
 import { ChangeEvent, useEffect, useState } from "react"
@@ -166,12 +166,14 @@ function BusinessModule({ businesses } : { businesses: BusinessSlug[] }) {
     )
 }
 
-export default function ProfilePageOrchestrator({ user } : { user: UserDetails }) {
+export default function ProfilePageOrchestrator({ user, f, r } : { user: UserDetails, f?: FriendSlug, r?: RequestSlug }) {
     const [loader, setLoader] = useState<boolean>(false)
 
     const [states, setStates] = useState<StateSlug[]>()
     const [congregations, setCongregations] = useState<CongregationSlug[]>()
     const [businesses, setBusinesses] = useState<BusinessSlug[]>()
+    const [friend, setFriend] = useState<FriendSlug | undefined>(f)
+    const [request, setRequest] = useState<RequestSlug | undefined>(r)
 
     async function getComponentData() {
         setLoader(true)
@@ -208,7 +210,7 @@ export default function ProfilePageOrchestrator({ user } : { user: UserDetails }
                 <div className={styles.loader}><Loading color='var(--color--text)' /></div> :
                 <>
                     <ProfileHeader user={user} />
-                    <ProfileContent user={user} />
+                    <ProfileContent user={user} friend={friend} setFriend={setFriend} request={request} setRequest={setRequest} />
                     <div className={styles.listsContainer}>
                         <StateModule states={states} />
                         <CongregationModule congregations={congregations} />

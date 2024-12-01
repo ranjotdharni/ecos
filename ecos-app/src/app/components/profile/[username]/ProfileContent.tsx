@@ -1,14 +1,14 @@
 'use client'
 
+import { FriendSlug, GenericError, GenericSuccess, RequestSlug, UserDetails } from "@/customs/utils/types"
+import { sendFriendRequest, undoFriends } from "@/customs/utils/actions"
 import { ChangeEvent, MouseEvent, useContext, useState } from "react"
-import { GenericError, UserDetails } from "@/customs/utils/types"
 import { UserContext } from "../../context/UserProvider"
 import styles from "./css/profileContent.module.css"
-import { editUser } from "@/customs/utils/actions"
 import useError from "@/customs/hooks/useError"
 import Loading from "@/app/loading"
 
-export default function ProfileContent({ user } : { user: UserDetails }) {
+export default function ProfileContent({ user, friend, setFriend, request, setRequest } : { user: UserDetails, friend?: FriendSlug, setFriend: (friend?: FriendSlug) => void, request?: RequestSlug, setRequest: (request?: RequestSlug) => void }) {
     const { getUser } = useContext(UserContext)
     const [loader, setLoader] = useState<boolean>(false)
     const [error, throwError] = useError()
@@ -47,20 +47,30 @@ export default function ProfileContent({ user } : { user: UserDetails }) {
     async function save(event: MouseEvent<HTMLButtonElement>) {
         event.preventDefault()
 
-        if (loader)
+        if (loader || request !== undefined)
             return
 
         setLoader(true)
 
-        await editUser(first.trim(), last.trim(), Number(user.pfp), bio.trim()).then(result => {
-            throwError(result.message)
+        if (friend !== undefined) {
+            await undoFriends(user.user_id).then(result => {
+                throwError(result.message)
 
-            if ((result as GenericError).error !== undefined) {
-                return
-            }
-
-            getUser()
-        })
+                if ((result as GenericSuccess).success !== undefined) {
+                    setFriend()
+                }
+            })
+        }
+        else {
+            await sendFriendRequest(user.username).then(result => {
+                if ((result as GenericError).error !== undefined) {
+                    throwError((result as GenericError).message)
+                    return
+                }
+                throwError('Friend Request Sent')
+                setRequest(result as RequestSlug)
+            })
+        }
 
         setLoader(false)
     }
@@ -74,7 +84,13 @@ export default function ProfileContent({ user } : { user: UserDetails }) {
                 <>
                     <div className={styles.mainEditsInputs}>
                         <p>{`${first} ${last}`}</p>
-                        <button onClick={save}>Save</button>
+                        <button onClick={save}>
+                            {
+                                friend !== undefined ?
+                                'Unfriend' :
+                                (request !== undefined ? 'Pending' : 'Add Friend')
+                            }
+                        </button>
                     </div>
                     <p className={styles.mainEditsBio}>
                         {bio}
