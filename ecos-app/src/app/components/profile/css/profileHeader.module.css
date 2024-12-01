@@ -64,3 +64,11 @@
     height: 75%;
     aspect-ratio: 1 / 1;
 }
+
+@media (max-width: 996px) {
+    .header {
+        width: 95%;
+        height: 20vh;
+        margin-bottom: 5vh;
+    }
+}

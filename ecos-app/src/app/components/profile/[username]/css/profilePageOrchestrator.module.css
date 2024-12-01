@@ -187,7 +187,18 @@
     color: var(--color--subtext);
 }
 
-@media (max-width: 573px) {
+@media (max-width: 996px) {
+    .main {
+        height: auto;
+    }
+
+    .listsContainer {
+        height: auto;
+        flex-direction: column; 
+        justify-content: flex-start; 
+        align-items: center;
+    }
+
     .contentModule {
         width: 90%;
         height: 90vh;
