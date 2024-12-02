@@ -78,3 +78,48 @@ export const CITY_ICON: string = 'https://img.icons8.com/color/96/city-hall.png'
 export const INVITE_ICON: string = 'https://img.icons8.com/color/48/invite.png'
 export const COIN_ICON: string = 'https://img.icons8.com/color/96/average.png'
 export const GAME_ICON: string = 'https://img.icons8.com/color/96/coins.png'
+
+
+
+    
+
+    /*const cookieList = cookies()
+
+    if (!cookieList.has('username') || !cookieList.has('token'))    // session cookies not found
+      status = AUTH_CODES.NOT_AUTHENTICATED
+    else {
+      const username: string = cookieList.get('username')!.value
+      const token: string = cookieList.get('token')!.value
+
+      const response: Session[] | GenericError = await getAuthentication(username)
+
+      if ((response as GenericError).error)
+        status = AUTH_CODES.NOT_AUTHENTICATED
+      else {
+        const session: Session[] = response as Session[]
+
+        if (session.length === 0 || await isSessionExpired(session[0].expires_at)) // session not found or expired, authenticate again
+            status = AUTH_CODES.NOT_AUTHENTICATED
+        else if (!(await compare(`${token}${process.env.TOKEN_SECRET}`, session[0].auth_token)))
+          status = AUTH_CODES.NOT_AUTHENTICATED
+        else {
+          // At this point user has valid session, now check if empire selected
+
+          const result = await dbGetUser(username)   // grab user info
+
+          if ((result as QueryError).code !== undefined) {    // ISE when getting user info, authenticate again
+            status = AUTH_CODES.NOT_AUTHENTICATED
+          }
+          else {
+            const credentials: User[] = (result as [User[], FieldPacket[]])[0]
+
+            if (credentials.length === 0)   // user info not found, authenticate
+              status = AUTH_CODES.NOT_AUTHENTICATED
+            else if (credentials[0].empire === null) // user authenticated but empire not selected
+              status = AUTH_CODES.NULL_EMPIRE
+            else
+              status = AUTH_CODES.LOGGED_IN // user authenticated and empire is selected
+          }
+        }
+      }
+    }*/
