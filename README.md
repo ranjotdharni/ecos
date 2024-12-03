@@ -215,19 +215,19 @@ Use the following table to find what each variable in the game's calculations re
 ## Calculations
 
 The **Revenue** of a business is given as:
-$$ R = {BER * M * (3 + W)} $$
+$$R = {BER * M * (3 + W)}$$
 
 Then, the **Wage** of a worker at this business can be found using:
-$$ WA_i = {[(WR_i * RM) + LS] * R} $$
+$$WA_i = {[(WR_i * RM) + LS] * R}$$
 
 For a state, we can calculate its earnings based on all businesses in the state using
-$$ \sum_{i=1}^B ST * R_i $$
+$$\sum_{i=1}^B ST * R_i$$
 
 For a congregation, we can calculate its earnings based on all businesses in the congregation using
-$$ \sum_{i=1}^B CT * R_i $$
+$$\sum_{i=1}^B CT * R_i$$
 
 Finally, we have the **Earning Rate** for a given business as follows:
-$$ ER = {[1 - ST - CT - \sum_{i=1}^W (WR_i * RM + LS)] * R} $$
+$$ER = {[1 - ST - CT - \sum_{i=1}^W (WR_i * RM + LS)] * R}$$
 
 # Issues
 
