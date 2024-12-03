@@ -1,6 +1,7 @@
 import { Business, BusinessEarnings, Collection, Congregation, CongregationSlug, Friend, GenericError, Invite, Request, Session, State, StateInvite, StateInviteMutable, User, Worker } from "@/customs/utils/types"
 import { dateToSQLDate, stateInviteMutablesToSlugs } from "@/customs/utils/tools"
-import { FieldPacket, QueryResult, QueryError } from "mysql2"
+import { FieldPacket, QueryResult, QueryError, RowDataPacket } from "mysql2"
+import { CITY_CODE } from "../server/congregation"
 import { db } from "./config"
 
 // Add a new user to the database
@@ -1428,6 +1429,48 @@ export async function dbCreateNewCongregation(cid: string, empire: number, sid: 
     }
 }
 
+// update the status of a congregation as necessary
+export async function dbUpdateCongregationStatus(congregationId: string): Promise<[QueryResult, FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        let query: string = `
+        SELECT COUNT(*) AS 
+            count
+        FROM 
+            businesses
+        WHERE 
+            congregation_id = ?
+        `
+        let params: (string | number)[] = [congregationId]
+        let response: [QueryResult, FieldPacket[]] = await conn.execute(query, params)
+
+        if (((response as [QueryResult, FieldPacket[]])[0] as RowDataPacket[]).length === 0)
+            return { error: true, message: 'Failed to Update Congregation Status in Database' } as GenericError
+
+        if (Number(((response as [QueryResult, FieldPacket[]])[0] as RowDataPacket[])[0].count) < 10)
+            return response
+
+        query = `
+        UPDATE
+            congregations
+        SET 
+            congregation_status = ?
+        WHERE 
+            congregation_id = ?
+        `
+        params = [CITY_CODE, congregationId]
+        response = await conn.execute(query, params)
+
+        conn.release()
+
+        return response as [QueryResult, FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Update Congregation Status in Database' } as GenericError
+    }
+}
+
 // update the state ids of a set of congregations (using an array of their congregation ids)
 export async function dbUpdateCongregationsState(s_id: string, c_ids: string[]): Promise<[QueryResult, FieldPacket[]] | GenericError> {
     try {
@@ -1895,5 +1938,36 @@ export async function dbDeleteInvite(u_from: string, u_to: string, invite_to: st
     } catch (error) {
         console.log(error)
         return { error: true, message: 'Failed to Delete Invite From Database' } as GenericError
+    }
+}
+
+// find a user using their worker id
+export async function dbGetUserByWorkerId(workerId: string): Promise<[User[], FieldPacket[]] | GenericError> {
+    try {
+        const conn = await db.getConnection()
+
+        const query: string = `
+        SELECT 
+            * 
+        FROM
+            users
+        WHERE
+            user_id = (
+                SELECT
+                    user_id
+                FROM
+                    workers
+                WHERE
+                    worker_id = ?
+            )
+        `
+        const params: (string | number)[] = [workerId]
+        const response: [User[], FieldPacket[]] = await conn.execute(query, params)
+        conn.release()
+
+        return response as [User[], FieldPacket[]]
+    } catch (error) {
+        console.log(error)
+        return { error: true, message: 'Failed to Find User from Worker in Database' } as GenericError
     }
 }
