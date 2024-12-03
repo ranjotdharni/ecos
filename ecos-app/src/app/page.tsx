@@ -21,8 +21,8 @@ export default function Home() {
         <div className={styles.nav}>
           <a href='/game/home'>Home</a>
           <a href='/welcome'>Login</a>
-          <a href='https://github.com/ranjotdharni/ecos'>About</a>
-          <a href='/'>Contact</a>
+          <a href='https://github.com/ranjotdharni/ecos?tab=readme-ov-file#usage'>Instructions</a>
+          <a href='https://github.com/ranjotdharni/ecos/issues'>Contact</a>
         </div>
       </div>
       <section className={styles.page}>

@@ -1,8 +1,9 @@
 'use client'
 
-import { GenericError, GenericSuccess, WorkerSlug } from "@/customs/utils/types"
+import { GenericError, GenericSuccess, UserDetails, WorkerSlug } from "@/customs/utils/types"
+import { editWorkers, getUserByWorker } from "@/customs/utils/actions"
 import { ChangeEvent, MouseEvent, useEffect, useState } from "react"
-import { editWorkers } from "@/customs/utils/actions"
+import { PROFILE_PAGE_ROUTE } from "@/customs/utils/constants"
 import styles from "../css/workerModal.module.css"
 import { useRouter } from "next/navigation"
 import { FiX } from "react-icons/fi"
@@ -32,6 +33,7 @@ interface WorkerModalProps {
 }
 
 function WorkerItem({ worker, addRankChange, addFired, clear } : WorkerItemProps) {
+    const router = useRouter()
     const [workerRank, setWorkerRank] = useState<number>(-1)
 
     // apparently setState works asynchronously, so this is the required syntax for the below function
@@ -60,6 +62,19 @@ function WorkerItem({ worker, addRankChange, addFired, clear } : WorkerItemProps
         })
     }
 
+    async function redirectToUser(event: MouseEvent<HTMLAnchorElement>) {
+        event.preventDefault()
+
+        const redirect: GenericError | UserDetails = await getUserByWorker(worker.worker_id)
+
+        if ((redirect as GenericError).error !== undefined) {
+            console.log((redirect as GenericError).message)
+            return
+        }
+
+        router.push(`${PROFILE_PAGE_ROUTE}/${(redirect as UserDetails).username}`)
+    }
+
     useEffect(() => {
         setWorkerRank(worker.worker_rank)
     }, [clear])
@@ -72,6 +87,7 @@ function WorkerItem({ worker, addRankChange, addFired, clear } : WorkerItemProps
                 <input type='number' value={workerRank} onChange={onRankChange} />
             </div>
             <div className={styles.workerItemFire}>
+                <a onClick={redirectToUser}>View Profile</a>
                 <button onClick={onFired}>Fire</button>
             </div>
         </li>

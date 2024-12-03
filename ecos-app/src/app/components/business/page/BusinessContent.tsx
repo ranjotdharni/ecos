@@ -1,18 +1,21 @@
 'use client'
 
 import { API_BUSINESS_ROUTE, API_CONGREGATION_ROUTE, BUSINESS_ICON, BUSINESS_PAGE_ROUTE, COIN_ICON, CONGREGATION_ICON, LABOR_SPLIT_ICON, STATE_ICON } from "@/customs/utils/constants"
-import { BusinessSlug, BusinessType, CongregationSlug, GenericSuccess } from "@/customs/utils/types"
+import { BusinessSlug, BusinessType, CongregationSlug, GenericError, GenericSuccess } from "@/customs/utils/types"
 import { ChangeEvent, MouseEvent, useContext, useEffect, useState } from "react"
 import { BUSINESS_TYPES, NEW_BUSINESS_COST } from "@/app/server/business"
 import { purchaseBusiness } from "@/customs/utils/actions"
 import { UserContext } from "../../context/UserProvider"
 import styles from "./css/businessContent.module.css"
 import useError from "@/customs/hooks/useError"
+import { useRouter } from "next/navigation"
 import DropList from "../../app/DropList"
 import Loading from "@/app/loading"
 
 function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { throwError: (error: string) => void, refetchBusinesses: () => void, refetchGold: () => void }) {
+    const router = useRouter()
     const [searchLoader, setSearchLoader] = useState<boolean>(false)
+    const [purchaseLoader, setPurchaseLoader] = useState<boolean>(false)
 
     const [businessType, setBusinessType] = useState<number>(0)
     const [congregations, setCongregations] = useState<CongregationSlug[]>([])
@@ -70,19 +73,28 @@ function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { th
     async function submit(event: MouseEvent<HTMLButtonElement>) {
         event.preventDefault()
 
+        if (purchaseLoader)
+            return
+
         if (name.trim() === '' || rank.trim() === '' || chosenCongregation === undefined) {
             throwError('Please Fill All Required Fields')
             return
         }
 
-        await purchaseBusiness(name.trim(), rank.trim(), BUSINESS_TYPES[businessType], chosenCongregation).then(result => {
-            throwError(result.message)
+        setPurchaseLoader(true)
 
-            if ((result as GenericSuccess).success) {
-                refetchBusinesses()
-                refetchGold()
+        await purchaseBusiness(name.trim(), rank.trim(), BUSINESS_TYPES[businessType], chosenCongregation).then(result => {
+            if ((result as GenericError).error !== undefined) {
+                throwError(result.message)
+                return
             }
+
+            refetchBusinesses()
+            refetchGold()
+            router.push(`${BUSINESS_PAGE_ROUTE}/${(result as GenericSuccess).message}`)
         })
+
+        setPurchaseLoader(false)
     }
 
     function dropListRender(item: BusinessType, selected?: number): JSX.Element | JSX.Element[] {
@@ -177,8 +189,14 @@ function NewBusinessModule({ throwError, refetchBusinesses, refetchGold } : { th
                     <DropList<BusinessType> selected={businessType} data={BUSINESS_TYPES} render={dropListRender} topMargin='-625%' />
                 </div>
                 <button className={styles.submitButton} type='submit' onClick={submit}>
-                    <img src={COIN_ICON} />
-                    <p>{NEW_BUSINESS_COST}</p>
+                    {
+                        purchaseLoader ? 
+                        <div style={{height: '50%', aspectRatio: 1}}><Loading color='var(--color--text)' /></div> :
+                        <>
+                            <img src={COIN_ICON} />
+                            <p>{NEW_BUSINESS_COST}</p>
+                        </>
+                    }
                 </button>
             </div>
         </form>

@@ -1,7 +1,7 @@
 'use client'
 
-import { BusinessType, EmpireData, GenericSuccess, NewBusiness, StateSlug } from "@/customs/utils/types"
-import { API_STATE_ROUTE, BUSINESS_ICON, COIN_ICON, } from "@/customs/utils/constants"
+import { BusinessType, EmpireData, GenericError, GenericSuccess, NewBusiness, StateSlug } from "@/customs/utils/types"
+import { API_STATE_ROUTE, BUSINESS_ICON, COIN_ICON, CONGREGATION_PAGE_ROUTE, } from "@/customs/utils/constants"
 import { ChangeEvent, MouseEvent, useContext, useEffect, useState } from "react"
 import { FiChevronLeft, FiChevronRight, FiSearch } from "react-icons/fi"
 import { NEW_CONGREGATION_COST } from "@/app/server/congregation"
@@ -11,6 +11,7 @@ import { UserContext } from "../../context/UserProvider"
 import { BUSINESS_TYPES } from "@/app/server/business"
 import { EMPIRE_DATA } from "@/app/server/empire"
 import useError from "@/customs/hooks/useError"
+import { useRouter } from "next/navigation"
 import DropList from "../../app/DropList"
 import Loading from "@/app/loading"
 
@@ -168,13 +169,13 @@ function NewBusinessesModule({ current, setCurrent, newBusinessesOne, setNewBusi
             <div className={styles.newContentContainer}>
                 <p>
                     {
-                        `Each new congregation must start with a minimum of 3 businesses. 
-                        Use this menu to set the details of the starting businesses in your 
-                        new congregation. Then, select a state to establish your new congregation 
+                        `Each new Congregation must start with a minimum of 3 Businesses. 
+                        Use this menu to set the details of the starting Businesses in your 
+                        new Congregation. Then, select a State to establish your new Congregation 
                         in from the Select State Module and hit the purchase button to create the 
-                        congregation with your entered details (provided you have sufficient funds). 
-                        You may not change the state you establish a congregation in once created so 
-                        be sure of your choice.`
+                        Congregation with your entered details (provided you have sufficient funds). 
+                        Once you establish a Congregation, you may move it to a new State you create 
+                        or move it to a State you've been invited to.`
                     }
                 </p>
             </div>
@@ -195,6 +196,7 @@ function NewBusinessesModule({ current, setCurrent, newBusinessesOne, setNewBusi
 
 function StateListModule({ selected, setSelected, submit } : { selected?: StateSlug, setSelected: (select: StateSlug) => void, submit: () => void }) {
     const [loader, setLoader] = useState<boolean>(false)
+    const [purchaseLoader, setPurchaseLoader] = useState<boolean>(false)
 
     const [states, setStates] = useState<StateSlug[]>([])
     const [search, setSearch] = useState<string>('')
@@ -209,6 +211,19 @@ function StateListModule({ selected, setSelected, submit } : { selected?: StateS
         })
 
         setLoader(false)
+    }
+
+    async function purchase(event: MouseEvent<HTMLButtonElement>) {
+        event.preventDefault()
+
+        if (purchaseLoader)
+            return
+
+        setPurchaseLoader(true)
+
+        await submit()
+
+        setPurchaseLoader(false)
     }
 
     useEffect(() => {
@@ -257,15 +272,22 @@ function StateListModule({ selected, setSelected, submit } : { selected?: StateS
                     )
                 }
             </ul>
-            <button className={styles.purchaseButton} onClick={() => { submit() }}>
-                <img src={COIN_ICON} />
-                <p>{NEW_CONGREGATION_COST}</p>
+            <button className={styles.purchaseButton} onClick={purchase}>
+                {
+                    purchaseLoader ? 
+                    <div style={{height: '50%', aspectRatio: 1}}><Loading color='var(--color--text)' /></div> : 
+                    <>
+                        <img src={COIN_ICON} />
+                        <p>{NEW_CONGREGATION_COST}</p>
+                    </>
+                }
             </button>
         </section>
     )
 }
 
 export default function BusinessContent() {
+    const router = useRouter()
     const { getUser } = useContext(UserContext)
 
     const [error, throwError] = useError()
@@ -308,11 +330,13 @@ export default function BusinessContent() {
         }
 
         await createNewCongregation(selected, name, taxRate, split, [newBusinessesOne, newBusinessesTwo, newBusinessesThree]).then(result => {
-            throwError(result.message)
-
-            if ((result as GenericSuccess).success) {
-                getUser() // refetch updated gold value
+            if ((result as GenericError).error !== undefined) {
+                throwError(result.message)
+                return
             }
+
+            getUser() // refetch updated gold value
+            router.push(`${CONGREGATION_PAGE_ROUTE}/${(result as GenericSuccess).message}`)
         })
     }
 

@@ -1,6 +1,6 @@
 'use server'
 
-import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry, dbGetCongregationById, dbSendInvite, dbInvitesToStateSlugs, dbDeleteInvite, dbGetInvitesByDetails, dbAcceptInvite, dbCreateState, dbUpdateCongregationsState, dbEditUserDetailsByUsername, dbSearchUsersByUsername, dbSendFriendRequest, dbDeleteRequest, dbMakeFriends, dbGetFriendsByDetails, dbDeleteFriends } from "../../app/db/query"
+import { dbGetUser, dbCreateUser, dbGenerateSession, dbSetEmpire, dbSelectJob, dbGetJobs, dbClockIn, dbClockOut, dbAddGold, dbCheckCongregationExists, dbNewBusiness, dbGetBusinessesByOwner, dbGetWorkersByBusinessId, dbGetBusinessEarningsByBusiness, dbUpdateBusinessEarnings, dbEditWorkerRank, dbFireWorker, dbGetStateById, dbCreateNewCongregation, dbGetUserById, dbAddCollectionEntry, dbGetCongregationById, dbSendInvite, dbInvitesToStateSlugs, dbDeleteInvite, dbGetInvitesByDetails, dbAcceptInvite, dbCreateState, dbUpdateCongregationsState, dbEditUserDetailsByUsername, dbSearchUsersByUsername, dbSendFriendRequest, dbDeleteRequest, dbMakeFriends, dbGetFriendsByDetails, dbDeleteFriends, dbGetBusinessById, dbUpdateCongregationStatus, dbGetUserByWorkerId } from "../../app/db/query"
 import { User, AuthFormSlug, GenericError, Worker, GenericSuccess, BusinessSlug, CongregationSlug, BusinessType, Business, BusinessEarnings, StateSlug, NewBusiness, State, WorkerSlug, Congregation, Invite, StateInvite, ProfileType, UserDetails, RequestSlug, Friend } from "@/customs/utils/types"
 import { businessesToSlugs, calculateBaseEarningRate, calculateEarningRate, calculateTotalSplit, calculateWage, dateToSQLDate, getRandomDecimalInclusive, timeSince, usersToSlugs, workersToSlugs } from "@/customs/utils/tools"
 import { API_BUSINESS_ROUTE, AUTH_ROUTE, DEFAULT_SUCCESS_ROUTE, MAX_CLOCK_TIME, MIN_CLOCK_REFRESH_TIME, NEW_EMPIRE_ROUTE, PASSWORD_SALT_ROUNDS, TOKEN_SALT_ROUNDS } from "../../customs/utils/constants"
@@ -161,6 +161,16 @@ export async function selectJob(businessId: string): Promise<string | GenericErr
     const username: string = cookieList.get('username')!.value
     const workerId: string = uuidv4()
 
+    const hiringCheck: [Business[], FieldPacket[]] | QueryError = await dbGetBusinessById(businessId)
+
+    if ((hiringCheck as QueryError).code !== undefined || (hiringCheck as [Business[], FieldPacket[]])[0].length === 0)
+        return { error: true, message: 'Failed To Find Business' }
+
+    const hiring: Business = (hiringCheck as [Business[], FieldPacket[]])[0][0]
+
+    if (Number(hiring.hiring) === 0)
+        return { error: true, message: 'This Business is not hiring' }
+
     const result: [Worker[], FieldPacket[]] | QueryError = await dbGetJobs(username)
 
     if ((result as QueryError).code !== undefined) {
@@ -319,14 +329,21 @@ export async function purchaseBusiness(name: string, rank: string, type: Busines
         return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Gold Update)' }
     }
 
-    result = await dbNewBusiness(uuidv4(), congregation.congregation_id, user.user_id, name, type.type, getRandomDecimalInclusive(MIN_BASE_EARNING_RATE, MAX_BASE_EARNING_RATE), rank, 1, uuidv4(), new Date())
+    const businessId: string = uuidv4()
+
+    result = await dbNewBusiness(businessId, congregation.congregation_id, user.user_id, name, type.type, getRandomDecimalInclusive(MIN_BASE_EARNING_RATE, MAX_BASE_EARNING_RATE), rank, 1, uuidv4(), new Date())
 
     if ((result as QueryError).code !== undefined) {
         console.log(result)
         return { error: true, message: '500 INTERNAL SERVER ERROR (Failed Purchase Update)' }
     }
 
-    return { success: true, message: 'Business Purchased' }
+    const congregationUpdate = await dbUpdateCongregationStatus(congregation.congregation_id)
+
+    if ((congregationUpdate as GenericError).error !== undefined)
+        return congregationUpdate as GenericError
+
+    return { success: true, message: businessId }
 }
 
 export async function collectBusinessEarnings(businessId: string): Promise<GenericSuccess | GenericError> {
@@ -578,7 +595,7 @@ export async function createNewCongregation(stateSlug: StateSlug, name: string, 
         }
     }
 
-    return { success: true, message: 'New Congregation Purchased' }
+    return { success: true, message: congregationId }
 }
 
 export async function sendStateInvite(i_to: string, i_from?: string): Promise<GenericSuccess | GenericError> {
@@ -820,7 +837,7 @@ export async function makeNewState(name: string, taxRate: string, congregationLi
             return checkResult as GenericError
     }
 
-    return { success: true, message: 'State Purchased' }
+    return { success: true, message: newStateId }
 }
 
 // edit a user's details using their username
@@ -1006,4 +1023,16 @@ export async function undoFriends(from: string): Promise<GenericSuccess | Generi
         return check as GenericError
 
     return { success: true, message: 'Unfriended' }
+}
+
+export async function getUserByWorker(workerId: string): Promise<UserDetails | GenericError> {
+    const result: [User[], FieldPacket[]] | GenericError = await dbGetUserByWorkerId(workerId)
+
+    if ((result as GenericError).error !== undefined)
+        return result as GenericError
+
+    if ((result as [User[], FieldPacket[]])[0].length === 0)
+        return { error: true, message: 'Failed to find worker user' }
+
+    return usersToSlugs((result as [User[], FieldPacket[]])[0])[0]
 }

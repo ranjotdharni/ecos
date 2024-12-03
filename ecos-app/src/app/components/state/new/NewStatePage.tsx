@@ -1,7 +1,7 @@
 'use client'
 
-import { API_CONGREGATION_OWNER_ROUTE, API_CONGREGATION_ROUTE, API_INVITE_ROUTE, API_USER_DETAILS_ROUTE, COIN_ICON, CONGREGATION_ICON, INVITE_ICON } from "@/customs/utils/constants"
-import { CongregationSlug, CongregationType, GenericSuccess, StateInvite } from "@/customs/utils/types"
+import { API_CONGREGATION_OWNER_ROUTE, API_CONGREGATION_ROUTE, API_INVITE_ROUTE, API_USER_DETAILS_ROUTE, COIN_ICON, CONGREGATION_ICON, INVITE_ICON, STATE_PAGE_ROUTE } from "@/customs/utils/constants"
+import { CongregationSlug, CongregationType, GenericError, GenericSuccess, StateInvite } from "@/customs/utils/types"
 import { INVITE_ACCEPT_CODE, INVITE_DEFAULT_CODE, STATE_INVITE_CODE } from "@/app/server/invite"
 import { MINIMUM_CONGREGATIONS_PER_STATE, NEW_STATE_COST } from "@/app/server/state"
 import { ChangeEvent, MouseEvent, useContext, useEffect, useState } from "react"
@@ -10,6 +10,7 @@ import { CONGREGATION_TYPES } from "@/app/server/congregation"
 import { UserContext } from "../../context/UserProvider"
 import useError from "@/customs/hooks/useError"
 import styles from "./newStatePage.module.css"
+import { useRouter } from "next/navigation"
 import Loading from "@/app/loading"
 
 function CongregationSelectList({ throwError, selectedCongregations, selectCongregation, deselectCongregations } : { throwError: (error: string) => void, selectedCongregations: CongregationSlug[], selectCongregation: (congregation: CongregationSlug) => void, deselectCongregations: (congregation: CongregationSlug) => void }) {
@@ -304,6 +305,7 @@ function InviteSelectList({ throwError, selectedInvites, selectInvite, deselectI
 }
 
 export default function NewStatePage() {
+    const router = useRouter()
     const { getUser } = useContext(UserContext)
     const [error, throwError] = useError()
 
@@ -366,11 +368,14 @@ export default function NewStatePage() {
         setPurchaseLoader(true)
 
         await makeNewState(name.trim(), tax.trim(), selectedCongregations, selectedInvites).then(result => {
-            throwError(result.message)
-
-            if ((result as GenericSuccess).success !== undefined) {
-                getUser()
+            
+            if ((result as GenericError).error !== undefined) {
+                throwError(result.message)
+                return
             }
+
+            getUser()
+            router.push(`${STATE_PAGE_ROUTE}/${(result as GenericSuccess).message}`)
         })
 
         setPurchaseLoader(false)
