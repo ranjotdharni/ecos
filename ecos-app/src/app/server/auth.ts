@@ -41,6 +41,9 @@ export async function validateUsername(username: string): Promise<string | void>
     if (username.indexOf(' ') >= 0) // whitespace
         return 'Username may not contain whitespaces'
 
+    if (username.includes('@')) // invalid character
+        return 'Username may not contain @ character'
+
     if (username.length < 8) // length
         return 'Username must be at least 8 characters'
 
