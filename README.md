@@ -38,12 +38,13 @@ profile art (all icons by [Icons8][icons8Link]). Sit back and collect your estat
 
 Hegemony was built on the following **technologies:**
 
-[![React][reactImg]][reactLink]
-[![Next][nextImg]][nextLink]
-[![TypeScript][typescriptImg]][typescriptLink]
-[![Vercel][vercelImg]][vercelLink]
+- [![Node][nodeImg]][nodeLink] *v22.11.0*
+- [![React][reactImg]][reactLink] *v18.3.1*
+- [![Next][nextImg]][nextLink] *v14.2.15*
+- [![TypeScript][typescriptImg]][typescriptLink] *v5.6.3*
+- [![Vercel][vercelImg]][vercelLink]
 
-It is a **Next 14** project, therefore it is a **React** app at its core, which employs **TypeScript** and uses **Vercel** to host the application.
+It is a **Next 14** project, therefore it is a **React** app at its core, which employs **Node.js** with **TypeScript** and uses **Vercel** to host the application.
 
 # Usage
 Navigate to the Hegemony landing page and click the *Play* button to create an account. This will redirect you to the sign-up page.*
@@ -275,6 +276,7 @@ Fork this repository and open a [pull request][contributionLink] to suggest any 
 [typescriptImg]: https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white
 [reactImg]: https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=1c2c4c
 [nextImg]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
+[nodeImg]: https://img.shields.io/badge/node.js-339933?style=for-the-badge&logo=Node.js&logoColor=white
 [vercelImg]: https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white
 
 [appLink]: https://hegemony.vercel.app
@@ -282,6 +284,7 @@ Fork this repository and open a [pull request][contributionLink] to suggest any 
 [typescriptLink]: https://www.typescriptlang.org/
 [reactLink]: https://react.dev/
 [nextLink]: https://nextjs.org/
+[nodeLink]: https://nodejs.org/
 [vercelLink]: https://vercel.com
 [issueLink]: https://github.com/ranjotdharni/ecos/issues
 [contributionLink]: https://github.com/ranjotdharni/ecos/pulls

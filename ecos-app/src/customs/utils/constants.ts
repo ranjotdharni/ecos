@@ -14,6 +14,7 @@ export const EMPIRE_PAGE_ROUTE: string = '/game/empire'    // empire page
 export const STATE_PAGE_ROUTE: string = '/game/state'   // state page
 export const JOB_PAGE_ROUTE: string = '/game/job'    // job page
 
+export const API_BUSINESS_EARNINGS_TOTAL_ROUTE: string = '/api/business/earnings/total' // get total earnings data of all a user's businesses
 export const API_COLLECTION_CONGREGATION_ROUTE: string = '/api/collection/congregation' // get collections by congregation
 export const API_BUSINESS_CONGREGATION_ROUTE: string = '/api/business/congregation' // get businesses by congregation
 export const API_CONGREGATION_EARNINGS_ROUTE: string = '/api/congregation/earnings' // get earnings of congregations

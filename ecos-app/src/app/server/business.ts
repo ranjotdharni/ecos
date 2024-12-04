@@ -1,7 +1,7 @@
 import { FOOD_SERVICE_ICON, MEDICINE_ICON, MILITARY_ICON, CONSTRUCTION_ICON, RELIGIOUS_ICON, RESIDENTIAL_ICON } from "@/customs/utils/constants"
 import { BusinessType, NewBusiness } from "@/customs/utils/types"
 
-export const NEW_BUSINESS_COST: number = 50000
+export const NEW_BUSINESS_COST: number = 100
 export const MIN_BASE_EARNING_RATE: number = 0.03
 export const MAX_BASE_EARNING_RATE: number = 0.05
 

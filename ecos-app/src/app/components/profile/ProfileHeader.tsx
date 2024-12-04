@@ -9,7 +9,7 @@ import Loading from "@/app/loading"
 import PFPModal from "./PFPModal"
 import { useState } from "react"
 
-export default function ProfileHeader({ user } : { user: UserDetails }) {
+export default function ProfileHeader({ user, getUser } : { user: UserDetails, getUser: () => void }) {
     const [error, throwError] = useError()
     const [loader, setLoader] = useState<boolean>(false)
     const [pfpModalVisible, setPfpModalVisible] = useState<boolean>(false)
@@ -24,7 +24,7 @@ export default function ProfileHeader({ user } : { user: UserDetails }) {
                 <div className={styles.loader}><Loading color='var(--color--text)' /></div> :
                 <>
                     <p className={styles.error}>{error}</p>
-                    <PFPModal user={user} pfp={profileData} setPfp={setProfileData} visible={pfpModalVisible} setVisible={setPfpModalVisible} throwError={throwError} />
+                    <PFPModal user={user} getUser={getUser} pfp={profileData} setPfp={setProfileData} visible={pfpModalVisible} setVisible={setPfpModalVisible} throwError={throwError} />
                     <div className={styles.userInfo}>
                         <img onClick={e => setPfpModalVisible(true)} src={profileData?.icon} />
                         <h1>{user?.username}</h1>

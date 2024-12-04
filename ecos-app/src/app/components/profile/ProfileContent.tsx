@@ -8,8 +8,8 @@ import { editUser } from "@/customs/utils/actions"
 import useError from "@/customs/hooks/useError"
 import Loading from "@/app/loading"
 
-export default function ProfileContent({ user } : { user: UserDetails }) {
-    const { getUser } = useContext(UserContext)
+export default function ProfileContent({ user, getUser } : { user: UserDetails, getUser: () => void }) {
+    const { getUser: getUserLocally } = useContext(UserContext)
     const [loader, setLoader] = useState<boolean>(false)
     const [error, throwError] = useError()
 
@@ -52,14 +52,15 @@ export default function ProfileContent({ user } : { user: UserDetails }) {
 
         setLoader(true)
 
-        await editUser(first.trim(), last.trim(), Number(user.pfp), bio.trim()).then(result => {
+        await editUser(first.trim(), last.trim(), Number(user.pfp), bio.trim()).then(async result => {
             throwError(result.message)
 
             if ((result as GenericError).error !== undefined) {
                 return
             }
 
-            getUser()
+            getUserLocally()
+            await getUser()
         })
 
         setLoader(false)

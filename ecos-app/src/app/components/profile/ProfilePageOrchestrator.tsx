@@ -37,8 +37,8 @@ export default function ProfilePageOrchestrator() {
                 loader || user === undefined ?
                 <div className={styles.loader}><Loading color='var(--color--text)' /></div> :
                 <>
-                    <ProfileHeader user={user} />
-                    <ProfileContent user={user} />
+                    <ProfileHeader user={user} getUser={getUser} />
+                    <ProfileContent user={user} getUser={getUser} />
                     <div className={styles.listsContainer}>
                         <UserSearch client={user} />
                         <FriendsList client={user} />

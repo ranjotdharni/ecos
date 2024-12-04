@@ -15,8 +15,8 @@ export interface Confirm {
     callback: () => void
 }
 
-export default function PFPModal({ user, pfp, setPfp, visible, setVisible, throwError } : { user: UserDetails, pfp: ProfileType, setPfp: (pfp: ProfileType) => void, visible: boolean, setVisible: (visible: boolean) => void, throwError: (error: string) => void }) {
-    const { getUser } = useContext(UserContext)
+export default function PFPModal({ user, getUser, pfp, setPfp, visible, setVisible, throwError } : { user: UserDetails, getUser: () => void, pfp: ProfileType, setPfp: (pfp: ProfileType) => void, visible: boolean, setVisible: (visible: boolean) => void, throwError: (error: string) => void }) {
+    const { getUser: getUserLocally } = useContext(UserContext)
     const [selected, setSelected] = useState<ProfileType>(pfp)
     const [loader, setLoader] = useState<boolean>(false)
 
@@ -43,7 +43,7 @@ export default function PFPModal({ user, pfp, setPfp, visible, setVisible, throw
 
         setLoader(true)
 
-        await editUser(user.firstname, user.lastname, selected.code, user.bio).then(result => {
+        await editUser(user.firstname, user.lastname, selected.code, user.bio).then(async result => {
             throwError(result.message)
 
             if ((result as GenericError).error !== undefined) {
@@ -51,7 +51,8 @@ export default function PFPModal({ user, pfp, setPfp, visible, setVisible, throw
             }
 
             setPfp(selected)
-            getUser()
+            getUserLocally()
+            await getUser()
         })
 
         setLoader(false)
