@@ -9,16 +9,10 @@ import { compare } from "bcrypt"
 // Error always gives forbidden because only server should access this route, 
 // it thereby inherently does so correctly
 export async function POST(request: NextRequest) {
-    console.log("Arrived in session endpoint")
-
     if (request.method !== 'POST') 
         return NextResponse.json({ error: true, message: 'FORBIDDEN' }, { status: 403 })
-
-    console.log("Confirmed POST request, authenticating...")
     
     const data = await request.json()
-
-    console.log(data)
 
     if (!data.username || !data.token || !data.key || data.key !== process.env.API_KEY)
         return NextResponse.json({ error: true, message: 'FORBIDDEN' }, { status: 403 }) 
